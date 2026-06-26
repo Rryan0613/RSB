@@ -9,6 +9,7 @@ Keep shared infrastructure separate from sport-specific analysis.
 Shared infrastructure:
 - Odds provider adapters
 - Provider diagnostics
+- Provider odds resolution for slate runs
 - Odds normalization
 - SQLite persistence
 - EV calculations
@@ -31,7 +32,7 @@ Future sport-specific layers can be added later without rewriting the shared inf
 When adding something new, prefer this pattern:
 
 ```text
-new data source -> new adapter -> provider diagnostics -> normalized output -> existing database shape
+new data source -> new adapter -> provider diagnostics -> normalized output -> qualified odds resolution -> existing database shape
 new sport -> new sport profile -> new feature module -> existing model/run pipeline
 new bet type -> new rules config -> existing EV/reporting layer
 new tracker -> new ledger tables -> existing predictions/results/odds history
@@ -52,6 +53,21 @@ Diagnostics should answer:
 - Are provider errors readable?
 
 Mock mode remains the default so tests and local development do not depend on external API availability.
+
+## Provider Odds Resolution Layer
+
+`src/slate_odds.py` connects qualified provider odds into `src/run_slate.py`.
+
+This layer should:
+- collect provider odds once per model run
+- evaluate odds through market selection rules
+- expose only qualified best prices to predictions
+- match odds to slate matches by match ID or team/date
+- handle reversed provider home/away order safely when the requested target is still the slate home team
+- fall back to manual slate odds unless strict provider-only mode is requested
+- preserve provider metadata in prediction output and odds snapshots
+
+Manual slate odds remain the default. Live provider odds must be explicitly requested so local development does not accidentally spend API quota.
 
 ## Current Rules Layer
 
@@ -77,6 +93,7 @@ Avoid:
 - Rewriting large modules when a small adapter/config would work
 - Turning parlays on before backtesting and calibration exist
 - Sending live provider odds into recommendations before diagnostics pass
+- Allowing unqualified provider lines to bypass market rules
 
 ## Near-Term Roadmap
 
@@ -84,6 +101,7 @@ v0.1.x foundation:
 - Input validation
 - Odds provider abstraction
 - Provider diagnostics
+- Provider odds resolution for slate runs
 - Best-price shopping
 - Configurable bet rules
 - Target odds filtering
