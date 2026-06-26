@@ -1,0 +1,32 @@
+{
+  "active_profile": "worldcup_default",
+  "profiles": {
+    "worldcup_default": {
+      "label": "World Cup default market rules",
+      "description": "Initial configurable rules for World Cup odds selection. Keep this conservative until backtesting is available.",
+      "allowed_sports": ["worldcup"],
+      "allowed_markets": ["h2h"],
+      "allowed_selections": ["home_win", "draw", "away_win"],
+      "bookmaker_rules": {
+        "required": ["fanduel", "draftkings", "betmgm"],
+        "minimum_available": 2
+      },
+      "target_odds": {
+        "min_decimal": 1.2,
+        "max_decimal": 6.0
+      },
+      "edge_rules": {
+        "minimum_edge": 0.03,
+        "minimum_ev_per_unit": 0.0
+      },
+      "bet_structure": {
+        "single_leg_enabled": true,
+        "parlay_enabled": false,
+        "same_game_parlay_enabled": false,
+        "allowed_parlay_leg_counts": [2, 3],
+        "max_total_legs": 3
+      },
+      "notes": "This is a rules foundation only. Parlay and SGP optimization should not be enabled until model calibration and backtesting exist."
+    }
+  }
+}
