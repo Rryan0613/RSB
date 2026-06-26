@@ -59,7 +59,7 @@ def test_find_provider_price_by_match_id():
     assert resolved["provider_selection"] == "home_win"
 
 
-def test_resolve_provider_odds_before_manual_fallback():
+def test_resolve_provider_before_manual_fallback():
     match = make_match(odds={"home_win": 120})
     decision = make_decision(selection="home_win", american_odds=390)
     context = {"qualified_decisions": [decision]}
@@ -70,7 +70,7 @@ def test_resolve_provider_odds_before_manual_fallback():
     assert resolved["line"]["american_odds"] == 390
 
 
-def test_resolve_manual_odds_without_provider_context():
+def test_resolve_manual_without_provider_context():
     match = make_match(odds={"home_win": 120})
 
     resolved = resolve_odds_for_match(match)
@@ -88,6 +88,19 @@ def test_resolve_reversed_provider_team_order():
     resolved = resolve_odds_for_match(match, provider_context=context, requested_selection="home_win")
 
     assert resolved["source"] == "provider_qualified"
+    assert resolved["match_strategy"] == "team_date_reversed"
+    assert resolved["provider_selection"] == "away_win"
+    assert resolved["line"]["american_odds"] == -170
+
+
+def test_reversed_team_order_selects_slate_home_side():
+    match = make_match(home_team="France", away_team="Norway")
+    provider_home = make_decision(selection="home_win", home_team="Norway", away_team="France", american_odds=390)
+    provider_away = make_decision(selection="away_win", home_team="Norway", away_team="France", american_odds=-170)
+    context = {"qualified_decisions": [provider_home, provider_away]}
+
+    resolved = resolve_odds_for_match(match, provider_context=context, requested_selection="home_win")
+
     assert resolved["match_strategy"] == "team_date_reversed"
     assert resolved["provider_selection"] == "away_win"
     assert resolved["line"]["american_odds"] == -170
