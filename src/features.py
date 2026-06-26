@@ -1,12 +1,18 @@
+from availability import availability_feature_set
+
+
 def make_features(match):
     """
     World Cup v0.1 feature set.
 
-    Add more fields as Claude identifies missing context.
     Current expected match schema:
     {
       "home": {...},
       "away": {...},
+      "availability": {
+        "home": {...},
+        "away": {...}
+      },
       "odds": {"home_win": -120}
     }
     """
@@ -14,7 +20,7 @@ def make_features(match):
     h = match["home"]
     a = match["away"]
 
-    return {
+    features = {
         "fifa_rank_diff": h.get("fifa_rank", 50) - a.get("fifa_rank", 50),
         "elo_diff": h.get("elo", 1700) - a.get("elo", 1700),
 
@@ -43,3 +49,5 @@ def make_features(match):
 
         "neutral_site": int(match.get("neutral_site", True))
     }
+    features.update(availability_feature_set(match))
+    return features
