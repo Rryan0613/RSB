@@ -92,6 +92,7 @@ def init_db():
         captured_at TEXT,
         provider TEXT,
         provider_event_id TEXT,
+        sport_key TEXT,
         home_team TEXT,
         away_team TEXT,
         commence_time TEXT,
@@ -102,6 +103,7 @@ def init_db():
     for column_name, column_definition in [
         ("provider", "TEXT"),
         ("provider_event_id", "TEXT"),
+        ("sport_key", "TEXT"),
         ("home_team", "TEXT"),
         ("away_team", "TEXT"),
         ("commence_time", "TEXT"),
@@ -226,6 +228,7 @@ def save_odds_snapshot(
     implied_probability,
     provider=None,
     provider_event_id=None,
+    sport_key=None,
     home_team=None,
     away_team=None,
     commence_time=None,
@@ -236,8 +239,8 @@ def save_odds_snapshot(
     cur.execute("""
     INSERT INTO odds_snapshots
     (run_id, match_id, sportsbook, market, selection, american_odds, implied_probability,
-     captured_at, provider, provider_event_id, home_team, away_team, commence_time, raw_json)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     captured_at, provider, provider_event_id, sport_key, home_team, away_team, commence_time, raw_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         run_id,
         match_id,
@@ -249,6 +252,7 @@ def save_odds_snapshot(
         utc_now(),
         provider,
         provider_event_id,
+        sport_key,
         home_team,
         away_team,
         commence_time,
@@ -269,6 +273,7 @@ def save_odds_lines(run_id, odds_lines):
             implied_probability=line["implied_probability"],
             provider=line.get("provider"),
             provider_event_id=line.get("provider_event_id"),
+            sport_key=line.get("sport_key"),
             home_team=line.get("home_team"),
             away_team=line.get("away_team"),
             commence_time=line.get("commence_time"),
