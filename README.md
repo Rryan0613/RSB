@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.3
+# WorldCup AI v0.1.4
 
 A focused World Cup +EV prediction framework.
 
@@ -17,6 +17,7 @@ This is not a "lock" generator. It is a disciplined sports analytics research pr
 The project is World Cup-focused right now, but the codebase is being built as a long-term analytics platform. Shared infrastructure should stay reusable:
 
 - Odds provider adapters
+- Provider diagnostics
 - Normalized odds snapshots
 - Database persistence
 - EV calculations
@@ -95,7 +96,7 @@ python src/update_results.py
 
 ## Odds Collection
 
-v0.1.2 added an odds provider abstraction. v0.1.3 adds market selection rules on top of those odds.
+v0.1.2 added an odds provider abstraction. v0.1.3 added market selection rules on top of those odds. v0.1.4 adds safe provider diagnostics.
 
 The default provider is `mock`, which is deterministic and does not call external APIs or spend API credits:
 
@@ -130,6 +131,40 @@ The active sport profile is configured in:
 ```text
 config/sports_config.json
 ```
+
+## Provider Diagnostics
+
+v0.1.4 adds:
+
+```text
+src/check_odds_provider.py
+```
+
+Run mock diagnostics without any API key:
+
+```bash
+python src/check_odds_provider.py
+```
+
+Run live The Odds API diagnostics after setting a local key:
+
+```bash
+export ODDS_API_KEY="your_key_here"
+python src/check_odds_provider.py --provider the_odds_api
+```
+
+The diagnostics script writes:
+
+```text
+data/output/latest_provider_diagnostics.json
+```
+
+Safety rules:
+- The API key is never printed in full.
+- The API key should never be committed.
+- Mock mode remains the default.
+- Live provider errors are captured into readable JSON.
+- The script can list matching soccer/FIFA/World Cup sport keys when the provider supports sport listing.
 
 ## Market Selection Rules
 
@@ -224,6 +259,9 @@ The tests cover:
 - Market selection rules
 - Target odds filtering
 - Minimum sportsbook availability
+- Provider diagnostics
+- API key masking
+- Safe live-provider missing-key behavior
 
 ## Future Roadmap
 
