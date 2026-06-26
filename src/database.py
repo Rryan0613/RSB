@@ -5,20 +5,25 @@ from datetime import datetime, timezone
 
 DB_PATH = Path("data/worldcup_ai.db")
 
+
 def utc_now():
     return datetime.now(timezone.utc).isoformat()
+
 
 def connect():
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     return sqlite3.connect(DB_PATH)
 
+
 def _column_exists(cur, table_name, column_name):
     columns = cur.execute(f"PRAGMA table_info({table_name})").fetchall()
     return any(row[1] == column_name for row in columns)
 
+
 def _add_column_if_missing(cur, table_name, column_name, column_definition):
     if not _column_exists(cur, table_name, column_name):
         cur.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_definition}")
+
 
 def init_db():
     con = connect()
@@ -64,9 +69,25 @@ def init_db():
         edge REAL,
         ev_per_unit REAL,
         recommendation TEXT,
+        technical_recommendation TEXT,
+        data_quality TEXT,
+        actionable INTEGER,
+        recommendation_guardrail TEXT,
+        do_not_bet_real_money INTEGER,
+        prediction_json TEXT,
         created_at TEXT
     )
     """)
+
+    for column_name, column_definition in [
+        ("technical_recommendation", "TEXT"),
+        ("data_quality", "TEXT"),
+        ("actionable", "INTEGER"),
+        ("recommendation_guardrail", "TEXT"),
+        ("do_not_bet_real_money", "INTEGER"),
+        ("prediction_json", "TEXT"),
+    ]:
+        _add_column_if_missing(cur, "predictions", column_name, column_definition)
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS simulation_outputs (
@@ -150,6 +171,7 @@ def init_db():
     con.commit()
     con.close()
 
+
 def save_match(match):
     con = connect()
     cur = con.cursor()
@@ -171,6 +193,7 @@ def save_match(match):
     con.commit()
     con.close()
 
+
 def save_features(run_id, model_version, match_id, features):
     con = connect()
     cur = con.cursor()
@@ -182,14 +205,17 @@ def save_features(run_id, model_version, match_id, features):
     con.commit()
     con.close()
 
+
 def save_prediction(pred):
     con = connect()
     cur = con.cursor()
     cur.execute("""
     INSERT INTO predictions
     (run_id, model_version, match_id, market, selection, model_probability,
-     american_odds, implied_probability, edge, ev_per_unit, recommendation, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     american_odds, implied_probability, edge, ev_per_unit, recommendation,
+     technical_recommendation, data_quality, actionable, recommendation_guardrail,
+     do_not_bet_real_money, prediction_json, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         pred["run_id"],
         pred["model_version"],
@@ -202,10 +228,17 @@ def save_prediction(pred):
         pred["edge"],
         pred["ev_per_unit"],
         pred["recommendation"],
+        pred.get("technical_recommendation"),
+        pred.get("data_quality"),
+        int(bool(pred.get("actionable", False))),
+        pred.get("recommendation_guardrail"),
+        int(bool(pred.get("do_not_bet_real_money", False))),
+        json.dumps(pred),
         utc_now()
     ))
     con.commit()
     con.close()
+
 
 def save_simulation(run_id, match_id, simulations, output):
     con = connect()
@@ -217,6 +250,7 @@ def save_simulation(run_id, match_id, simulations, output):
     """, (run_id, match_id, simulations, json.dumps(output), utc_now()))
     con.commit()
     con.close()
+
 
 def save_odds_snapshot(
     run_id,
@@ -261,6 +295,7 @@ def save_odds_snapshot(
     con.commit()
     con.close()
 
+
 def save_odds_lines(run_id, odds_lines):
     for line in odds_lines:
         save_odds_snapshot(
@@ -279,6 +314,7 @@ def save_odds_lines(run_id, odds_lines):
             commence_time=line.get("commence_time"),
             raw_json=line.get("raw_json"),
         )
+
 
 def save_result(result):
     home_score = int(result["home_score"])
@@ -304,6 +340,7 @@ def save_result(result):
     ))
     con.commit()
     con.close()
+
 
 def load_training_rows(target_market="home_win"):
     allowed_targets = {"home_win", "draw", "away_win", "btts", "over_25"}
@@ -333,6 +370,7 @@ def load_training_rows(target_market="home_win"):
 
     return training_rows
 
+
 def save_model_run(run_id, model_version, run_type, trained_on_matches, notes=""):
     con = connect()
     cur = con.cursor()
@@ -343,6 +381,7 @@ def save_model_run(run_id, model_version, run_type, trained_on_matches, notes=""
     """, (run_id, model_version, run_type, trained_on_matches, notes, utc_now()))
     con.commit()
     con.close()
+
 
 def save_review_note(run_id, note_type, note):
     con = connect()
