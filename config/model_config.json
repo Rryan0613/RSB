@@ -1,6 +1,6 @@
 {
   "project": "worldcup-ai",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "target_market": "home_win",
   "minimum_completed_matches_to_train": 20,
   "minimum_edge": 0.03,
@@ -16,5 +16,5 @@
     "markets": ["h2h"],
     "odds_format": "american"
   },
-  "notes": "World Cup focused. v0.1.2 adds a provider-based odds collection abstraction while keeping future sport expansion easy."
+  "notes": "World Cup focused. v0.1.3 adds configurable market selection rules for best-price qualification, target odds ranges, and future bet-structure expansion."
 }
