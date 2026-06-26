@@ -1,230 +1,92 @@
-# WorldCup AI v0.1.7
+# WorldCup AI v0.1.8
 
-A focused World Cup +EV prediction framework.
+A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
 
-This project is designed to:
-- Store every match, feature snapshot, prediction, odds line, simulation output, and final result.
-- Retrain from the local database as completed results are added.
-- Estimate model probability.
-- Compare model probability to sportsbook implied probability.
-- Calculate edge and expected value.
-- Generate structured JSON that can be pasted into Claude or ChatGPT for review.
+## Current Foundation
 
-This is not a "lock" generator. It is a disciplined sports analytics research project.
+The project currently supports:
 
-## Design Direction
-
-The project is World Cup-focused right now, but the codebase is being built as a long-term analytics platform. Shared infrastructure should stay reusable:
-
-- Odds provider adapters
-- Provider diagnostics
-- Qualified provider odds for slate runs
-- Data quality guardrails
-- Availability, lineup, injury, and rotation-risk context
-- Normalized odds snapshots
-- Database persistence
-- EV calculations
-- Model run tracking
-- Market selection rules
-- Reporting
-- Tests
-
-Sport-specific logic should stay isolated. When NBA, NFL, MLB, player props, parlays, or P&L tracking are added later, they should be added as new modules/configs rather than by rewriting the World Cup foundation.
+- SQLite model memory
+- input validation
+- reproducible Monte Carlo simulation
+- odds provider abstraction
+- provider diagnostics
+- qualified provider odds in `run_slate.py`
+- market selection rules
+- data quality guardrails
+- availability, lineup, injury, and rotation-risk context
+- tactical matchup context
+- pytest coverage
 
 ## Quick Start
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate   # Mac/Linux
-# .venv\Scripts\activate   # Windows
-
+source .venv/bin/activate
 pip install -r requirements.txt
 python src/run_slate.py
 ```
 
-The default live slate is intentionally empty. An empty run should complete safely and write a report with zero analyzed matches.
+Run tests:
 
-## Live Inputs vs Samples
+```bash
+python -m pytest
+```
 
-Use `data/input/` for live working files:
+Run with qualified mock provider odds:
+
+```bash
+python src/run_slate.py --odds-source provider --odds-provider mock
+```
+
+Run with The Odds API after setting a local key:
+
+```bash
+export ODDS_API_KEY="your_key_here"
+python src/run_slate.py --odds-source provider --odds-provider the_odds_api
+```
+
+Do not commit API keys to GitHub.
+
+## Live Inputs
+
+Live working files:
 
 ```text
 data/input/slate.json
 data/input/results.json
 ```
 
-Use `data/samples/` for sample/dev data:
+Sample/dev files:
 
 ```text
 data/samples/slate_sample.json
 data/samples/results_sample.json
 ```
 
-Do not leave fake sample matches in `data/input/` when running real analysis. Completed matches become training data through the SQLite database.
+Do not leave fake sample matches in `data/input/` when running real analysis.
 
-## Main Workflow
-
-1. Add upcoming matches to `data/input/slate.json`.
-2. Run with manual slate odds:
-
-```bash
-python src/run_slate.py
-```
-
-3. Or run with qualified provider odds:
-
-```bash
-python src/run_slate.py --odds-source provider --odds-provider mock
-```
-
-4. The model writes predictions to:
-
-```text
-data/output/latest_model_output.json
-```
-
-5. Paste that JSON into Claude with the prompt in:
-
-```text
-prompts/claude_worldcup_prompt.md
-```
-
-6. After games finish, add final results to:
-
-```text
-data/input/results.json
-```
-
-7. Run:
-
-```bash
-python src/update_results.py
-```
-
-8. Next slate run retrains using the updated database.
-
-## Odds Collection
-
-v0.1.2 added an odds provider abstraction. v0.1.3 added market selection rules on top of those odds. v0.1.4 added safe provider diagnostics. v0.1.5 lets `run_slate.py` use qualified provider odds. v0.1.6 adds data quality guardrails. v0.1.7 adds availability, lineup, injury, and rotation-risk context.
-
-The default provider is `mock`, which is deterministic and does not call external APIs or spend API credits:
-
-```bash
-python src/odds_collector.py
-```
-
-The collector writes:
-
-```text
-data/output/latest_odds_output.json
-```
-
-It also saves normalized sportsbook lines into `odds_snapshots`.
-
-Current sportsbook targets:
-
-```text
-fanduel
-draftkings
-betmgm
-```
-
-Current active sport:
-
-```text
-worldcup
-```
-
-The active sport profile is configured in:
-
-```text
-config/sports_config.json
-```
-
-## Provider Diagnostics
-
-v0.1.4 adds:
-
-```text
-src/check_odds_provider.py
-```
-
-Run mock diagnostics without any API key:
-
-```bash
-python src/check_odds_provider.py
-```
-
-Run live The Odds API diagnostics after setting a local key:
-
-```bash
-export ODDS_API_KEY="your_key_here"
-python src/check_odds_provider.py --provider the_odds_api
-```
-
-The diagnostics script writes:
-
-```text
-data/output/latest_provider_diagnostics.json
-```
-
-Safety rules:
-- The API key is never printed in full.
-- The API key should never be committed.
-- Mock mode remains the default.
-- Live provider errors are captured into readable JSON.
-- The script can list matching soccer/FIFA/World Cup sport keys when the provider supports sport listing.
-
-## Provider Odds in Slate Runs
-
-v0.1.5 adds:
-
-```text
-src/slate_odds.py
-```
-
-Manual slate odds remain the default so normal development does not accidentally spend live API quota:
-
-```bash
-python src/run_slate.py
-```
-
-Use provider odds with the mock provider:
-
-```bash
-python src/run_slate.py --odds-source provider --odds-provider mock
-```
-
-Use provider odds with The Odds API:
-
-```bash
-python src/run_slate.py --odds-source provider --odds-provider the_odds_api
-```
+## Provider Odds
 
 Provider odds mode:
+
 - collects provider odds once per run
 - applies market selection rules
 - uses only qualified best prices
 - matches provider lines to slate matches by match ID or team/date
-- supports reversed provider team order when the target is still the slate home team
+- supports reversed provider home/away order when the target is still the slate home team
 - falls back to manual slate odds unless `--no-manual-odds-fallback` is provided
 - records provider metadata in prediction output and odds snapshots
 
-For strict provider-only runs:
+Strict provider-only run:
 
 ```bash
 python src/run_slate.py --odds-source provider --odds-provider the_odds_api --no-manual-odds-fallback
 ```
 
-## Data Quality Guardrails
+## Guardrails
 
-v0.1.6 adds:
-
-```text
-src/data_quality.py
-```
-
-Each prediction now includes:
+Each prediction includes:
 
 ```text
 data_quality
@@ -237,120 +99,40 @@ guardrail_reasons
 do_not_bet_real_money
 ```
 
-The model can still calculate a technical EV signal, but weak data can block that signal from becoming an actionable bet. For example, a technical `bet` becomes a final `pass` when guardrails identify simulation-only bootstrap mode, insufficient training data, unverified manual features, manual odds fallback, stale odds, missing feature fields, unconfirmed lineups, B-team rotation risk, or high-impact absences.
+The model can calculate a technical EV signal, but weak data can block that signal from becoming actionable. Guardrails currently cover simulation-only bootstrap mode, insufficient training data, unverified features, stale odds, manual fallback odds, missing availability, unverified injury data, unconfirmed lineups, rotation risk, key absences, missing tactical context, unverified tactical data, and low tactical confidence.
 
-To mark slate features as verified, add metadata like this to a match:
+## Availability Context
 
-```json
-"data_quality": {
-  "feature_source": "verified_dataset"
-}
-```
-
-Trusted feature sources are:
+`src/availability.py` models the actual expected version of each team. It supports:
 
 ```text
-official_feed
-verified_dataset
-historical_backfill
-model_feature_store
+lineup_status
+lineup_confidence
+normal_starter_count
+expected_starters_available
+lineup_strength_rating
+rotation_risk
+b_team_risk
+replacement_quality_rating
+key_absences
+returning_players
+fitness_concerns
 ```
 
-Until a match has enough completed training data, verified feature inputs, and verified availability context, treat model output as research-only.
-
-## Availability, Lineup, Injury, and Rotation Context
-
-v0.1.7 adds:
-
-```text
-src/availability.py
-```
-
-The goal is to analyze the actual expected version of each team, not just the country name.
-
-Each match can include:
-
-```json
-"availability": {
-  "home": {
-    "source": "verified_team_news",
-    "lineup_status": "confirmed",
-    "lineup_confidence": 0.95,
-    "normal_starter_count": 11,
-    "expected_starters_available": 10,
-    "lineup_strength_rating": 88,
-    "rotation_risk": 2,
-    "b_team_risk": 1,
-    "replacement_quality_rating": 7,
-    "key_absences": [
-      {
-        "name": "Example Player",
-        "role": "starter",
-        "position": "CB",
-        "status": "out",
-        "impact_rating": 8,
-        "reason": "injury"
-      }
-    ],
-    "returning_players": [
-      {
-        "name": "Example Player 2",
-        "injury_type": "hamstring",
-        "days_since_return": 7,
-        "games_since_return": 1,
-        "minutes_restriction": true,
-        "impact_rating": 7
-      }
-    ],
-    "fitness_concerns": []
-  },
-  "away": {
-    "source": "verified_team_news",
-    "lineup_status": "confirmed",
-    "lineup_confidence": 0.95,
-    "normal_starter_count": 11,
-    "expected_starters_available": 11,
-    "lineup_strength_rating": 94,
-    "rotation_risk": 1,
-    "b_team_risk": 0,
-    "replacement_quality_rating": 8,
-    "key_absences": [],
-    "returning_players": [],
-    "fitness_concerns": []
-  }
-}
-```
-
-The feature engine now creates availability features such as:
+It creates features such as:
 
 ```text
 lineup_strength_diff
 starter_availability_rate_diff
 expected_starters_available_diff
-lineup_confidence_min
 rotation_risk_diff
 b_team_risk_diff
-replacement_quality_diff
 key_absence_impact_diff
 returning_player_risk_diff
 minutes_restricted_count_diff
-fitness_concern_count_diff
 ```
 
-The guardrails can block recommendations for:
-
-```text
-availability_data_missing
-injury_data_unverified
-lineup_unconfirmed
-low_lineup_confidence
-b_team_rotation_risk
-key_player_absence
-recent_injury_return
-minutes_restriction
-```
-
-Trusted availability sources are:
+Trusted availability sources:
 
 ```text
 official_feed
@@ -361,46 +143,75 @@ historical_backfill
 model_availability_store
 ```
 
-## Market Selection Rules
+## Tactical Matchup Engine
 
-v0.1.3 adds configurable market rules in:
+`src/tactical_matchup.py` models how the teams match up tactically. It supports:
 
 ```text
-config/bet_rules_config.json
+tactical_confidence
+pressing_intensity
+build_up_quality
+defensive_line_height
+pace_threat
+crossing_volume
+aerial_threat
+aerial_defense
+set_piece_attack
+set_piece_defense
+counterattack_threat
+transition_defense
+midfield_control
+formation_flexibility
+manager_tactical_rating
+low_block_comfort
+chance_creation_centrality
+wide_creation
+press_resistance
+vulnerability_to_press
 ```
 
-The initial World Cup default profile supports:
+It creates features such as:
 
-- allowed markets
-- allowed selections
-- required sportsbooks
-- minimum sportsbook availability
-- minimum decimal odds
-- maximum decimal odds
-- single-leg enablement flag
-- future parlay/SGP configuration placeholders
-
-The current rules layer does **not** claim a bet is +EV by itself. It only decides whether a sportsbook price is eligible for analysis based on your configured market rules.
-
-Later versions can add:
-
-- single-leg filters
-- 2-leg / 3-leg parlay rules
-- same-game parlay rules
-- target odds windows
-- player-specific filters
-- stake sizing
-- P&L tracking
-
-## The Odds API
-
-To use The Odds API later, set your local environment variable and change the odds provider config from `mock` to `the_odds_api`:
-
-```bash
-export ODDS_API_KEY="your_key_here"
+```text
+home_press_vs_away_buildup
+away_press_vs_home_buildup
+home_pace_vs_away_high_line
+away_pace_vs_home_high_line
+home_crossing_vs_away_aerial_defense
+away_crossing_vs_home_aerial_defense
+home_set_piece_edge
+away_set_piece_edge
+home_counterattack_edge
+away_counterattack_edge
+home_central_creation_edge
+away_central_creation_edge
+home_wide_creation_edge
+away_wide_creation_edge
+midfield_control_diff
+formation_flexibility_diff
+manager_tactical_diff
+transition_defense_diff
 ```
 
-Do not commit API keys to GitHub.
+Tactical guardrails can block for:
+
+```text
+tactical_data_missing
+tactical_data_unverified
+low_tactical_confidence
+```
+
+The system can also emit non-blocking review warnings for major tactical mismatches, such as pace versus high line, press versus buildup, and set-piece edge.
+
+Trusted tactical sources:
+
+```text
+official_feed
+verified_dataset
+verified_scouting_report
+historical_backfill
+model_tactical_store
+```
 
 ## Database
 
@@ -410,75 +221,26 @@ SQLite database path:
 data/worldcup_ai.db
 ```
 
-The database is the model's memory.
+Core tables:
 
-Current core tables:
-- `matches`
-- `feature_snapshots`
-- `predictions`
-- `simulation_outputs`
-- `odds_snapshots`
-- `results`
-- `model_runs`
-- `review_notes`
-
-## Reproducible Simulations
-
-`run_monte_carlo` accepts an optional `seed`:
-
-```python
-run_monte_carlo(match, simulations=10000, seed=42)
+```text
+matches
+feature_snapshots
+predictions
+simulation_outputs
+odds_snapshots
+results
+model_runs
+review_notes
 ```
 
-You can also add `simulation_seed` to a match in `slate.json`. If no seed is provided, simulations run with non-deterministic randomness.
+## Roadmap
 
-## Tests
+Next likely versions:
 
-Run the test suite with:
-
-```bash
-python -m pytest
+```text
+v0.1.9 - advanced team stats: duels, passing, pressing, set pieces, transitions
+v0.2.0 - historical dataset and backtesting foundation
+v0.3.0 - ledger, ROI, CLV, and performance tracking
+v0.4.0 - API/dashboard layer
 ```
-
-The tests cover:
-- American odds conversion
-- Implied probability
-- EV calculation
-- Feature generation
-- Input validation
-- Optional odds validation for provider mode
-- Monte Carlo reproducibility
-- Empty slate execution
-- Odds provider normalization
-- Best-price selection
-- Mock odds collection
-- Market selection rules
-- Target odds filtering
-- Minimum sportsbook availability
-- Provider diagnostics
-- API key masking
-- Safe live-provider missing-key behavior
-- Provider odds resolution for slate runs
-- Manual odds fallback
-- Reversed team-order provider matching
-- Data quality warnings
-- Recommendation guardrails
-- Stale odds detection
-- Availability feature extraction
-- Lineup confidence and rotation-risk guardrails
-- Injury-return and minutes-restriction guardrails
-
-## Future Roadmap
-
-Planned future modules include:
-- Best-price shopping and line movement analysis
-- Configurable single-leg and parlay rules
-- Same-game parlay rules
-- Target odds ranges
-- Advanced tactical matchup features
-- Advanced team stats: duels, passing, pressing, set pieces, transitions
-- Historical backtesting
-- Bet ledger and P&L tracking
-- W/L ratio and ROI dashboards
-- Closing line value tracking
-- Future sport profiles after the World Cup foundation is stable
