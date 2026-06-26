@@ -18,6 +18,14 @@ from availability import (
     rotation_risk,
     team_availability,
 )
+from tactical_matchup import (
+    confidence as tactical_confidence,
+    has_team_tactical,
+    is_verified_tactical_source,
+    tactical_review_flags,
+    tactical_source,
+    team_tactical,
+)
 
 FEATURE_FIELDS = [
     "fifa_rank",
@@ -64,6 +72,9 @@ ACTION_BLOCK_CODES = {
     "key_player_absence",
     "recent_injury_return",
     "minutes_restriction",
+    "tactical_data_missing",
+    "tactical_data_unverified",
+    "low_tactical_confidence",
 }
 
 PLACEHOLDER_TERMS = {
@@ -264,6 +275,48 @@ def _assess_availability(match: dict) -> list:
     return warnings
 
 
+def _assess_tactical(match: dict) -> list:
+    warnings = []
+    missing_teams = [team_key for team_key in ["home", "away"] if not has_team_tactical(match, team_key)]
+    if missing_teams:
+        warnings.append(make_warning(
+            "tactical_data_missing",
+            "blocker",
+            f"Missing tactical matchup context for: {', '.join(missing_teams)}.",
+        ))
+        return warnings
+
+    for team_key in ["home", "away"]:
+        team_data = team_tactical(match, team_key)
+        team_name = _team_label(match, team_key)
+        source = tactical_source(team_data, match)
+        confidence = tactical_confidence(team_data)
+
+        if not is_verified_tactical_source(source):
+            warnings.append(make_warning(
+                "tactical_data_unverified",
+                "blocker",
+                f"{team_name} tactical source is {source}; matchup data is not verified.",
+            ))
+
+        if confidence < 0.65:
+            warnings.append(make_warning(
+                "low_tactical_confidence",
+                "blocker",
+                f"{team_name} tactical confidence is {confidence:.2f}, below 0.65.",
+            ))
+
+    flags = tactical_review_flags(match)
+    if flags:
+        warnings.append(make_warning(
+            "tactical_mismatch_review_required",
+            "warning",
+            f"Potential tactical mismatch flags require review: {', '.join(flags)}.",
+        ))
+
+    return warnings
+
+
 def assess_data_quality(
     match: dict,
     model_status: str,
@@ -314,6 +367,7 @@ def assess_data_quality(
         ))
 
     warnings.extend(_assess_availability(match))
+    warnings.extend(_assess_tactical(match))
 
     if odds_choice:
         source = odds_choice.get("source")
