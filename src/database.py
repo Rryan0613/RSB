@@ -12,6 +12,14 @@ def connect():
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     return sqlite3.connect(DB_PATH)
 
+def _column_exists(cur, table_name, column_name):
+    columns = cur.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return any(row[1] == column_name for row in columns)
+
+def _add_column_if_missing(cur, table_name, column_name, column_definition):
+    if not _column_exists(cur, table_name, column_name):
+        cur.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_definition}")
+
 def init_db():
     con = connect()
     cur = con.cursor()
@@ -81,9 +89,25 @@ def init_db():
         selection TEXT,
         american_odds INTEGER,
         implied_probability REAL,
-        captured_at TEXT
+        captured_at TEXT,
+        provider TEXT,
+        provider_event_id TEXT,
+        home_team TEXT,
+        away_team TEXT,
+        commence_time TEXT,
+        raw_json TEXT
     )
     """)
+
+    for column_name, column_definition in [
+        ("provider", "TEXT"),
+        ("provider_event_id", "TEXT"),
+        ("home_team", "TEXT"),
+        ("away_team", "TEXT"),
+        ("commence_time", "TEXT"),
+        ("raw_json", "TEXT"),
+    ]:
+        _add_column_if_missing(cur, "odds_snapshots", column_name, column_definition)
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS results (
@@ -192,13 +216,28 @@ def save_simulation(run_id, match_id, simulations, output):
     con.commit()
     con.close()
 
-def save_odds_snapshot(run_id, match_id, sportsbook, market, selection, american_odds, implied_probability):
+def save_odds_snapshot(
+    run_id,
+    match_id,
+    sportsbook,
+    market,
+    selection,
+    american_odds,
+    implied_probability,
+    provider=None,
+    provider_event_id=None,
+    home_team=None,
+    away_team=None,
+    commence_time=None,
+    raw_json=None,
+):
     con = connect()
     cur = con.cursor()
     cur.execute("""
     INSERT INTO odds_snapshots
-    (run_id, match_id, sportsbook, market, selection, american_odds, implied_probability, captured_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    (run_id, match_id, sportsbook, market, selection, american_odds, implied_probability,
+     captured_at, provider, provider_event_id, home_team, away_team, commence_time, raw_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         run_id,
         match_id,
@@ -207,10 +246,34 @@ def save_odds_snapshot(run_id, match_id, sportsbook, market, selection, american
         selection,
         int(american_odds),
         float(implied_probability),
-        utc_now()
+        utc_now(),
+        provider,
+        provider_event_id,
+        home_team,
+        away_team,
+        commence_time,
+        json.dumps(raw_json) if raw_json is not None else None,
     ))
     con.commit()
     con.close()
+
+def save_odds_lines(run_id, odds_lines):
+    for line in odds_lines:
+        save_odds_snapshot(
+            run_id=run_id,
+            match_id=line["match_id"],
+            sportsbook=line["sportsbook"],
+            market=line["market"],
+            selection=line["selection"],
+            american_odds=line["american_odds"],
+            implied_probability=line["implied_probability"],
+            provider=line.get("provider"),
+            provider_event_id=line.get("provider_event_id"),
+            home_team=line.get("home_team"),
+            away_team=line.get("away_team"),
+            commence_time=line.get("commence_time"),
+            raw_json=line.get("raw_json"),
+        )
 
 def save_result(result):
     home_score = int(result["home_score"])
