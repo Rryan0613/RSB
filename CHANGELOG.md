@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.8
+- Added `src/tactical_matchup.py` for World Cup tactical matchup context.
+- Added tactical matchup features for pressing versus buildup, pace versus high defensive line, crossing and aerial matchups, set-piece edges, counterattack edges, central/wide chance creation, midfield control, formation flexibility, transition defense, low-block comfort, and manager tactical rating.
+- Updated `src/features.py` so tactical features are included in every feature snapshot.
+- Added tactical data guardrails for missing tactical context, unverified tactical sources, and low tactical confidence.
+- Added non-blocking tactical review warnings for major matchup flags such as pace versus high line, press versus buildup, and set-piece edge.
+- Added tests for tactical feature extraction, tactical review flags, tactical rating clamping, feature integration, and tactical guardrails.
+- Updated model version to `0.1.8`.
+
 ## v0.1.7
 - Added `src/availability.py` for World Cup lineup, injury, availability, and rotation-risk context.
 - Added availability-derived features to `src/features.py`, including lineup strength, starter availability, lineup confidence, rotation risk, B-team risk, replacement quality, key absence impact, returning player risk, minutes restrictions, and fitness concern differentials.
