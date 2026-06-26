@@ -4,12 +4,14 @@ from pathlib import Path
 
 from database import (
     init_db, save_match, save_features, save_prediction,
-    save_simulation, load_training_rows, save_model_run
+    save_simulation, load_training_rows, save_model_run,
+    save_odds_snapshot
 )
 from features import make_features
 from model import train_model, predict_probability, MODEL_PATH
 from simulator import run_monte_carlo
 from ev import implied_probability, edge, ev_per_unit
+from validation import validate_slate
 
 CONFIG = json.loads(Path("config/model_config.json").read_text())
 MODEL_VERSION = CONFIG["version"]
@@ -25,6 +27,7 @@ def main():
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     slate = json.loads(slate_path.read_text())
+    validate_slate(slate)
     training_rows = load_training_rows(CONFIG["target_market"])
 
     model_status = "existing_model"
@@ -49,7 +52,8 @@ def main():
         features = make_features(match)
         save_features(run_id, MODEL_VERSION, match["match_id"], features)
 
-        sim = run_monte_carlo(match, simulations=match.get("simulations", 10000))
+        simulation_seed = match.get("simulation_seed", CONFIG.get("simulation_seed"))
+        sim = run_monte_carlo(match, simulations=match.get("simulations", 10000), seed=simulation_seed)
         save_simulation(run_id, match["match_id"], sim["simulations"], sim)
 
         if model_status == "simulation_only_bootstrap":
@@ -64,6 +68,16 @@ def main():
         edg = edge(model_probability, odds)
         ev = ev_per_unit(model_probability, odds)
 
+        save_odds_snapshot(
+            run_id=run_id,
+            match_id=match["match_id"],
+            sportsbook=match.get("sportsbook"),
+            market="home_win",
+            selection=f'{match["home_team"]} home win',
+            american_odds=odds,
+            implied_probability=imp
+        )
+
         recommendation = "bet" if edg >= MIN_EDGE and ev > 0 else "pass"
 
         pred = {
@@ -75,6 +89,7 @@ def main():
             "selection": f'{match["home_team"]} home win',
             "model_probability": model_probability,
             "simulation_home_win_probability": sim["home_win_probability"],
+            "simulation_seed": sim.get("seed_used"),
             "american_odds": odds,
             "implied_probability": imp,
             "edge": edg,
