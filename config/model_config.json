@@ -1,6 +1,6 @@
 {
   "project": "worldcup-ai",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "target_market": "home_win",
   "minimum_completed_matches_to_train": 20,
   "minimum_edge": 0.03,
@@ -16,5 +16,5 @@
     "markets": ["h2h"],
     "odds_format": "american"
   },
-  "notes": "World Cup focused. v0.1.6 adds data quality warnings and recommendation guardrails so weak or research-only outputs cannot be treated as actionable bets."
+  "notes": "World Cup focused. v0.1.7 adds availability, lineup, injury, and rotation-risk context so the model analyzes the actual expected version of each team."
 }
