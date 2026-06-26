@@ -3,8 +3,9 @@ import sqlite3
 import database
 
 
-def test_save_odds_lines_persists_provider_metadata(tmp_path):
-    database.DB_PATH = tmp_path / "test_worldcup_ai.db"
+def test_save_odds_lines_persists_provider_metadata(tmp_path, monkeypatch):
+    test_db_path = tmp_path / "test_worldcup_ai.db"
+    monkeypatch.setattr(database, "DB_PATH", test_db_path)
     database.init_db()
 
     line = {
@@ -25,7 +26,7 @@ def test_save_odds_lines_persists_provider_metadata(tmp_path):
 
     database.save_odds_lines("run_1", [line])
 
-    con = sqlite3.connect(database.DB_PATH)
+    con = sqlite3.connect(test_db_path)
     row = con.execute(
         "SELECT provider, provider_event_id, sport_key, sportsbook, market, selection FROM odds_snapshots"
     ).fetchone()
