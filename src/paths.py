@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -19,3 +20,18 @@ DEFAULT_MODEL_OUTPUT_PATH = DATA_OUTPUT_DIR / "latest_model_output.json"
 DEFAULT_ODDS_OUTPUT_PATH = DATA_OUTPUT_DIR / "latest_odds_output.json"
 DEFAULT_PROVIDER_DIAGNOSTICS_PATH = DATA_OUTPUT_DIR / "latest_provider_diagnostics.json"
 DEFAULT_CLAUDE_REVIEW_PATH = DATA_INPUT_DIR / "claude_review.json"
+
+
+def get_db_path() -> Path:
+    override = os.environ.get("RSB_DB_PATH")
+    return Path(override) if override else DEFAULT_DB_PATH
+
+
+def get_slate_path() -> Path:
+    override = os.environ.get("RSB_SLATE_PATH")
+    return Path(override) if override else DEFAULT_SLATE_PATH
+
+
+def get_model_output_path() -> Path:
+    override = os.environ.get("RSB_MODEL_OUTPUT_PATH")
+    return Path(override) if override else DEFAULT_MODEL_OUTPUT_PATH

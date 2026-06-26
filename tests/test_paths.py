@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 import paths
+from paths import get_db_path, get_slate_path, get_model_output_path
 
 ROOT = Path(__file__).resolve().parents[1]
 SLATE_PATH = ROOT / "data/input/slate.json"
@@ -74,7 +75,7 @@ def test_run_slate_module_loads_from_outside_project_root(tmp_path):
         f"import sys; sys.path.insert(0, {src!r}); "
         f"import run_slate; "
         f"from paths import MODEL_CONFIG_PATH, DEFAULT_SLATE_PATH, DEFAULT_MODEL_OUTPUT_PATH, DEFAULT_DB_PATH; "
-        f"assert run_slate.MODEL_VERSION == '0.1.8.2', run_slate.MODEL_VERSION; "
+        f"assert run_slate.MODEL_VERSION == '0.1.8.3', run_slate.MODEL_VERSION; "
         f"assert MODEL_CONFIG_PATH.is_absolute(); "
         f"assert DEFAULT_SLATE_PATH.is_absolute(); "
         f"assert DEFAULT_MODEL_OUTPUT_PATH.is_absolute(); "
@@ -97,3 +98,27 @@ def test_run_slate_module_loads_from_outside_project_root(tmp_path):
     output_mtime_after = output_path.stat().st_mtime if output_path.exists() else None
     assert db_mtime_after == db_mtime_before, "data/worldcup_ai.db was written"
     assert output_mtime_after == output_mtime_before, "data/output/latest_model_output.json was written"
+
+
+def test_default_paths_point_to_project_root_files():
+    assert get_db_path() == ROOT / "data" / "worldcup_ai.db"
+    assert get_slate_path() == ROOT / "data" / "input" / "slate.json"
+    assert get_model_output_path() == ROOT / "data" / "output" / "latest_model_output.json"
+
+
+def test_rsb_db_path_env_overrides_db_path(tmp_path, monkeypatch):
+    override = tmp_path / "override.db"
+    monkeypatch.setenv("RSB_DB_PATH", str(override))
+    assert get_db_path() == override
+
+
+def test_rsb_slate_path_env_overrides_slate_path(tmp_path, monkeypatch):
+    override = tmp_path / "override_slate.json"
+    monkeypatch.setenv("RSB_SLATE_PATH", str(override))
+    assert get_slate_path() == override
+
+
+def test_rsb_model_output_path_env_overrides_model_output_path(tmp_path, monkeypatch):
+    override = tmp_path / "override_output.json"
+    monkeypatch.setenv("RSB_MODEL_OUTPUT_PATH", str(override))
+    assert get_model_output_path() == override

@@ -2,9 +2,9 @@ import sqlite3
 import json
 from datetime import datetime, timezone
 
-from paths import DEFAULT_DB_PATH
+from paths import get_db_path
 
-DB_PATH = DEFAULT_DB_PATH
+DB_PATH = get_db_path()
 
 
 def utc_now():
