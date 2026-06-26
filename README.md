@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.5
+# WorldCup AI v0.1.6
 
 A focused World Cup +EV prediction framework.
 
@@ -19,6 +19,7 @@ The project is World Cup-focused right now, but the codebase is being built as a
 - Odds provider adapters
 - Provider diagnostics
 - Qualified provider odds for slate runs
+- Data quality guardrails
 - Normalized odds snapshots
 - Database persistence
 - EV calculations
@@ -103,7 +104,7 @@ python src/update_results.py
 
 ## Odds Collection
 
-v0.1.2 added an odds provider abstraction. v0.1.3 added market selection rules on top of those odds. v0.1.4 added safe provider diagnostics. v0.1.5 lets `run_slate.py` use qualified provider odds.
+v0.1.2 added an odds provider abstraction. v0.1.3 added market selection rules on top of those odds. v0.1.4 added safe provider diagnostics. v0.1.5 lets `run_slate.py` use qualified provider odds. v0.1.6 adds data quality guardrails.
 
 The default provider is `mock`, which is deterministic and does not call external APIs or spend API credits:
 
@@ -214,6 +215,48 @@ For strict provider-only runs:
 python src/run_slate.py --odds-source provider --odds-provider the_odds_api --no-manual-odds-fallback
 ```
 
+## Data Quality Guardrails
+
+v0.1.6 adds:
+
+```text
+src/data_quality.py
+```
+
+Each prediction now includes:
+
+```text
+data_quality
+actionable
+quality_warnings
+technical_recommendation
+recommendation
+recommendation_guardrail
+guardrail_reasons
+do_not_bet_real_money
+```
+
+The model can still calculate a technical EV signal, but weak data can block that signal from becoming an actionable bet. For example, a technical `bet` becomes a final `pass` when guardrails identify simulation-only bootstrap mode, insufficient training data, unverified manual features, manual odds fallback, stale odds, or missing feature fields.
+
+To mark slate features as verified, add metadata like this to a match:
+
+```json
+"data_quality": {
+  "feature_source": "verified_dataset"
+}
+```
+
+Trusted feature sources are:
+
+```text
+official_feed
+verified_dataset
+historical_backfill
+model_feature_store
+```
+
+Until a match has enough completed training data and verified feature inputs, treat model output as research-only.
+
 ## Market Selection Rules
 
 v0.1.3 adds configurable market rules in:
@@ -314,6 +357,9 @@ The tests cover:
 - Provider odds resolution for slate runs
 - Manual odds fallback
 - Reversed team-order provider matching
+- Data quality warnings
+- Recommendation guardrails
+- Stale odds detection
 
 ## Future Roadmap
 
