@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.6
+# WorldCup AI v0.1.7
 
 A focused World Cup +EV prediction framework.
 
@@ -20,6 +20,7 @@ The project is World Cup-focused right now, but the codebase is being built as a
 - Provider diagnostics
 - Qualified provider odds for slate runs
 - Data quality guardrails
+- Availability, lineup, injury, and rotation-risk context
 - Normalized odds snapshots
 - Database persistence
 - EV calculations
@@ -104,7 +105,7 @@ python src/update_results.py
 
 ## Odds Collection
 
-v0.1.2 added an odds provider abstraction. v0.1.3 added market selection rules on top of those odds. v0.1.4 added safe provider diagnostics. v0.1.5 lets `run_slate.py` use qualified provider odds. v0.1.6 adds data quality guardrails.
+v0.1.2 added an odds provider abstraction. v0.1.3 added market selection rules on top of those odds. v0.1.4 added safe provider diagnostics. v0.1.5 lets `run_slate.py` use qualified provider odds. v0.1.6 adds data quality guardrails. v0.1.7 adds availability, lineup, injury, and rotation-risk context.
 
 The default provider is `mock`, which is deterministic and does not call external APIs or spend API credits:
 
@@ -236,7 +237,7 @@ guardrail_reasons
 do_not_bet_real_money
 ```
 
-The model can still calculate a technical EV signal, but weak data can block that signal from becoming an actionable bet. For example, a technical `bet` becomes a final `pass` when guardrails identify simulation-only bootstrap mode, insufficient training data, unverified manual features, manual odds fallback, stale odds, or missing feature fields.
+The model can still calculate a technical EV signal, but weak data can block that signal from becoming an actionable bet. For example, a technical `bet` becomes a final `pass` when guardrails identify simulation-only bootstrap mode, insufficient training data, unverified manual features, manual odds fallback, stale odds, missing feature fields, unconfirmed lineups, B-team rotation risk, or high-impact absences.
 
 To mark slate features as verified, add metadata like this to a match:
 
@@ -255,7 +256,110 @@ historical_backfill
 model_feature_store
 ```
 
-Until a match has enough completed training data and verified feature inputs, treat model output as research-only.
+Until a match has enough completed training data, verified feature inputs, and verified availability context, treat model output as research-only.
+
+## Availability, Lineup, Injury, and Rotation Context
+
+v0.1.7 adds:
+
+```text
+src/availability.py
+```
+
+The goal is to analyze the actual expected version of each team, not just the country name.
+
+Each match can include:
+
+```json
+"availability": {
+  "home": {
+    "source": "verified_team_news",
+    "lineup_status": "confirmed",
+    "lineup_confidence": 0.95,
+    "normal_starter_count": 11,
+    "expected_starters_available": 10,
+    "lineup_strength_rating": 88,
+    "rotation_risk": 2,
+    "b_team_risk": 1,
+    "replacement_quality_rating": 7,
+    "key_absences": [
+      {
+        "name": "Example Player",
+        "role": "starter",
+        "position": "CB",
+        "status": "out",
+        "impact_rating": 8,
+        "reason": "injury"
+      }
+    ],
+    "returning_players": [
+      {
+        "name": "Example Player 2",
+        "injury_type": "hamstring",
+        "days_since_return": 7,
+        "games_since_return": 1,
+        "minutes_restriction": true,
+        "impact_rating": 7
+      }
+    ],
+    "fitness_concerns": []
+  },
+  "away": {
+    "source": "verified_team_news",
+    "lineup_status": "confirmed",
+    "lineup_confidence": 0.95,
+    "normal_starter_count": 11,
+    "expected_starters_available": 11,
+    "lineup_strength_rating": 94,
+    "rotation_risk": 1,
+    "b_team_risk": 0,
+    "replacement_quality_rating": 8,
+    "key_absences": [],
+    "returning_players": [],
+    "fitness_concerns": []
+  }
+}
+```
+
+The feature engine now creates availability features such as:
+
+```text
+lineup_strength_diff
+starter_availability_rate_diff
+expected_starters_available_diff
+lineup_confidence_min
+rotation_risk_diff
+b_team_risk_diff
+replacement_quality_diff
+key_absence_impact_diff
+returning_player_risk_diff
+minutes_restricted_count_diff
+fitness_concern_count_diff
+```
+
+The guardrails can block recommendations for:
+
+```text
+availability_data_missing
+injury_data_unverified
+lineup_unconfirmed
+low_lineup_confidence
+b_team_rotation_risk
+key_player_absence
+recent_injury_return
+minutes_restriction
+```
+
+Trusted availability sources are:
+
+```text
+official_feed
+official_lineup
+verified_dataset
+verified_team_news
+historical_backfill
+model_availability_store
+```
 
 ## Market Selection Rules
 
@@ -360,6 +464,9 @@ The tests cover:
 - Data quality warnings
 - Recommendation guardrails
 - Stale odds detection
+- Availability feature extraction
+- Lineup confidence and rotation-risk guardrails
+- Injury-return and minutes-restriction guardrails
 
 ## Future Roadmap
 
@@ -368,7 +475,8 @@ Planned future modules include:
 - Configurable single-leg and parlay rules
 - Same-game parlay rules
 - Target odds ranges
-- Player-specific filters
+- Advanced tactical matchup features
+- Advanced team stats: duels, passing, pressing, set pieces, transitions
 - Historical backtesting
 - Bet ledger and P&L tracking
 - W/L ratio and ROI dashboards
