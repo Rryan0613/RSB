@@ -13,6 +13,7 @@ Shared infrastructure:
 - EV calculations
 - Model run tracking
 - Prediction output
+- Market selection rules
 - Review notes
 - Tests
 
@@ -35,6 +36,20 @@ new bet type -> new rules config -> existing EV/reporting layer
 new tracker -> new ledger tables -> existing predictions/results/odds history
 ```
 
+## Current Rules Layer
+
+`config/bet_rules_config.json` is the first home for configurable betting rules.
+
+Current World Cup rule categories:
+- allowed markets
+- allowed selections
+- required sportsbooks
+- minimum sportsbook availability
+- target decimal odds range
+- single-leg/parlay/SGP feature flags
+
+The rules layer does not create a bet recommendation by itself. It only decides whether a price is eligible to be analyzed by the model and EV engine.
+
 ## What Should Not Happen
 
 Avoid:
@@ -43,6 +58,7 @@ Avoid:
 - Replacing historical tables when adding new features
 - Letting sample data become training data
 - Rewriting large modules when a small adapter/config would work
+- Turning parlays on before backtesting and calibration exist
 
 ## Near-Term Roadmap
 
@@ -51,6 +67,7 @@ v0.1.x foundation:
 - Odds provider abstraction
 - Best-price shopping
 - Configurable bet rules
+- Target odds filtering
 
 v0.2.x modeling/data:
 - Real historical World Cup dataset
