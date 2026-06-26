@@ -205,7 +205,7 @@ def assess_data_quality(
                 ))
 
             line = odds_choice.get("line") or {}
-            if _is_stale_odds(line, max_odds_age_minutes=max_odds_age_minutes):
+            if _is_stale_odds(line, max_age_minutes=max_odds_age_minutes):
                 warnings.append(make_warning(
                     "stale_odds",
                     "blocker",
