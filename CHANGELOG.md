@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.1.8.1
+- Added `pyproject.toml` with Python `>=3.10,<3.15` project metadata.
+- Pinned dependency ranges in `requirements.txt`.
+- Added GitHub Actions pytest CI across Python 3.10, 3.11, 3.12, and 3.13.
+- Updated `src/simulator.py` to use vectorized NumPy Poisson draws.
+- Updated bootstrap simulation so availability and tactical matchup context now adjust estimated goal rates instead of only affecting guardrails.
+- Added goal-rate adjustment details to simulation output.
+- Added versioned model artifact paths and model metadata in `src/model.py`.
+- Added feature schema hash and feature schema validation before ML prediction.
+- Updated `src/run_slate.py` to use version-specific model artifacts.
+- Extended prediction persistence with technical recommendation, data quality, actionable status, guardrail status, do-not-bet flag, and full prediction JSON.
+- Added tests for simulator adjustments, model schema safety, model path versioning, and full prediction persistence.
+- Updated model version to `0.1.8.1`.
+
 ## v0.1.8
 - Added `src/tactical_matchup.py` for World Cup tactical matchup context.
 - Added tactical matchup features for pressing versus buildup, pace versus high defensive line, crossing and aerial matchups, set-piece edges, counterattack edges, central/wide chance creation, midfield control, formation flexibility, transition defense, low-block comfort, and manager tactical rating.
