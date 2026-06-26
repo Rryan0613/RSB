@@ -5,7 +5,40 @@ from data_quality import (
 )
 
 
-def make_match(feature_source=None, match_id="2026-06-26_canada_france"):
+def clean_availability():
+    return {
+        "home": {
+            "source": "verified_team_news",
+            "lineup_status": "confirmed",
+            "lineup_confidence": 0.95,
+            "normal_starter_count": 11,
+            "expected_starters_available": 11,
+            "lineup_strength_rating": 92,
+            "rotation_risk": 1,
+            "b_team_risk": 0,
+            "replacement_quality_rating": 8,
+            "key_absences": [],
+            "returning_players": [],
+            "fitness_concerns": [],
+        },
+        "away": {
+            "source": "verified_team_news",
+            "lineup_status": "confirmed",
+            "lineup_confidence": 0.95,
+            "normal_starter_count": 11,
+            "expected_starters_available": 11,
+            "lineup_strength_rating": 94,
+            "rotation_risk": 1,
+            "b_team_risk": 0,
+            "replacement_quality_rating": 8,
+            "key_absences": [],
+            "returning_players": [],
+            "fitness_concerns": [],
+        },
+    }
+
+
+def make_match(feature_source=None, match_id="2026-06-26_canada_france", availability=None):
     match = {
         "match_id": match_id,
         "date": "2026-06-26",
@@ -53,6 +86,8 @@ def make_match(feature_source=None, match_id="2026-06-26_canada_france"):
     }
     if feature_source:
         match["data_quality"] = {"feature_source": feature_source}
+    if availability is not None:
+        match["availability"] = availability
     return match
 
 
@@ -77,7 +112,7 @@ def warning_codes(assessment):
 
 def test_bootstrap_and_manual_features_block_actionable_prediction():
     assessment = assess_data_quality(
-        match=make_match(),
+        match=make_match(availability=clean_availability()),
         model_status="simulation_only_bootstrap",
         trained_count=0,
         min_train=20,
@@ -95,7 +130,7 @@ def test_bootstrap_and_manual_features_block_actionable_prediction():
 
 def test_verified_trained_provider_prediction_can_be_actionable():
     assessment = assess_data_quality(
-        match=make_match(feature_source="verified_dataset"),
+        match=make_match(feature_source="verified_dataset", availability=clean_availability()),
         model_status="existing_model",
         trained_count=25,
         min_train=20,
@@ -108,9 +143,74 @@ def test_verified_trained_provider_prediction_can_be_actionable():
     assert assessment["warnings"] == []
 
 
-def test_manual_odds_fallback_blocks_actionable_prediction():
+def test_missing_availability_blocks_actionable_prediction():
     assessment = assess_data_quality(
         match=make_match(feature_source="verified_dataset"),
+        model_status="existing_model",
+        trained_count=25,
+        min_train=20,
+        odds_choice=make_provider_choice(),
+    )
+
+    assert assessment["actionable"] is False
+    assert "availability_data_missing" in warning_codes(assessment)
+
+
+def test_unverified_and_unconfirmed_availability_blocks_prediction():
+    availability = clean_availability()
+    availability["home"]["source"] = "manual"
+    availability["home"]["lineup_status"] = "projected"
+    availability["home"]["lineup_confidence"] = 0.55
+
+    assessment = assess_data_quality(
+        match=make_match(feature_source="verified_dataset", availability=availability),
+        model_status="existing_model",
+        trained_count=25,
+        min_train=20,
+        odds_choice=make_provider_choice(),
+    )
+
+    codes = warning_codes(assessment)
+    assert assessment["actionable"] is False
+    assert "injury_data_unverified" in codes
+    assert "lineup_unconfirmed" in codes
+    assert "low_lineup_confidence" in codes
+
+
+def test_rotation_key_absence_and_recent_return_block_prediction():
+    availability = clean_availability()
+    availability["home"]["rotation_risk"] = 8
+    availability["home"]["b_team_risk"] = 7
+    availability["home"]["key_absences"] = [{"name": "Starting CB", "impact_rating": 8}]
+    availability["home"]["returning_players"] = [
+        {
+            "name": "Starting ST",
+            "impact_rating": 8,
+            "days_since_return": 5,
+            "games_since_return": 1,
+            "minutes_restriction": True,
+        }
+    ]
+
+    assessment = assess_data_quality(
+        match=make_match(feature_source="verified_dataset", availability=availability),
+        model_status="existing_model",
+        trained_count=25,
+        min_train=20,
+        odds_choice=make_provider_choice(),
+    )
+
+    codes = warning_codes(assessment)
+    assert assessment["actionable"] is False
+    assert "b_team_rotation_risk" in codes
+    assert "key_player_absence" in codes
+    assert "recent_injury_return" in codes
+    assert "minutes_restriction" in codes
+
+
+def test_manual_odds_fallback_blocks_actionable_prediction():
+    assessment = assess_data_quality(
+        match=make_match(feature_source="verified_dataset", availability=clean_availability()),
         model_status="existing_model",
         trained_count=25,
         min_train=20,
@@ -122,7 +222,7 @@ def test_manual_odds_fallback_blocks_actionable_prediction():
 
 
 def test_missing_feature_fields_block_actionable_prediction():
-    match = make_match(feature_source="verified_dataset")
+    match = make_match(feature_source="verified_dataset", availability=clean_availability())
     match["home"].pop("elo")
 
     assessment = assess_data_quality(
@@ -142,7 +242,7 @@ def test_stale_odds_block_actionable_prediction():
     stale_choice["line"]["captured_at"] = "2026-06-26T16:30:08+00:00"
 
     assessment = assess_data_quality(
-        match=make_match(feature_source="verified_dataset"),
+        match=make_match(feature_source="verified_dataset", availability=clean_availability()),
         model_status="existing_model",
         trained_count=25,
         min_train=20,
@@ -156,7 +256,7 @@ def test_stale_odds_block_actionable_prediction():
 
 def test_guardrail_converts_bet_to_pass_when_blocked():
     assessment = assess_data_quality(
-        match=make_match(),
+        match=make_match(availability=clean_availability()),
         model_status="simulation_only_bootstrap",
         trained_count=0,
         min_train=20,
