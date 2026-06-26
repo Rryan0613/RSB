@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.6
+- Added `src/data_quality.py` for data quality warnings and recommendation guardrails.
+- Added prediction-level fields for `data_quality`, `quality_warnings`, `actionable`, `recommendation_guardrail`, `guardrail_reasons`, and `do_not_bet_real_money`.
+- Added `technical_recommendation` so the raw EV signal is preserved separately from the final guarded recommendation.
+- Added guardrail logic that converts technical `bet` signals into final `pass` recommendations when data is weak or research-only.
+- Added warnings for simulation-only bootstrap mode, insufficient training data, unverified manual features, placeholder features, missing feature fields, manual odds usage, manual odds fallback, stale odds, missing provider odds, and low sportsbook coverage.
+- Added run-level data quality summary with warning counts, blocked prediction counts, and actionable prediction counts.
+- Added tests for data quality assessment, stale odds detection, manual fallback blocking, missing features, guardrail application, and quality summaries.
+- Updated README and architecture docs with data quality guardrail workflow.
+
 ## v0.1.5
 - Added `src/slate_odds.py` to resolve qualified provider odds for `run_slate.py` predictions.
 - Added `--odds-source manual|provider` and `--odds-provider mock|the_odds_api` CLI options to `src/run_slate.py`.
