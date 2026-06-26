@@ -14,7 +14,7 @@ from database import (
     save_odds_snapshot, save_odds_lines
 )
 from features import make_features
-from model import train_model, predict_probability, MODEL_PATH
+from model import model_path_for_version, train_model, predict_probability
 from simulator import run_monte_carlo
 from ev import implied_probability, edge, ev_per_unit
 from slate_odds import PREDICTION_MARKET, build_provider_odds_context, resolve_odds_for_match
@@ -25,6 +25,7 @@ MODEL_VERSION = CONFIG["version"]
 MIN_EDGE = CONFIG["minimum_edge"]
 MIN_TRAIN = CONFIG["minimum_completed_matches_to_train"]
 TARGET_MARKET = CONFIG["target_market"]
+MODEL_PATH = model_path_for_version(MODEL_VERSION, TARGET_MARKET)
 
 
 def parse_args():
@@ -104,15 +105,21 @@ def main():
     trained_count = len(training_rows)
 
     if len(training_rows) >= MIN_TRAIN:
-        trained_count, feature_cols = train_model(training_rows, minimum_rows=MIN_TRAIN)
+        trained_count, feature_cols = train_model(
+            training_rows,
+            minimum_rows=MIN_TRAIN,
+            model_version=MODEL_VERSION,
+            target_market=TARGET_MARKET,
+            model_path=MODEL_PATH,
+        )
         model_status = "retrained"
-        save_model_run(run_id, MODEL_VERSION, "retrain_and_predict", trained_count, "Retrained using completed database matches.")
+        save_model_run(run_id, MODEL_VERSION, "retrain_and_predict", trained_count, f"Retrained using completed database matches. Model path: {MODEL_PATH}")
     elif not MODEL_PATH.exists():
         # Bootstrap fallback: use simulation probability only until enough historical data exists.
         model_status = "simulation_only_bootstrap"
         save_model_run(run_id, MODEL_VERSION, "simulation_only", trained_count, "Not enough data to train. Used Monte Carlo only.")
     else:
-        save_model_run(run_id, MODEL_VERSION, "predict_existing_model", trained_count, "Used existing model.")
+        save_model_run(run_id, MODEL_VERSION, "predict_existing_model", trained_count, f"Used existing versioned model: {MODEL_PATH}")
 
     predictions = []
     provider_odds_matches = 0
@@ -131,8 +138,8 @@ def main():
         if model_status == "simulation_only_bootstrap":
             model_probability = sim["home_win_probability"]
         else:
-            ml_probability = predict_probability(features)
-            # Blend ML and simulation. Later versions can optimize this blend.
+            ml_probability = predict_probability(features, model_path=MODEL_PATH)
+            # Blend ML and simulation. Later versions can optimize this blend through backtesting.
             model_probability = (0.65 * ml_probability) + (0.35 * sim["home_win_probability"])
 
         odds_choice = resolve_odds_for_match(
@@ -227,6 +234,7 @@ def main():
             "run_id": run_id,
             "model_version": MODEL_VERSION,
             "model_status": model_status,
+            "model_path": str(MODEL_PATH),
             "trained_on_completed_matches": trained_count,
             "matches_analyzed": len(predictions),
             "odds_source_requested": args.odds_source,
