@@ -1,10 +1,17 @@
 import json
 import uuid
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional
 
 from database import init_db, save_odds_lines
-from ev import american_to_decimal
+from market_selector import (
+    evaluate_odds_lines,
+    get_active_rules,
+    qualified_best_prices,
+    rejected_price_groups,
+    select_best_prices,
+    summarize_rules,
+)
 from odds_providers import MockOddsProvider, TheOddsAPIProvider
 from odds_providers.base import lines_to_dicts
 
@@ -23,6 +30,7 @@ def load_runtime_config() -> dict:
     active_sport = sports_config.get("active_sport", "worldcup")
     sport_profile = sports_config["sports"][active_sport]
     odds_config = model_config.get("odds_collection", {})
+    bet_rules = get_active_rules()
 
     return {
         "model_config": model_config,
@@ -30,6 +38,7 @@ def load_runtime_config() -> dict:
         "active_sport": active_sport,
         "sport_profile": sport_profile,
         "odds_config": odds_config,
+        "bet_rules": bet_rules,
     }
 
 
@@ -60,26 +69,6 @@ def collect_odds(runtime_config: Optional[dict] = None) -> List[dict]:
     return lines_to_dicts(lines)
 
 
-def price_rank(american_odds: int) -> float:
-    """Higher decimal payout is better for the bettor."""
-    return american_to_decimal(int(american_odds))
-
-
-def select_best_prices(odds_lines: List[dict]) -> List[dict]:
-    best_by_market: Dict[Tuple[str, str, str], dict] = {}
-
-    for line in odds_lines:
-        key = (line["match_id"], line["market"], line["selection"])
-        current = best_by_market.get(key)
-        if current is None or price_rank(line["american_odds"]) > price_rank(current["american_odds"]):
-            best_by_market[key] = line
-
-    return sorted(
-        best_by_market.values(),
-        key=lambda line: (line["match_id"], line["market"], line["selection"]),
-    )
-
-
 def summarize_bookmakers(odds_lines: List[dict], expected_bookmakers: List[str]) -> dict:
     counts = {book: 0 for book in expected_bookmakers}
     observed = set()
@@ -99,8 +88,12 @@ def summarize_bookmakers(odds_lines: List[dict], expected_bookmakers: List[str])
 def build_report(run_id: str, runtime_config: dict, odds_lines: List[dict]) -> dict:
     sport_profile = runtime_config["sport_profile"]
     odds_config = runtime_config["odds_config"]
+    bet_rules = runtime_config.get("bet_rules") or get_active_rules()
     expected_books = odds_config.get("bookmakers", sport_profile.get("bookmakers", []))
     best_prices = select_best_prices(odds_lines)
+    market_decisions = evaluate_odds_lines(odds_lines, bet_rules)
+    qualified_prices = qualified_best_prices(market_decisions)
+    rejected_groups = rejected_price_groups(market_decisions)
 
     return {
         "run_summary": {
@@ -114,8 +107,14 @@ def build_report(run_id: str, runtime_config: dict, odds_lines: List[dict]) -> d
             "bookmakers_requested": expected_books,
             "odds_lines_collected": len(odds_lines),
             "best_price_count": len(best_prices),
+            "qualified_price_count": len(qualified_prices),
+            "rejected_price_group_count": len(rejected_groups),
         },
+        "rules_summary": summarize_rules(bet_rules),
         "bookmaker_summary": summarize_bookmakers(odds_lines, expected_books),
+        "qualified_best_prices": qualified_prices,
+        "rejected_price_groups": rejected_groups,
+        "market_decisions": market_decisions,
         "best_prices": best_prices,
         "odds_lines": odds_lines,
     }
