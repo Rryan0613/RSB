@@ -1,6 +1,6 @@
 {
   "project": "worldcup-ai",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "target_market": "home_win",
   "minimum_completed_matches_to_train": 20,
   "minimum_edge": 0.03,
@@ -8,5 +8,13 @@
   "bankroll_units": 100,
   "max_single_stake_units": 1.0,
   "simulation_seed": null,
-  "notes": "World Cup focused. v0.1.1 adds validation, samples, odds snapshots, reproducible simulations, and tests."
+  "odds_collection": {
+    "enabled": true,
+    "provider": "mock",
+    "regions": "us",
+    "bookmakers": ["fanduel", "draftkings", "betmgm"],
+    "markets": ["h2h"],
+    "odds_format": "american"
+  },
+  "notes": "World Cup focused. v0.1.2 adds a provider-based odds collection abstraction while keeping future sport expansion easy."
 }
