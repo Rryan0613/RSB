@@ -14,7 +14,7 @@ from database import (
 )
 from features import make_features
 from model import model_path_for_version, train_model, predict_probability
-from paths import MODEL_CONFIG_PATH, DEFAULT_SLATE_PATH, DEFAULT_MODEL_OUTPUT_PATH
+from paths import MODEL_CONFIG_PATH, get_slate_path, get_model_output_path
 from simulator import run_monte_carlo
 from ev import implied_probability, edge, ev_per_unit
 from slate_odds import PREDICTION_MARKET, build_provider_odds_context, resolve_odds_for_match
@@ -83,8 +83,8 @@ def main():
     init_db()
 
     run_id = str(uuid.uuid4())[:8]
-    slate_path = DEFAULT_SLATE_PATH
-    output_path = DEFAULT_MODEL_OUTPUT_PATH
+    slate_path = get_slate_path()
+    output_path = get_model_output_path()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     slate = json.loads(slate_path.read_text())
