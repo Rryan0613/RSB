@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.2
+# WorldCup AI v0.1.3
 
 A focused World Cup +EV prediction framework.
 
@@ -21,6 +21,7 @@ The project is World Cup-focused right now, but the codebase is being built as a
 - Database persistence
 - EV calculations
 - Model run tracking
+- Market selection rules
 - Reporting
 - Tests
 
@@ -94,7 +95,7 @@ python src/update_results.py
 
 ## Odds Collection
 
-v0.1.2 adds an odds provider abstraction.
+v0.1.2 added an odds provider abstraction. v0.1.3 adds market selection rules on top of those odds.
 
 The default provider is `mock`, which is deterministic and does not call external APIs or spend API credits:
 
@@ -129,6 +130,39 @@ The active sport profile is configured in:
 ```text
 config/sports_config.json
 ```
+
+## Market Selection Rules
+
+v0.1.3 adds configurable market rules in:
+
+```text
+config/bet_rules_config.json
+```
+
+The initial World Cup default profile supports:
+
+- allowed markets
+- allowed selections
+- required sportsbooks
+- minimum sportsbook availability
+- minimum decimal odds
+- maximum decimal odds
+- single-leg enablement flag
+- future parlay/SGP configuration placeholders
+
+The current rules layer does **not** claim a bet is +EV by itself. It only decides whether a sportsbook price is eligible for analysis based on your configured market rules.
+
+Later versions can add:
+
+- single-leg filters
+- 2-leg / 3-leg parlay rules
+- same-game parlay rules
+- target odds windows
+- player-specific filters
+- stake sizing
+- P&L tracking
+
+## The Odds API
 
 To use The Odds API later, set your local environment variable and change the odds provider config from `mock` to `the_odds_api`:
 
@@ -187,6 +221,9 @@ The tests cover:
 - Odds provider normalization
 - Best-price selection
 - Mock odds collection
+- Market selection rules
+- Target odds filtering
+- Minimum sportsbook availability
 
 ## Future Roadmap
 
