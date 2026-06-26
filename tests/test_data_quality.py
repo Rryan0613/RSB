@@ -38,7 +38,63 @@ def clean_availability():
     }
 
 
-def make_match(feature_source=None, match_id="2026-06-26_canada_france", availability=None):
+def clean_tactical():
+    return {
+        "home": {
+            "source": "verified_scouting_report",
+            "tactical_confidence": 0.9,
+            "pressing_intensity": 6,
+            "build_up_quality": 7,
+            "defensive_line_height": 5,
+            "pace_threat": 6,
+            "crossing_volume": 5,
+            "aerial_threat": 5,
+            "aerial_defense": 6,
+            "set_piece_attack": 5,
+            "set_piece_defense": 6,
+            "counterattack_threat": 5,
+            "transition_defense": 6,
+            "midfield_control": 6,
+            "formation_flexibility": 6,
+            "manager_tactical_rating": 6,
+            "low_block_comfort": 6,
+            "chance_creation_centrality": 6,
+            "wide_creation": 5,
+            "press_resistance": 7,
+            "vulnerability_to_press": 3,
+        },
+        "away": {
+            "source": "verified_scouting_report",
+            "tactical_confidence": 0.9,
+            "pressing_intensity": 6,
+            "build_up_quality": 7,
+            "defensive_line_height": 5,
+            "pace_threat": 6,
+            "crossing_volume": 5,
+            "aerial_threat": 5,
+            "aerial_defense": 6,
+            "set_piece_attack": 5,
+            "set_piece_defense": 6,
+            "counterattack_threat": 5,
+            "transition_defense": 6,
+            "midfield_control": 6,
+            "formation_flexibility": 6,
+            "manager_tactical_rating": 6,
+            "low_block_comfort": 6,
+            "chance_creation_centrality": 6,
+            "wide_creation": 5,
+            "press_resistance": 7,
+            "vulnerability_to_press": 3,
+        },
+    }
+
+
+def make_match(
+    feature_source=None,
+    match_id="2026-06-26_canada_france",
+    availability=None,
+    tactical=None,
+):
     match = {
         "match_id": match_id,
         "date": "2026-06-26",
@@ -88,7 +144,17 @@ def make_match(feature_source=None, match_id="2026-06-26_canada_france", availab
         match["data_quality"] = {"feature_source": feature_source}
     if availability is not None:
         match["availability"] = availability
+    if tactical is not None:
+        match["tactical"] = tactical
     return match
+
+
+def make_complete_match(feature_source="verified_dataset"):
+    return make_match(
+        feature_source=feature_source,
+        availability=clean_availability(),
+        tactical=clean_tactical(),
+    )
 
 
 def make_provider_choice():
@@ -112,7 +178,7 @@ def warning_codes(assessment):
 
 def test_bootstrap_and_manual_features_block_actionable_prediction():
     assessment = assess_data_quality(
-        match=make_match(availability=clean_availability()),
+        match=make_complete_match(feature_source=None),
         model_status="simulation_only_bootstrap",
         trained_count=0,
         min_train=20,
@@ -130,7 +196,7 @@ def test_bootstrap_and_manual_features_block_actionable_prediction():
 
 def test_verified_trained_provider_prediction_can_be_actionable():
     assessment = assess_data_quality(
-        match=make_match(feature_source="verified_dataset", availability=clean_availability()),
+        match=make_complete_match(),
         model_status="existing_model",
         trained_count=25,
         min_train=20,
@@ -145,7 +211,7 @@ def test_verified_trained_provider_prediction_can_be_actionable():
 
 def test_missing_availability_blocks_actionable_prediction():
     assessment = assess_data_quality(
-        match=make_match(feature_source="verified_dataset"),
+        match=make_match(feature_source="verified_dataset", tactical=clean_tactical()),
         model_status="existing_model",
         trained_count=25,
         min_train=20,
@@ -156,6 +222,19 @@ def test_missing_availability_blocks_actionable_prediction():
     assert "availability_data_missing" in warning_codes(assessment)
 
 
+def test_missing_tactical_blocks_actionable_prediction():
+    assessment = assess_data_quality(
+        match=make_match(feature_source="verified_dataset", availability=clean_availability()),
+        model_status="existing_model",
+        trained_count=25,
+        min_train=20,
+        odds_choice=make_provider_choice(),
+    )
+
+    assert assessment["actionable"] is False
+    assert "tactical_data_missing" in warning_codes(assessment)
+
+
 def test_unverified_and_unconfirmed_availability_blocks_prediction():
     availability = clean_availability()
     availability["home"]["source"] = "manual"
@@ -163,7 +242,7 @@ def test_unverified_and_unconfirmed_availability_blocks_prediction():
     availability["home"]["lineup_confidence"] = 0.55
 
     assessment = assess_data_quality(
-        match=make_match(feature_source="verified_dataset", availability=availability),
+        match=make_match(feature_source="verified_dataset", availability=availability, tactical=clean_tactical()),
         model_status="existing_model",
         trained_count=25,
         min_train=20,
@@ -175,6 +254,50 @@ def test_unverified_and_unconfirmed_availability_blocks_prediction():
     assert "injury_data_unverified" in codes
     assert "lineup_unconfirmed" in codes
     assert "low_lineup_confidence" in codes
+
+
+def test_unverified_and_low_confidence_tactical_blocks_prediction():
+    tactical = clean_tactical()
+    tactical["home"]["source"] = "manual"
+    tactical["home"]["tactical_confidence"] = 0.5
+
+    assessment = assess_data_quality(
+        match=make_match(feature_source="verified_dataset", availability=clean_availability(), tactical=tactical),
+        model_status="existing_model",
+        trained_count=25,
+        min_train=20,
+        odds_choice=make_provider_choice(),
+    )
+
+    codes = warning_codes(assessment)
+    assert assessment["actionable"] is False
+    assert "tactical_data_unverified" in codes
+    assert "low_tactical_confidence" in codes
+
+
+def test_tactical_mismatch_warning_does_not_block_by_itself():
+    tactical = clean_tactical()
+    tactical["home"].update({
+        "pace_threat": 9,
+        "set_piece_attack": 9,
+    })
+    tactical["away"].update({
+        "defensive_line_height": 9,
+        "transition_defense": 3,
+        "set_piece_defense": 4,
+    })
+
+    assessment = assess_data_quality(
+        match=make_match(feature_source="verified_dataset", availability=clean_availability(), tactical=tactical),
+        model_status="existing_model",
+        trained_count=25,
+        min_train=20,
+        odds_choice=make_provider_choice(),
+    )
+
+    assert assessment["data_quality"] == "okay"
+    assert assessment["actionable"] is True
+    assert "tactical_mismatch_review_required" in warning_codes(assessment)
 
 
 def test_rotation_key_absence_and_recent_return_block_prediction():
@@ -193,7 +316,7 @@ def test_rotation_key_absence_and_recent_return_block_prediction():
     ]
 
     assessment = assess_data_quality(
-        match=make_match(feature_source="verified_dataset", availability=availability),
+        match=make_match(feature_source="verified_dataset", availability=availability, tactical=clean_tactical()),
         model_status="existing_model",
         trained_count=25,
         min_train=20,
@@ -210,7 +333,7 @@ def test_rotation_key_absence_and_recent_return_block_prediction():
 
 def test_manual_odds_fallback_blocks_actionable_prediction():
     assessment = assess_data_quality(
-        match=make_match(feature_source="verified_dataset", availability=clean_availability()),
+        match=make_complete_match(),
         model_status="existing_model",
         trained_count=25,
         min_train=20,
@@ -222,7 +345,7 @@ def test_manual_odds_fallback_blocks_actionable_prediction():
 
 
 def test_missing_feature_fields_block_actionable_prediction():
-    match = make_match(feature_source="verified_dataset", availability=clean_availability())
+    match = make_complete_match()
     match["home"].pop("elo")
 
     assessment = assess_data_quality(
@@ -242,7 +365,7 @@ def test_stale_odds_block_actionable_prediction():
     stale_choice["line"]["captured_at"] = "2026-06-26T16:30:08+00:00"
 
     assessment = assess_data_quality(
-        match=make_match(feature_source="verified_dataset", availability=clean_availability()),
+        match=make_complete_match(),
         model_status="existing_model",
         trained_count=25,
         min_train=20,
@@ -256,7 +379,7 @@ def test_stale_odds_block_actionable_prediction():
 
 def test_guardrail_converts_bet_to_pass_when_blocked():
     assessment = assess_data_quality(
-        match=make_match(availability=clean_availability()),
+        match=make_complete_match(feature_source=None),
         model_status="simulation_only_bootstrap",
         trained_count=0,
         min_train=20,
