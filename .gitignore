@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.DS_Store
+models/*.joblib
+data/worldcup_ai.db
+data/output/*.json
