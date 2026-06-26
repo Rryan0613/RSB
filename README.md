@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.1
+# WorldCup AI v0.1.2
 
 A focused World Cup +EV prediction framework.
 
@@ -11,6 +11,20 @@ This project is designed to:
 - Generate structured JSON that can be pasted into Claude or ChatGPT for review.
 
 This is not a "lock" generator. It is a disciplined sports analytics research project.
+
+## Design Direction
+
+The project is World Cup-focused right now, but the codebase is being built as a long-term analytics platform. Shared infrastructure should stay reusable:
+
+- Odds provider adapters
+- Normalized odds snapshots
+- Database persistence
+- EV calculations
+- Model run tracking
+- Reporting
+- Tests
+
+Sport-specific logic should stay isolated. When NBA, NFL, MLB, player props, parlays, or P&L tracking are added later, they should be added as new modules/configs rather than by rewriting the World Cup foundation.
 
 ## Quick Start
 
@@ -78,6 +92,52 @@ python src/update_results.py
 
 7. Next slate run retrains using the updated database.
 
+## Odds Collection
+
+v0.1.2 adds an odds provider abstraction.
+
+The default provider is `mock`, which is deterministic and does not call external APIs or spend API credits:
+
+```bash
+python src/odds_collector.py
+```
+
+The collector writes:
+
+```text
+data/output/latest_odds_output.json
+```
+
+It also saves normalized sportsbook lines into `odds_snapshots`.
+
+Current sportsbook targets:
+
+```text
+fanduel
+draftkings
+betmgm
+```
+
+Current active sport:
+
+```text
+worldcup
+```
+
+The active sport profile is configured in:
+
+```text
+config/sports_config.json
+```
+
+To use The Odds API later, set your local environment variable and change the odds provider config from `mock` to `the_odds_api`:
+
+```bash
+export ODDS_API_KEY="your_key_here"
+```
+
+Do not commit API keys to GitHub.
+
 ## Database
 
 SQLite database path:
@@ -113,10 +173,10 @@ You can also add `simulation_seed` to a match in `slate.json`. If no seed is pro
 Run the test suite with:
 
 ```bash
-pytest
+python -m pytest
 ```
 
-The v0.1.1 tests cover:
+The tests cover:
 - American odds conversion
 - Implied probability
 - EV calculation
@@ -124,3 +184,20 @@ The v0.1.1 tests cover:
 - Input validation
 - Monte Carlo reproducibility
 - Empty slate execution
+- Odds provider normalization
+- Best-price selection
+- Mock odds collection
+
+## Future Roadmap
+
+Planned future modules include:
+- Best-price shopping and line movement analysis
+- Configurable single-leg and parlay rules
+- Same-game parlay rules
+- Target odds ranges
+- Player-specific filters
+- Historical backtesting
+- Bet ledger and P&L tracking
+- W/L ratio and ROI dashboards
+- Closing line value tracking
+- Future sport profiles after the World Cup foundation is stable
