@@ -1,0 +1,56 @@
+{
+  "matches": [
+    {
+      "match_id": "2026-06-26_alpha_beta",
+      "date": "2026-06-26",
+      "competition": "World Cup",
+      "stage": "Group Stage",
+      "neutral_site": true,
+      "home_team": "Alpha FC",
+      "away_team": "Beta FC",
+      "simulations": 10000,
+      "simulation_seed": 42,
+      "home": {
+        "fifa_rank": 14,
+        "elo": 1845,
+        "xg_for_l5": 1.8,
+        "xg_against_l5": 1.1,
+        "shots_l5": 14.0,
+        "sog_l5": 5.4,
+        "big_chances_l5": 2.8,
+        "possession_l5": 56,
+        "pass_completion_l5": 84,
+        "ppda_l5": 8.7,
+        "rest_days": 5,
+        "injuries": 1,
+        "suspensions": 0,
+        "missing_starters": 0,
+        "motivation": 8,
+        "tournament_experience": 7,
+        "squad_value_millions": 620
+      },
+      "away": {
+        "fifa_rank": 35,
+        "elo": 1710,
+        "xg_for_l5": 1.2,
+        "xg_against_l5": 1.6,
+        "shots_l5": 10.2,
+        "sog_l5": 3.7,
+        "big_chances_l5": 1.7,
+        "possession_l5": 48,
+        "pass_completion_l5": 79,
+        "ppda_l5": 11.2,
+        "rest_days": 4,
+        "injuries": 3,
+        "suspensions": 1,
+        "missing_starters": 2,
+        "motivation": 7,
+        "tournament_experience": 4,
+        "squad_value_millions": 180
+      },
+      "odds": {
+        "home_win": -120
+      }
+    }
+  ]
+}
