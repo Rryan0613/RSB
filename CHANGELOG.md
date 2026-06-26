@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.4
+- Added `src/check_odds_provider.py` for safe mock and live odds provider diagnostics.
+- Added API key presence checks with masked output so `ODDS_API_KEY` is never printed in full.
+- Added live The Odds API diagnostic mode without changing mock mode as the default.
+- Added provider diagnostics output to `data/output/latest_provider_diagnostics.json`.
+- Added readable provider error reporting for missing keys, provider failures, unavailable sport keys, or quota issues.
+- Added tests for API key masking, mock diagnostics, and safe missing-key behavior.
+- Updated README with provider diagnostic workflow.
+
 ## v0.1.3
 - Added configurable World Cup market selection rules in `config/bet_rules_config.json`.
 - Added `src/market_selector.py` for best-price qualification, target odds filtering, allowed market/selection checks, and sportsbook availability checks.
