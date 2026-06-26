@@ -7,31 +7,7 @@
       "markets": ["h2h"],
       "bookmakers": ["fanduel", "draftkings", "betmgm"],
       "feature_module": "features",
-      "notes": "Soccer-specific model inputs: xG, PPDA, ELO/FIFA rank, rest, injuries, suspensions, lineups, weather, and tournament context."
-    },
-    "nba": {
-      "label": "NBA",
-      "provider_sport_key": "basketball_nba",
-      "markets": ["h2h"],
-      "bookmakers": ["fanduel", "draftkings", "betmgm"],
-      "feature_module": "features_nba",
-      "notes": "Future NBA inputs: minutes, usage, pace, last 10 games, opponent defensive profile, injuries, rest, rebound chances, assist potential, and player props."
-    },
-    "nfl": {
-      "label": "NFL",
-      "provider_sport_key": "americanfootball_nfl",
-      "markets": ["h2h"],
-      "bookmakers": ["fanduel", "draftkings", "betmgm"],
-      "feature_module": "features_nfl",
-      "notes": "Future NFL inputs: EPA, DVOA, QB pressure, weather, injuries, pace, pass rate over expectation, red-zone efficiency, and matchup tendencies."
-    },
-    "mlb": {
-      "label": "MLB",
-      "provider_sport_key": "baseball_mlb",
-      "markets": ["h2h"],
-      "bookmakers": ["fanduel", "draftkings", "betmgm"],
-      "feature_module": "features_mlb",
-      "notes": "Future MLB inputs: starting pitchers, bullpen usage, handedness splits, park factors, weather/wind, wRC+, strikeout/walk rates, and lineup quality."
+      "notes": "World Cup-focused for now. Soccer-specific model inputs: xG, PPDA, ELO/FIFA rank, rest, injuries, suspensions, lineups, weather, and tournament context. Future sports can be added later by adding new sport profiles and sport-specific feature modules."
     }
   }
 }
