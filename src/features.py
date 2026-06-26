@@ -1,4 +1,5 @@
 from availability import availability_feature_set
+from tactical_matchup import tactical_feature_set
 
 
 def make_features(match):
@@ -10,6 +11,10 @@ def make_features(match):
       "home": {...},
       "away": {...},
       "availability": {
+        "home": {...},
+        "away": {...}
+      },
+      "tactical": {
         "home": {...},
         "away": {...}
       },
@@ -50,4 +55,5 @@ def make_features(match):
         "neutral_site": int(match.get("neutral_site", True))
     }
     features.update(availability_feature_set(match))
+    features.update(tactical_feature_set(match))
     return features
