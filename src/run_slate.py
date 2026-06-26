@@ -3,6 +3,11 @@ import json
 import uuid
 from pathlib import Path
 
+from data_quality import (
+    apply_recommendation_guardrail,
+    assess_data_quality,
+    summarize_data_quality,
+)
 from database import (
     init_db, save_match, save_features, save_prediction,
     save_simulation, load_training_rows, save_model_run,
@@ -169,7 +174,16 @@ def main():
             },
         )
 
-        recommendation = "bet" if edg >= MIN_EDGE and ev > 0 else "pass"
+        technical_recommendation = "bet" if edg >= MIN_EDGE and ev > 0 else "pass"
+        quality_assessment = assess_data_quality(
+            match=match,
+            model_status=model_status,
+            trained_count=trained_count,
+            min_train=MIN_TRAIN,
+            odds_choice=odds_choice,
+            provider_context=provider_context,
+        )
+        recommendation = apply_recommendation_guardrail(technical_recommendation, quality_assessment)
 
         pred = {
             "run_id": run_id,
@@ -186,7 +200,14 @@ def main():
             "implied_probability": imp,
             "edge": edg,
             "ev_per_unit": ev,
+            "technical_recommendation": technical_recommendation,
             "recommendation": recommendation,
+            "data_quality": quality_assessment["data_quality"],
+            "quality_warnings": quality_assessment["warnings"],
+            "actionable": quality_assessment["actionable"],
+            "recommendation_guardrail": quality_assessment["recommendation_guardrail"],
+            "guardrail_reasons": quality_assessment["guardrail_reasons"],
+            "do_not_bet_real_money": quality_assessment["do_not_bet_real_money"],
             "odds_source": odds_choice["source"],
             "odds_match_strategy": odds_choice["match_strategy"],
             "sportsbook": odds_line.get("sportsbook"),
@@ -212,6 +233,7 @@ def main():
             "odds_provider_requested": args.odds_provider,
             "provider_odds_matches": provider_odds_matches,
             "manual_odds_matches": manual_odds_matches,
+            "data_quality_summary": summarize_data_quality(predictions),
         },
         "provider_odds_summary": provider_odds_summary,
         "predictions": predictions,
