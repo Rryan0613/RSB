@@ -1,6 +1,8 @@
-# WorldCup AI v0.1.8.1
+# WorldCup AI v0.1.8.5
 
 A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
+
+**This project is not live-betting-ready.** The model is currently in bootstrap/simulation-only mode with no completed training data. Historical replay, backtesting, and calibration must be completed before any recommendation should be treated as actionable.
 
 ## Current Foundation
 
@@ -22,6 +24,9 @@ The project currently supports:
 - fuller prediction JSON persistence
 - pinned dependency ranges
 - GitHub Actions pytest CI
+- absolute path resolution independent of working directory (`src/paths.py`)
+- runtime path overrides via `RSB_DB_PATH`, `RSB_SLATE_PATH`, `RSB_MODEL_OUTPUT_PATH` for safe test isolation
+- dependency-free config validation with clear error messages (`src/config_validation.py`)
 
 ## Runtime Target
 
@@ -312,11 +317,23 @@ Workflow file:
 
 ## Roadmap
 
-Next likely versions:
+Near-term (v0.1.8.x – v0.1.9.x):
 
 ```text
-v0.1.9 - advanced team stats: duels, passing, pressing, set pieces, transitions
-v0.2.0 - historical dataset and backtesting foundation
-v0.3.0 - ledger, ROI, CLV, and performance tracking
-v0.4.0 - API/dashboard layer
+v0.1.8.6 - pure backtest metric primitives (Brier score, log loss, calibration) — no DB dependency
+v0.1.8.7 - results ingestion safety (update_results env override + tests)
+v0.1.8.8 - historical replay read-only loader
+v0.1.8.9 - training data leakage guard (database.load_training_rows SQL filter)
+v0.1.9.0 - backtest report output
+v0.1.9.1 - World Cup feature variable upgrade
+v0.1.9.2 - FixtureProvider foundation
+```
+
+Later (v0.2.x+):
+
+```text
+v0.2.x - automated fixture and odds collection
+v0.3.x - parlays only after confirmed calibration on sufficient historical matches
+v0.4.x - API backend
+v0.5.x - dashboard/frontend
 ```

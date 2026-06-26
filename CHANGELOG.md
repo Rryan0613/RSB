@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.8.5
+- Updated `pyproject.toml` version to `0.1.8.5`.
+- Updated `config/model_config.json` version to `0.1.8.5` and replaced version-specific notes with a generic, non-stale project note.
+- Updated `CLAUDE.md` with current version (`v0.1.8.5`), accurate test count (`119`), completed foundation summary for v0.1.8.2–v0.1.8.5, and the next modeling target (pure backtest metric primitives, not API/frontend/parlay).
+- Updated `README.md` with current version, expanded current foundation section to include path resolution, runtime path overrides, test isolation, and config validation; added explicit not-live-betting-ready statement; updated roadmap to reflect revised versioning plan through v0.5.x.
+
 ## v0.1.8.4
 - Added `src/config_validation.py` with a dependency-free config validation layer: `ConfigValidationError`, `load_json_config`, `validate_required_keys`, `validate_model_config`, `validate_sports_config`, and `validate_bet_rules_config`.
 - Updated `src/run_slate.py` to replace raw `json.loads(MODEL_CONFIG_PATH.read_text())` at module level with `load_json_config` + `validate_model_config`, so invalid or incomplete config fails immediately on import with a clear error.
