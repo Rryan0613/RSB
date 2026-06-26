@@ -10,6 +10,7 @@ Shared infrastructure:
 - Odds provider adapters
 - Provider diagnostics
 - Provider odds resolution for slate runs
+- Data quality guardrails
 - Odds normalization
 - SQLite persistence
 - EV calculations
@@ -33,7 +34,7 @@ When adding something new, prefer this pattern:
 
 ```text
 new data source -> new adapter -> provider diagnostics -> normalized output -> qualified odds resolution -> existing database shape
-new sport -> new sport profile -> new feature module -> existing model/run pipeline
+new sport -> new sport profile -> new feature module -> data quality guardrails -> existing model/run pipeline
 new bet type -> new rules config -> existing EV/reporting layer
 new tracker -> new ledger tables -> existing predictions/results/odds history
 ```
@@ -69,6 +70,23 @@ This layer should:
 
 Manual slate odds remain the default. Live provider odds must be explicitly requested so local development does not accidentally spend API quota.
 
+## Data Quality Guardrail Layer
+
+`src/data_quality.py` separates technical EV math from actionable recommendations.
+
+This layer should:
+- warn when the model is running in simulation-only bootstrap mode
+- warn when completed training data is below the configured minimum
+- warn when match features are not marked as verified
+- warn when sample, test, mock, or placeholder identifiers are detected
+- warn when required feature fields are missing and defaults would otherwise hide the issue
+- warn when manual odds or manual fallback odds are used
+- warn when provider odds are stale or sportsbook coverage is weak
+- expose `technical_recommendation` separately from final `recommendation`
+- block weak technical bet signals from becoming actionable recommendations
+
+A prediction can have a technical `bet` signal while the final guarded recommendation remains `pass`. This is intentional. The system should prefer no bet over acting on weak data.
+
 ## Current Rules Layer
 
 `config/bet_rules_config.json` is the first home for configurable betting rules.
@@ -94,6 +112,8 @@ Avoid:
 - Turning parlays on before backtesting and calibration exist
 - Sending live provider odds into recommendations before diagnostics pass
 - Allowing unqualified provider lines to bypass market rules
+- Treating simulation-only bootstrap outputs as real-money bets
+- Hiding missing feature values behind silent defaults without warnings
 
 ## Near-Term Roadmap
 
@@ -102,6 +122,7 @@ v0.1.x foundation:
 - Odds provider abstraction
 - Provider diagnostics
 - Provider odds resolution for slate runs
+- Data quality guardrails
 - Best-price shopping
 - Configurable bet rules
 - Target odds filtering
