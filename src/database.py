@@ -1,9 +1,10 @@
 import sqlite3
 import json
-from pathlib import Path
 from datetime import datetime, timezone
 
-DB_PATH = Path("data/worldcup_ai.db")
+from paths import DEFAULT_DB_PATH
+
+DB_PATH = DEFAULT_DB_PATH
 
 
 def utc_now():

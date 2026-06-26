@@ -1,15 +1,15 @@
 import argparse
 import json
 import os
-from pathlib import Path
 from typing import List, Optional
 
 from market_selector import get_active_rules, summarize_rules
 from odds_collector import collect_odds, load_runtime_config, summarize_bookmakers
 from odds_providers import MockOddsProvider, TheOddsAPIProvider
 from odds_providers.base import OddsProviderError, lines_to_dicts
+from paths import DEFAULT_PROVIDER_DIAGNOSTICS_PATH
 
-OUTPUT_PATH = Path("data/output/latest_provider_diagnostics.json")
+OUTPUT_PATH = DEFAULT_PROVIDER_DIAGNOSTICS_PATH
 
 
 def mask_secret(value: Optional[str]) -> Optional[str]:

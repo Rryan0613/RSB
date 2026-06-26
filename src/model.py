@@ -10,7 +10,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-MODELS_DIR = Path("models")
+from paths import MODELS_DIR
+
 DEFAULT_MODEL_PATH = MODELS_DIR / "home_win_model.joblib"
 
 

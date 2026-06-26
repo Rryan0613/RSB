@@ -14,10 +14,9 @@ from market_selector import (
 )
 from odds_providers import MockOddsProvider, TheOddsAPIProvider
 from odds_providers.base import lines_to_dicts
+from paths import MODEL_CONFIG_PATH, SPORTS_CONFIG_PATH, DEFAULT_ODDS_OUTPUT_PATH
 
-MODEL_CONFIG_PATH = Path("config/model_config.json")
-SPORTS_CONFIG_PATH = Path("config/sports_config.json")
-OUTPUT_PATH = Path("data/output/latest_odds_output.json")
+OUTPUT_PATH = DEFAULT_ODDS_OUTPUT_PATH
 
 
 def load_json(path: Path) -> dict:

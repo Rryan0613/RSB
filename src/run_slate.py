@@ -1,7 +1,6 @@
 import argparse
 import json
 import uuid
-from pathlib import Path
 
 from data_quality import (
     apply_recommendation_guardrail,
@@ -15,12 +14,13 @@ from database import (
 )
 from features import make_features
 from model import model_path_for_version, train_model, predict_probability
+from paths import MODEL_CONFIG_PATH, DEFAULT_SLATE_PATH, DEFAULT_MODEL_OUTPUT_PATH
 from simulator import run_monte_carlo
 from ev import implied_probability, edge, ev_per_unit
 from slate_odds import PREDICTION_MARKET, build_provider_odds_context, resolve_odds_for_match
 from validation import validate_slate
 
-CONFIG = json.loads(Path("config/model_config.json").read_text())
+CONFIG = json.loads(MODEL_CONFIG_PATH.read_text())
 MODEL_VERSION = CONFIG["version"]
 MIN_EDGE = CONFIG["minimum_edge"]
 MIN_TRAIN = CONFIG["minimum_completed_matches_to_train"]
@@ -83,8 +83,8 @@ def main():
     init_db()
 
     run_id = str(uuid.uuid4())[:8]
-    slate_path = Path("data/input/slate.json")
-    output_path = Path("data/output/latest_model_output.json")
+    slate_path = DEFAULT_SLATE_PATH
+    output_path = DEFAULT_MODEL_OUTPUT_PATH
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     slate = json.loads(slate_path.read_text())

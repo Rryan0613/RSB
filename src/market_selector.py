@@ -3,8 +3,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from ev import american_to_decimal
-
-BET_RULES_CONFIG_PATH = Path("config/bet_rules_config.json")
+from paths import BET_RULES_CONFIG_PATH
 
 
 def load_rules_config(path: Path = BET_RULES_CONFIG_PATH) -> dict:
