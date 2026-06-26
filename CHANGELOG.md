@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.7
+- Added `src/availability.py` for World Cup lineup, injury, availability, and rotation-risk context.
+- Added availability-derived features to `src/features.py`, including lineup strength, starter availability, lineup confidence, rotation risk, B-team risk, replacement quality, key absence impact, returning player risk, minutes restrictions, and fitness concern differentials.
+- Added availability guardrails to `src/data_quality.py` for missing availability data, unverified injury data, unconfirmed lineups, low lineup confidence, B-team rotation risk, key player absences, recent injury returns, and minutes restrictions.
+- Updated data quality blocking logic so research outputs remain non-actionable when the expected version of either team is unclear.
+- Added tests for availability defaults, availability feature extraction, returning-player risk, availability guardrails, and updated feature generation.
+- Updated model version to `0.1.7`.
+
 ## v0.1.6
 - Added `src/data_quality.py` for data quality warnings and recommendation guardrails.
 - Added prediction-level fields for `data_quality`, `quality_warnings`, `actionable`, `recommendation_guardrail`, `guardrail_reasons`, and `do_not_bet_real_money`.
