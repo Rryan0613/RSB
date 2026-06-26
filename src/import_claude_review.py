@@ -1,10 +1,10 @@
 import json
-from pathlib import Path
 from database import init_db, save_review_note
+from paths import DEFAULT_CLAUDE_REVIEW_PATH
 
 def main():
     init_db()
-    review_path = Path("data/input/claude_review.json")
+    review_path = DEFAULT_CLAUDE_REVIEW_PATH
     review = json.loads(review_path.read_text())
 
     run_id = review.get("run_summary", {}).get("run_id") or review.get("run_id", "unknown")

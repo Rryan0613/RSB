@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.1.8.2
+- Added `src/paths.py` with all project-root-relative path constants derived from the module's own location, not the working directory.
+- Replaced every `Path("relative/...")` constant in `src/database.py`, `src/model.py`, `src/odds_collector.py`, `src/run_slate.py`, `src/market_selector.py`, `src/check_odds_provider.py`, `src/import_claude_review.py`, and `src/update_results.py` with imports from `src/paths.py`.
+- Scripts can now be invoked from any working directory and still resolve config, input, and output files from the project root.
+- Added `tests/test_paths.py` to verify `PROJECT_ROOT` resolves to the repo root, all path constants are absolute, key paths point to expected locations, config files exist at their resolved paths, and `run_slate.py` succeeds when launched from outside the project root.
+- Updated model version to `0.1.8.2`.
+
 ## v0.1.8.1
 - Added `pyproject.toml` with Python `>=3.10,<3.15` project metadata.
 - Pinned dependency ranges in `requirements.txt`.

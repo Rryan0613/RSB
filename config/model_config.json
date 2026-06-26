@@ -1,6 +1,6 @@
 {
   "project": "worldcup-ai",
-  "version": "0.1.8.1",
+  "version": "0.1.8.2",
   "target_market": "home_win",
   "minimum_completed_matches_to_train": 20,
   "minimum_edge": 0.03,
@@ -16,5 +16,5 @@
     "markets": ["h2h"],
     "odds_format": "american"
   },
-  "notes": "World Cup focused. v0.1.8.1 hardens architecture with versioned model artifacts, feature schema validation, vectorized simulation, availability/tactical goal-rate adjustments, fuller prediction persistence, pinned dependencies, and CI."
+  "notes": "World Cup focused. v0.1.8.2 centralizes file paths in src/paths.py so the project no longer depends on the working directory."
 }
