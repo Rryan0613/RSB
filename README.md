@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.4
+# WorldCup AI v0.1.5
 
 A focused World Cup +EV prediction framework.
 
@@ -18,6 +18,7 @@ The project is World Cup-focused right now, but the codebase is being built as a
 
 - Odds provider adapters
 - Provider diagnostics
+- Qualified provider odds for slate runs
 - Normalized odds snapshots
 - Database persistence
 - EV calculations
@@ -62,41 +63,47 @@ Do not leave fake sample matches in `data/input/` when running real analysis. Co
 ## Main Workflow
 
 1. Add upcoming matches to `data/input/slate.json`.
-2. Run:
+2. Run with manual slate odds:
 
 ```bash
 python src/run_slate.py
 ```
 
-3. The model writes predictions to:
+3. Or run with qualified provider odds:
+
+```bash
+python src/run_slate.py --odds-source provider --odds-provider mock
+```
+
+4. The model writes predictions to:
 
 ```text
 data/output/latest_model_output.json
 ```
 
-4. Paste that JSON into Claude with the prompt in:
+5. Paste that JSON into Claude with the prompt in:
 
 ```text
 prompts/claude_worldcup_prompt.md
 ```
 
-5. After games finish, add final results to:
+6. After games finish, add final results to:
 
 ```text
 data/input/results.json
 ```
 
-6. Run:
+7. Run:
 
 ```bash
 python src/update_results.py
 ```
 
-7. Next slate run retrains using the updated database.
+8. Next slate run retrains using the updated database.
 
 ## Odds Collection
 
-v0.1.2 added an odds provider abstraction. v0.1.3 added market selection rules on top of those odds. v0.1.4 adds safe provider diagnostics.
+v0.1.2 added an odds provider abstraction. v0.1.3 added market selection rules on top of those odds. v0.1.4 added safe provider diagnostics. v0.1.5 lets `run_slate.py` use qualified provider odds.
 
 The default provider is `mock`, which is deterministic and does not call external APIs or spend API credits:
 
@@ -165,6 +172,47 @@ Safety rules:
 - Mock mode remains the default.
 - Live provider errors are captured into readable JSON.
 - The script can list matching soccer/FIFA/World Cup sport keys when the provider supports sport listing.
+
+## Provider Odds in Slate Runs
+
+v0.1.5 adds:
+
+```text
+src/slate_odds.py
+```
+
+Manual slate odds remain the default so normal development does not accidentally spend live API quota:
+
+```bash
+python src/run_slate.py
+```
+
+Use provider odds with the mock provider:
+
+```bash
+python src/run_slate.py --odds-source provider --odds-provider mock
+```
+
+Use provider odds with The Odds API:
+
+```bash
+python src/run_slate.py --odds-source provider --odds-provider the_odds_api
+```
+
+Provider odds mode:
+- collects provider odds once per run
+- applies market selection rules
+- uses only qualified best prices
+- matches provider lines to slate matches by match ID or team/date
+- supports reversed provider team order when the target is still the slate home team
+- falls back to manual slate odds unless `--no-manual-odds-fallback` is provided
+- records provider metadata in prediction output and odds snapshots
+
+For strict provider-only runs:
+
+```bash
+python src/run_slate.py --odds-source provider --odds-provider the_odds_api --no-manual-odds-fallback
+```
 
 ## Market Selection Rules
 
@@ -251,6 +299,7 @@ The tests cover:
 - EV calculation
 - Feature generation
 - Input validation
+- Optional odds validation for provider mode
 - Monte Carlo reproducibility
 - Empty slate execution
 - Odds provider normalization
@@ -262,6 +311,9 @@ The tests cover:
 - Provider diagnostics
 - API key masking
 - Safe live-provider missing-key behavior
+- Provider odds resolution for slate runs
+- Manual odds fallback
+- Reversed team-order provider matching
 
 ## Future Roadmap
 
