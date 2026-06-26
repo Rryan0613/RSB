@@ -1,6 +1,6 @@
 {
   "project": "worldcup-ai",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "target_market": "home_win",
   "minimum_completed_matches_to_train": 20,
   "minimum_edge": 0.03,
@@ -16,5 +16,5 @@
     "markets": ["h2h"],
     "odds_format": "american"
   },
-  "notes": "World Cup focused. v0.1.4 adds safe live odds provider diagnostics while keeping mock mode as the default."
+  "notes": "World Cup focused. v0.1.5 lets run_slate.py use qualified provider odds while keeping manual odds as the safe default."
 }
