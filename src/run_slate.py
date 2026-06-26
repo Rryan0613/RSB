@@ -14,13 +14,15 @@ from database import (
 )
 from features import make_features
 from model import model_path_for_version, train_model, predict_probability
+from config_validation import load_json_config, validate_model_config
 from paths import MODEL_CONFIG_PATH, get_slate_path, get_model_output_path
 from simulator import run_monte_carlo
 from ev import implied_probability, edge, ev_per_unit
 from slate_odds import PREDICTION_MARKET, build_provider_odds_context, resolve_odds_for_match
 from validation import validate_slate
 
-CONFIG = json.loads(MODEL_CONFIG_PATH.read_text())
+CONFIG = load_json_config(MODEL_CONFIG_PATH)
+validate_model_config(CONFIG)
 MODEL_VERSION = CONFIG["version"]
 MIN_EDGE = CONFIG["minimum_edge"]
 MIN_TRAIN = CONFIG["minimum_completed_matches_to_train"]

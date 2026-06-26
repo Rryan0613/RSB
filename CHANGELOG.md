@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.8.4
+- Added `src/config_validation.py` with a dependency-free config validation layer: `ConfigValidationError`, `load_json_config`, `validate_required_keys`, `validate_model_config`, `validate_sports_config`, and `validate_bet_rules_config`.
+- Updated `src/run_slate.py` to replace raw `json.loads(MODEL_CONFIG_PATH.read_text())` at module level with `load_json_config` + `validate_model_config`, so invalid or incomplete config fails immediately on import with a clear error.
+- Updated `src/odds_collector.py` to validate `model_config.json` via `validate_model_config` and `sports_config.json` via `validate_sports_config` inside `load_runtime_config`.
+- Updated `src/market_selector.py` to validate `bet_rules_config.json` via `validate_bet_rules_config` inside `load_rules_config`.
+- Added `tests/test_config_validation.py` with 30 tests covering: valid configs pass, missing required keys raise `ConfigValidationError` with the key name, wrong types raise with the field name, invalid JSON raises a clear error, validated loading does not mutate the config dict, and all three real config files pass validation.
+- Updated model version to `0.1.8.4`.
+
 ## v0.1.8.3
 - Added `get_db_path()`, `get_slate_path()`, and `get_model_output_path()` helper functions to `src/paths.py` that check `RSB_DB_PATH`, `RSB_SLATE_PATH`, and `RSB_MODEL_OUTPUT_PATH` environment variables and fall back to the existing `DEFAULT_*` constants.
 - Updated `src/database.py` to resolve `DB_PATH` via `get_db_path()` at import time so subprocess tests can redirect the database without touching `data/worldcup_ai.db`.
