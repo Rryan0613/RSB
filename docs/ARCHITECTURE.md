@@ -8,6 +8,7 @@ Keep shared infrastructure separate from sport-specific analysis.
 
 Shared infrastructure:
 - Odds provider adapters
+- Provider diagnostics
 - Odds normalization
 - SQLite persistence
 - EV calculations
@@ -30,11 +31,27 @@ Future sport-specific layers can be added later without rewriting the shared inf
 When adding something new, prefer this pattern:
 
 ```text
-new data source -> new adapter -> normalized output -> existing database shape
+new data source -> new adapter -> provider diagnostics -> normalized output -> existing database shape
 new sport -> new sport profile -> new feature module -> existing model/run pipeline
 new bet type -> new rules config -> existing EV/reporting layer
 new tracker -> new ledger tables -> existing predictions/results/odds history
 ```
+
+## Provider Diagnostics Layer
+
+`src/check_odds_provider.py` is the safety gate between mock odds and live provider odds.
+
+It should be used before routing any live odds into model decisions.
+
+Diagnostics should answer:
+- Is the provider reachable?
+- Is `ODDS_API_KEY` present locally?
+- Is the key hidden from output?
+- Can relevant sport keys be listed?
+- Are expected sportsbooks returning lines?
+- Are provider errors readable?
+
+Mock mode remains the default so tests and local development do not depend on external API availability.
 
 ## Current Rules Layer
 
@@ -59,12 +76,14 @@ Avoid:
 - Letting sample data become training data
 - Rewriting large modules when a small adapter/config would work
 - Turning parlays on before backtesting and calibration exist
+- Sending live provider odds into recommendations before diagnostics pass
 
 ## Near-Term Roadmap
 
 v0.1.x foundation:
 - Input validation
 - Odds provider abstraction
+- Provider diagnostics
 - Best-price shopping
 - Configurable bet rules
 - Target odds filtering
