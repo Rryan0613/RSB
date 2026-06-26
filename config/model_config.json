@@ -1,6 +1,6 @@
 {
   "project": "worldcup-ai",
-  "version": "0.1.8.4",
+  "version": "0.1.8.5",
   "target_market": "home_win",
   "minimum_completed_matches_to_train": 20,
   "minimum_edge": 0.03,
@@ -16,5 +16,5 @@
     "markets": ["h2h"],
     "odds_format": "american"
   },
-  "notes": "World Cup focused. v0.1.8.3 adds runtime path overrides via RSB_DB_PATH, RSB_SLATE_PATH, RSB_MODEL_OUTPUT_PATH env vars so subprocess tests redirect file IO to tmp_path without touching real project files."
+  "notes": "World Cup focused. Foundation includes absolute path resolution, runtime path overrides for safe test isolation, and dependency-free config validation. Model is bootstrap/simulation-only until historical replay and backtesting are complete."
 }
