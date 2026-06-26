@@ -17,8 +17,10 @@ Shared infrastructure:
 - Model run tracking
 - Prediction output
 - Market selection rules
+- Model artifact versioning
+- Feature schema validation
+- CI tests
 - Review notes
-- Tests
 
 World Cup-specific layer:
 - Soccer features
@@ -27,6 +29,7 @@ World Cup-specific layer:
 - World Cup markets
 - Availability, lineup, injury, and rotation-risk context
 - Tactical matchup context
+- Bootstrap goal-rate adjustments
 
 Future sport-specific layers can be added later without rewriting the shared infrastructure.
 
@@ -37,6 +40,7 @@ When adding something new, prefer this pattern:
 ```text
 new data source -> new adapter -> provider diagnostics -> normalized output -> qualified odds resolution -> existing database shape
 new sport -> new sport profile -> new feature module -> availability context -> tactical context -> data quality guardrails -> existing model/run pipeline
+new model version -> versioned artifact -> feature schema validation -> calibrated prediction output
 new bet type -> new rules config -> existing EV/reporting layer
 new tracker -> new ledger tables -> existing predictions/results/odds history
 ```
@@ -118,6 +122,30 @@ The feature layer converts tactical context into model inputs such as press vers
 
 Major tactical mismatch flags are review warnings rather than automatic blockers. Missing, unverified, or low-confidence tactical context can block recommendations.
 
+## Bootstrap Simulation Layer
+
+`src/simulator.py` is the fallback probability engine used before enough completed matches exist for model training.
+
+This layer should:
+- use vectorized simulation for scale
+- start from xG, opponent xGA, missing starters, and rest
+- apply bounded availability adjustments
+- apply bounded tactical matchup adjustments
+- expose adjustment details in the simulation output
+
+Bootstrap simulation is still not a substitute for trained/backtested modeling. It is a safer fallback while historical data is being built.
+
+## Model Safety Layer
+
+`src/model.py` owns model artifacts and schema safety.
+
+This layer should:
+- save model artifacts by target market and model version
+- store feature columns and feature schema hash
+- validate all required features before prediction
+- reject missing or non-numeric model features
+- avoid silently scoring a new feature set with an old artifact
+
 ## Data Quality Guardrail Layer
 
 `src/data_quality.py` separates technical EV math from actionable recommendations.
@@ -170,6 +198,7 @@ Avoid:
 - Hiding missing feature values behind silent defaults without warnings
 - Treating a national team as full strength when lineups, rotation, or injuries say otherwise
 - Treating a tactical matchup as neutral when tactical context is missing or low confidence
+- Reusing an old model artifact against a changed feature schema
 
 ## Near-Term Roadmap
 
@@ -181,6 +210,7 @@ v0.1.x foundation:
 - Data quality guardrails
 - Availability, lineup, injury, and rotation-risk context
 - Tactical matchup context
+- Simulator/model hardening
 - Best-price shopping
 - Configurable market rules
 - Target odds filtering
