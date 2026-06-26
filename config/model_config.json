@@ -1,11 +1,12 @@
 {
   "project": "worldcup-ai",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "target_market": "home_win",
   "minimum_completed_matches_to_train": 20,
   "minimum_edge": 0.03,
   "max_legs": 3,
   "bankroll_units": 100,
   "max_single_stake_units": 1.0,
-  "notes": "World Cup focused. Expand features gradually after we review Claude outputs and completed results."
+  "simulation_seed": null,
+  "notes": "World Cup focused. v0.1.1 adds validation, samples, odds snapshots, reproducible simulations, and tests."
 }
