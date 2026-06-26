@@ -37,6 +37,13 @@ def test_match_missing_home_win_odds_fails():
         validate_slate({"matches": [invalid]})
 
 
+def test_match_can_omit_odds_when_provider_odds_are_allowed():
+    match = dict(VALID_MATCH)
+    match.pop("odds")
+
+    validate_slate({"matches": [match]}, require_odds=False)
+
+
 def test_empty_results_is_valid():
     validate_results({"results": []})
 
