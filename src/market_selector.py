@@ -1,13 +1,15 @@
-import json
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from config_validation import load_json_config, validate_bet_rules_config
 from ev import american_to_decimal
 from paths import BET_RULES_CONFIG_PATH
 
 
 def load_rules_config(path: Path = BET_RULES_CONFIG_PATH) -> dict:
-    return json.loads(path.read_text())
+    config = load_json_config(path)
+    validate_bet_rules_config(config)
+    return config
 
 
 def get_active_rules(rules_config: Optional[dict] = None) -> dict:

@@ -3,6 +3,11 @@ import uuid
 from pathlib import Path
 from typing import List, Optional
 
+from config_validation import (
+    load_json_config,
+    validate_model_config,
+    validate_sports_config,
+)
 from database import init_db, save_odds_lines
 from market_selector import (
     evaluate_odds_lines,
@@ -19,13 +24,11 @@ from paths import MODEL_CONFIG_PATH, SPORTS_CONFIG_PATH, DEFAULT_ODDS_OUTPUT_PAT
 OUTPUT_PATH = DEFAULT_ODDS_OUTPUT_PATH
 
 
-def load_json(path: Path) -> dict:
-    return json.loads(path.read_text())
-
-
 def load_runtime_config() -> dict:
-    model_config = load_json(MODEL_CONFIG_PATH)
-    sports_config = load_json(SPORTS_CONFIG_PATH)
+    model_config = load_json_config(MODEL_CONFIG_PATH)
+    validate_model_config(model_config)
+    sports_config = load_json_config(SPORTS_CONFIG_PATH)
+    validate_sports_config(sports_config)
     active_sport = sports_config.get("active_sport", "worldcup")
     sport_profile = sports_config["sports"][active_sport]
     odds_config = model_config.get("odds_collection", {})
