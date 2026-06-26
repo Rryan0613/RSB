@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.3
+- Added configurable World Cup market selection rules in `config/bet_rules_config.json`.
+- Added `src/market_selector.py` for best-price qualification, target odds filtering, allowed market/selection checks, and sportsbook availability checks.
+- Updated `src/odds_collector.py` to include rules summary, qualified best prices, rejected price groups, and market decisions in latest odds output.
+- Kept parlay and same-game parlay logic disabled while adding config placeholders for future expansion.
+- Added tests for market selection rules, target odds filtering, minimum sportsbook requirements, and active rules loading.
+- Updated README with market rules workflow and future bet-structure roadmap.
+
 ## v0.1.2
 - Added World Cup-focused odds provider abstraction.
 - Added `config/sports_config.json` with a single active `worldcup` profile.
