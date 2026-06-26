@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.8
+# WorldCup AI v0.1.8.1
 
 A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
 
@@ -8,7 +8,8 @@ The project currently supports:
 
 - SQLite model memory
 - input validation
-- reproducible Monte Carlo simulation
+- reproducible, vectorized Monte Carlo simulation
+- availability and tactical goal-rate adjustments during bootstrap simulation
 - odds provider abstraction
 - provider diagnostics
 - qualified provider odds in `run_slate.py`
@@ -16,7 +17,27 @@ The project currently supports:
 - data quality guardrails
 - availability, lineup, injury, and rotation-risk context
 - tactical matchup context
-- pytest coverage
+- versioned model artifacts
+- model feature schema validation
+- fuller prediction JSON persistence
+- pinned dependency ranges
+- GitHub Actions pytest CI
+
+## Runtime Target
+
+Project metadata lives in:
+
+```text
+pyproject.toml
+```
+
+The project target is:
+
+```text
+Python >=3.10,<3.15
+```
+
+Use a modern Python version before installing fresh dependencies.
 
 ## Quick Start
 
@@ -100,6 +121,42 @@ do_not_bet_real_money
 ```
 
 The model can calculate a technical EV signal, but weak data can block that signal from becoming actionable. Guardrails currently cover simulation-only bootstrap mode, insufficient training data, unverified features, stale odds, manual fallback odds, missing availability, unverified injury data, unconfirmed lineups, rotation risk, key absences, missing tactical context, unverified tactical data, and low tactical confidence.
+
+## Bootstrap Simulation
+
+`src/simulator.py` now uses NumPy vectorized Poisson draws and applies controlled goal-rate adjustments from availability and tactical matchup context.
+
+The simulation output includes:
+
+```text
+goal_rate_adjustments
+total_home_goal_adjustment
+estimated_home_goals
+estimated_away_goals
+```
+
+This means availability and tactical values now affect bootstrap probability, not just guardrail status.
+
+## Model Safety
+
+`src/model.py` now saves versioned model artifacts such as:
+
+```text
+models/home_win_model_0_1_8_1.joblib
+```
+
+Model artifacts store:
+
+```text
+feature_cols
+feature_schema_hash
+model_version
+target_market
+trained_rows
+trained_at
+```
+
+Before prediction, the feature schema is validated so an older model cannot silently score a newer feature set with missing or non-numeric features.
 
 ## Availability Context
 
@@ -232,6 +289,25 @@ odds_snapshots
 results
 model_runs
 review_notes
+```
+
+The `predictions` table now stores the full prediction JSON payload in `prediction_json`, including quality warnings, guardrail status, provider metadata, and simulation summary.
+
+## CI
+
+GitHub Actions runs pytest on:
+
+```text
+Python 3.10
+Python 3.11
+Python 3.12
+Python 3.13
+```
+
+Workflow file:
+
+```text
+.github/workflows/tests.yml
 ```
 
 ## Roadmap
