@@ -72,6 +72,20 @@ def init_db():
     """)
 
     cur.execute("""
+    CREATE TABLE IF NOT EXISTS odds_snapshots (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_id TEXT,
+        match_id TEXT,
+        sportsbook TEXT,
+        market TEXT,
+        selection TEXT,
+        american_odds INTEGER,
+        implied_probability REAL,
+        captured_at TEXT
+    )
+    """)
+
+    cur.execute("""
     CREATE TABLE IF NOT EXISTS results (
         match_id TEXT PRIMARY KEY,
         home_score INTEGER,
@@ -178,6 +192,26 @@ def save_simulation(run_id, match_id, simulations, output):
     con.commit()
     con.close()
 
+def save_odds_snapshot(run_id, match_id, sportsbook, market, selection, american_odds, implied_probability):
+    con = connect()
+    cur = con.cursor()
+    cur.execute("""
+    INSERT INTO odds_snapshots
+    (run_id, match_id, sportsbook, market, selection, american_odds, implied_probability, captured_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        run_id,
+        match_id,
+        sportsbook,
+        market,
+        selection,
+        int(american_odds),
+        float(implied_probability),
+        utc_now()
+    ))
+    con.commit()
+    con.close()
+
 def save_result(result):
     home_score = int(result["home_score"])
     away_score = int(result["away_score"])
@@ -204,6 +238,10 @@ def save_result(result):
     con.close()
 
 def load_training_rows(target_market="home_win"):
+    allowed_targets = {"home_win", "draw", "away_win", "btts", "over_25"}
+    if target_market not in allowed_targets:
+        raise ValueError(f"Unsupported target_market: {target_market}. Allowed: {sorted(allowed_targets)}")
+
     con = connect()
     query = f"""
     SELECT fs.match_id, fs.features_json, r.{target_market} AS target
