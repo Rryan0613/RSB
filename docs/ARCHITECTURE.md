@@ -25,6 +25,7 @@ World Cup-specific layer:
 - World Cup match schema
 - World Cup model config
 - World Cup markets
+- Availability, lineup, injury, and rotation-risk context
 
 Future sport-specific layers can be added later without rewriting the shared infrastructure.
 
@@ -34,7 +35,7 @@ When adding something new, prefer this pattern:
 
 ```text
 new data source -> new adapter -> provider diagnostics -> normalized output -> qualified odds resolution -> existing database shape
-new sport -> new sport profile -> new feature module -> data quality guardrails -> existing model/run pipeline
+new sport -> new sport profile -> new feature module -> availability context -> data quality guardrails -> existing model/run pipeline
 new bet type -> new rules config -> existing EV/reporting layer
 new tracker -> new ledger tables -> existing predictions/results/odds history
 ```
@@ -70,6 +71,26 @@ This layer should:
 
 Manual slate odds remain the default. Live provider odds must be explicitly requested so local development does not accidentally spend API quota.
 
+## Availability Context Layer
+
+`src/availability.py` models the actual expected version of each World Cup team.
+
+This layer should track:
+- confirmed versus projected lineup status
+- lineup confidence
+- expected starters available versus normal starter count
+- lineup strength rating
+- rotation risk
+- B-team risk
+- key absences and absence impact
+- replacement quality
+- returning players from injury
+- recent injury-return risk
+- minutes restrictions
+- fitness concerns
+
+The feature layer converts availability into model inputs such as lineup strength differential, starter availability differential, key absence impact differential, returning player risk differential, and minutes restriction differential.
+
 ## Data Quality Guardrail Layer
 
 `src/data_quality.py` separates technical EV math from actionable recommendations.
@@ -80,6 +101,10 @@ This layer should:
 - warn when match features are not marked as verified
 - warn when sample, test, mock, or placeholder identifiers are detected
 - warn when required feature fields are missing and defaults would otherwise hide the issue
+- warn when availability data is missing or unverified
+- warn when lineups are unconfirmed or low confidence
+- warn when rotation/B-team risk is high
+- warn when key players are absent, recently returned, or minutes restricted
 - warn when manual odds or manual fallback odds are used
 - warn when provider odds are stale or sportsbook coverage is weak
 - expose `technical_recommendation` separately from final `recommendation`
@@ -114,6 +139,7 @@ Avoid:
 - Allowing unqualified provider lines to bypass market rules
 - Treating simulation-only bootstrap outputs as real-money bets
 - Hiding missing feature values behind silent defaults without warnings
+- Treating a national team as full strength when lineups, rotation, or injuries say otherwise
 
 ## Near-Term Roadmap
 
@@ -123,6 +149,7 @@ v0.1.x foundation:
 - Provider diagnostics
 - Provider odds resolution for slate runs
 - Data quality guardrails
+- Availability, lineup, injury, and rotation-risk context
 - Best-price shopping
 - Configurable bet rules
 - Target odds filtering
