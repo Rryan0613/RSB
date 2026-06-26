@@ -2,6 +2,23 @@ from collections import Counter
 from datetime import datetime, timezone
 from typing import Optional
 
+from availability import (
+    availability_source,
+    b_team_risk,
+    fitness_concerns,
+    has_team_availability,
+    high_impact_absence_count,
+    is_verified_availability_source,
+    key_absences,
+    lineup_confidence,
+    lineup_status,
+    minutes_restricted_count,
+    recent_returning_player_count,
+    returning_players,
+    rotation_risk,
+    team_availability,
+)
+
 FEATURE_FIELDS = [
     "fifa_rank",
     "elo",
@@ -39,6 +56,14 @@ ACTION_BLOCK_CODES = {
     "manual_odds_used",
     "manual_odds_fallback_used",
     "stale_odds",
+    "availability_data_missing",
+    "injury_data_unverified",
+    "lineup_unconfirmed",
+    "low_lineup_confidence",
+    "b_team_rotation_risk",
+    "key_player_absence",
+    "recent_injury_return",
+    "minutes_restriction",
 }
 
 PLACEHOLDER_TERMS = {
@@ -131,6 +156,114 @@ def _is_stale_odds(line: dict, max_age_minutes: int) -> bool:
     return age_minutes > max_age_minutes
 
 
+def _high_impact_key_absence_names(team_data: dict) -> list:
+    names = []
+    for absence in key_absences(team_data):
+        if not isinstance(absence, dict):
+            continue
+        impact = absence.get("impact_rating", 0)
+        try:
+            impact_value = float(impact)
+        except (TypeError, ValueError):
+            impact_value = 0.0
+        if impact_value >= 7:
+            names.append(absence.get("name") or absence.get("role") or "unknown_player")
+    return names
+
+
+def _team_label(match: dict, team_key: str) -> str:
+    return match.get(f"{team_key}_team") or team_key
+
+
+def _assess_availability(match: dict) -> list:
+    warnings = []
+    missing_teams = [team_key for team_key in ["home", "away"] if not has_team_availability(match, team_key)]
+    if missing_teams:
+        warnings.append(make_warning(
+            "availability_data_missing",
+            "blocker",
+            f"Missing availability context for: {', '.join(missing_teams)}.",
+        ))
+        return warnings
+
+    for team_key in ["home", "away"]:
+        team_data = team_availability(match, team_key)
+        team_name = _team_label(match, team_key)
+        source = availability_source(team_data, match)
+        status = lineup_status(team_data)
+        confidence = lineup_confidence(team_data)
+        team_rotation_risk = rotation_risk(team_data)
+        team_b_risk = b_team_risk(team_data)
+        high_absence_names = _high_impact_key_absence_names(team_data)
+        recent_returns = recent_returning_player_count(team_data)
+        minutes_restricted = minutes_restricted_count(team_data)
+
+        if not is_verified_availability_source(source):
+            warnings.append(make_warning(
+                "injury_data_unverified",
+                "blocker",
+                f"{team_name} availability source is {source}; injury/lineup data is not verified.",
+            ))
+
+        if status != "confirmed":
+            warnings.append(make_warning(
+                "lineup_unconfirmed",
+                "blocker",
+                f"{team_name} lineup status is {status}; confirmed XI is not available.",
+            ))
+
+        if confidence < 0.7:
+            warnings.append(make_warning(
+                "low_lineup_confidence",
+                "blocker",
+                f"{team_name} lineup confidence is {confidence:.2f}, below 0.70.",
+            ))
+
+        if team_rotation_risk >= 7 or team_b_risk >= 7:
+            warnings.append(make_warning(
+                "b_team_rotation_risk",
+                "blocker",
+                f"{team_name} has high rotation/B-team risk: rotation={team_rotation_risk:.1f}, b_team={team_b_risk:.1f}.",
+            ))
+
+        if high_impact_absence_count(team_data) > 0:
+            warnings.append(make_warning(
+                "key_player_absence",
+                "blocker",
+                f"{team_name} has high-impact key absences: {', '.join(high_absence_names)}.",
+            ))
+
+        if recent_returns > 0:
+            warnings.append(make_warning(
+                "recent_injury_return",
+                "blocker",
+                f"{team_name} has {recent_returns} recent injury return(s) requiring caution.",
+            ))
+
+        if minutes_restricted > 0:
+            warnings.append(make_warning(
+                "minutes_restriction",
+                "blocker",
+                f"{team_name} has {minutes_restricted} player(s) with minutes restrictions or fitness limits.",
+            ))
+
+        if fitness_concerns(team_data) and not recent_returns and not minutes_restricted:
+            warnings.append(make_warning(
+                "fitness_concerns_present",
+                "warning",
+                f"{team_name} has listed fitness concerns that should be reviewed.",
+            ))
+
+        if returning_players(team_data) and recent_returns == 0:
+            warnings.append(make_warning(
+                "returning_players_present",
+                "warning",
+                f"{team_name} has returning players listed; review role and minutes context.",
+            ))
+
+    return warnings
+
+
 def assess_data_quality(
     match: dict,
     model_status: str,
@@ -179,6 +312,8 @@ def assess_data_quality(
             "blocker",
             f"Missing feature fields: {', '.join(missing_fields)}.",
         ))
+
+    warnings.extend(_assess_availability(match))
 
     if odds_choice:
         source = odds_choice.get("source")
