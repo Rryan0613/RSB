@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.5
+- Added `src/slate_odds.py` to resolve qualified provider odds for `run_slate.py` predictions.
+- Added `--odds-source manual|provider` and `--odds-provider mock|the_odds_api` CLI options to `src/run_slate.py`.
+- Kept manual slate odds as the default to avoid accidental live API quota usage.
+- Added provider-odds mode that collects odds once, applies market rules, uses qualified best prices, and records provider metadata.
+- Added manual fallback behavior and `--no-manual-odds-fallback` for strict provider-only runs.
+- Added team/date matching and reversed team-order handling so provider home/away ordering can still map to the slate target selection.
+- Added optional slate odds validation for provider-odds mode.
+- Added tests for provider odds resolution, manual fallback, reversed team-order matching, and optional odds validation.
+- Updated README with provider odds workflow for slate runs.
+
 ## v0.1.4
 - Added `src/check_odds_provider.py` for safe mock and live odds provider diagnostics.
 - Added API key presence checks with masked output so `ODDS_API_KEY` is never printed in full.
