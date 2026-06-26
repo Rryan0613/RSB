@@ -14,6 +14,15 @@ REQUIRED_MATCH_FIELDS = [
     "odds",
 ]
 
+REQUIRED_MATCH_FIELDS_WITHOUT_ODDS = [
+    "match_id",
+    "date",
+    "home_team",
+    "away_team",
+    "home",
+    "away",
+]
+
 REQUIRED_RESULT_FIELDS = [
     "match_id",
     "home_score",
@@ -23,7 +32,7 @@ REQUIRED_RESULT_FIELDS = [
 def _is_number(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool)
 
-def validate_slate(data):
+def validate_slate(data, require_odds=True):
     if not isinstance(data, dict):
         raise SlateValidationError(f"slate.json must be a JSON object, got {type(data).__name__}.")
 
@@ -34,13 +43,14 @@ def validate_slate(data):
         raise SlateValidationError(f'"matches" must be a list, got {type(data["matches"]).__name__}.')
 
     for index, match in enumerate(data["matches"]):
-        validate_match(match, index)
+        validate_match(match, index, require_odds=require_odds)
 
-def validate_match(match, index=0):
+def validate_match(match, index=0, require_odds=True):
     if not isinstance(match, dict):
         raise SlateValidationError(f"matches[{index}] must be an object, got {type(match).__name__}.")
 
-    for field in REQUIRED_MATCH_FIELDS:
+    required_fields = REQUIRED_MATCH_FIELDS if require_odds else REQUIRED_MATCH_FIELDS_WITHOUT_ODDS
+    for field in required_fields:
         if field not in match:
             match_id = match.get("match_id", f"<index {index}>")
             raise SlateValidationError(f'Match "{match_id}" is missing required field "{field}".')
@@ -50,18 +60,22 @@ def validate_match(match, index=0):
             match_id = match.get("match_id", f"<index {index}>")
             raise SlateValidationError(f'Match "{match_id}" field "{team_key}" must be an object of team metrics.')
 
-    odds = match["odds"]
-    if not isinstance(odds, dict):
-        match_id = match.get("match_id", f"<index {index}>")
-        raise SlateValidationError(f'Match "{match_id}" field "odds" must be an object.')
+    if "odds" in match:
+        odds = match["odds"]
+        if not isinstance(odds, dict):
+            match_id = match.get("match_id", f"<index {index}>")
+            raise SlateValidationError(f'Match "{match_id}" field "odds" must be an object.')
 
-    if "home_win" not in odds:
-        match_id = match.get("match_id", f"<index {index}>")
-        raise SlateValidationError(f'Match "{match_id}" odds are missing required key "home_win".')
+        if "home_win" not in odds:
+            match_id = match.get("match_id", f"<index {index}>")
+            raise SlateValidationError(f'Match "{match_id}" odds are missing required key "home_win".')
 
-    if not _is_number(odds["home_win"]) or odds["home_win"] == 0:
+        if not _is_number(odds["home_win"]) or odds["home_win"] == 0:
+            match_id = match.get("match_id", f"<index {index}>")
+            raise SlateValidationError(f'Match "{match_id}" odds.home_win must be a non-zero number.')
+    elif require_odds:
         match_id = match.get("match_id", f"<index {index}>")
-        raise SlateValidationError(f'Match "{match_id}" odds.home_win must be a non-zero number.')
+        raise SlateValidationError(f'Match "{match_id}" is missing required field "odds".')
 
     if "simulations" in match:
         simulations = match["simulations"]
