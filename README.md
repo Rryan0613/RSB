@@ -1,4 +1,4 @@
-# WorldCup AI v0.1
+# WorldCup AI v0.1.1
 
 A focused World Cup +EV prediction framework.
 
@@ -23,7 +23,25 @@ pip install -r requirements.txt
 python src/run_slate.py
 ```
 
-The first run may say there is not enough completed historical data to train. That is expected. Add historical results or use the sample bootstrap data.
+The default live slate is intentionally empty. An empty run should complete safely and write a report with zero analyzed matches.
+
+## Live Inputs vs Samples
+
+Use `data/input/` for live working files:
+
+```text
+data/input/slate.json
+data/input/results.json
+```
+
+Use `data/samples/` for sample/dev data:
+
+```text
+data/samples/slate_sample.json
+data/samples/results_sample.json
+```
+
+Do not leave fake sample matches in `data/input/` when running real analysis. Completed matches become training data through the SQLite database.
 
 ## Main Workflow
 
@@ -69,3 +87,40 @@ data/worldcup_ai.db
 ```
 
 The database is the model's memory.
+
+Current core tables:
+- `matches`
+- `feature_snapshots`
+- `predictions`
+- `simulation_outputs`
+- `odds_snapshots`
+- `results`
+- `model_runs`
+- `review_notes`
+
+## Reproducible Simulations
+
+`run_monte_carlo` accepts an optional `seed`:
+
+```python
+run_monte_carlo(match, simulations=10000, seed=42)
+```
+
+You can also add `simulation_seed` to a match in `slate.json`. If no seed is provided, simulations run with non-deterministic randomness.
+
+## Tests
+
+Run the test suite with:
+
+```bash
+pytest
+```
+
+The v0.1.1 tests cover:
+- American odds conversion
+- Implied probability
+- EV calculation
+- Feature generation
+- Input validation
+- Monte Carlo reproducibility
+- Empty slate execution
