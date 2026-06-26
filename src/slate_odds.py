@@ -108,7 +108,7 @@ def find_provider_price(
             continue
         if decision["selection"] != requested_selection:
             continue
-        if line.get("match_id") in {direct_match_id, generated_match_id}:
+        if line.get("match_id") in {direct_match_id, generated_match_id} and _teams_match_direct(match, line):
             return {
                 "decision": decision,
                 "line": line,
