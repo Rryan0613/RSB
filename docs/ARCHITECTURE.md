@@ -26,6 +26,7 @@ World Cup-specific layer:
 - World Cup model config
 - World Cup markets
 - Availability, lineup, injury, and rotation-risk context
+- Tactical matchup context
 
 Future sport-specific layers can be added later without rewriting the shared infrastructure.
 
@@ -35,7 +36,7 @@ When adding something new, prefer this pattern:
 
 ```text
 new data source -> new adapter -> provider diagnostics -> normalized output -> qualified odds resolution -> existing database shape
-new sport -> new sport profile -> new feature module -> availability context -> data quality guardrails -> existing model/run pipeline
+new sport -> new sport profile -> new feature module -> availability context -> tactical context -> data quality guardrails -> existing model/run pipeline
 new bet type -> new rules config -> existing EV/reporting layer
 new tracker -> new ledger tables -> existing predictions/results/odds history
 ```
@@ -91,6 +92,32 @@ This layer should track:
 
 The feature layer converts availability into model inputs such as lineup strength differential, starter availability differential, key absence impact differential, returning player risk differential, and minutes restriction differential.
 
+## Tactical Matchup Layer
+
+`src/tactical_matchup.py` models how two teams attack each other's tactical strengths and weaknesses.
+
+This layer should track:
+- pressing intensity
+- buildup quality
+- press resistance
+- vulnerability to press
+- defensive line height
+- pace threat
+- crossing volume
+- aerial threat and aerial defense
+- set-piece attack and defense
+- counterattack threat
+- transition defense
+- midfield control
+- formation flexibility
+- manager tactical rating
+- low-block comfort
+- central and wide chance creation
+
+The feature layer converts tactical context into model inputs such as press versus buildup, pace versus high defensive line, crossing versus aerial defense, set-piece edge, counterattack edge, central/wide chance creation edge, midfield control differential, formation flexibility differential, and manager tactical differential.
+
+Major tactical mismatch flags are review warnings rather than automatic blockers. Missing, unverified, or low-confidence tactical context can block recommendations.
+
 ## Data Quality Guardrail Layer
 
 `src/data_quality.py` separates technical EV math from actionable recommendations.
@@ -105,16 +132,18 @@ This layer should:
 - warn when lineups are unconfirmed or low confidence
 - warn when rotation/B-team risk is high
 - warn when key players are absent, recently returned, or minutes restricted
+- warn when tactical data is missing, unverified, or low confidence
+- warn when tactical mismatch flags require review
 - warn when manual odds or manual fallback odds are used
 - warn when provider odds are stale or sportsbook coverage is weak
 - expose `technical_recommendation` separately from final `recommendation`
-- block weak technical bet signals from becoming actionable recommendations
+- block weak technical signals from becoming actionable recommendations
 
-A prediction can have a technical `bet` signal while the final guarded recommendation remains `pass`. This is intentional. The system should prefer no bet over acting on weak data.
+A prediction can have a technical signal while the final guarded recommendation remains `pass`. This is intentional. The system should prefer no play over acting on weak data.
 
 ## Current Rules Layer
 
-`config/bet_rules_config.json` is the first home for configurable betting rules.
+`config/bet_rules_config.json` is the first home for configurable market rules.
 
 Current World Cup rule categories:
 - allowed markets
@@ -124,7 +153,7 @@ Current World Cup rule categories:
 - target decimal odds range
 - single-leg/parlay/SGP feature flags
 
-The rules layer does not create a bet recommendation by itself. It only decides whether a price is eligible to be analyzed by the model and EV engine.
+The rules layer does not create a recommendation by itself. It only decides whether a price is eligible to be analyzed by the model and EV engine.
 
 ## What Should Not Happen
 
@@ -137,9 +166,10 @@ Avoid:
 - Turning parlays on before backtesting and calibration exist
 - Sending live provider odds into recommendations before diagnostics pass
 - Allowing unqualified provider lines to bypass market rules
-- Treating simulation-only bootstrap outputs as real-money bets
+- Treating simulation-only bootstrap outputs as real-money decisions
 - Hiding missing feature values behind silent defaults without warnings
 - Treating a national team as full strength when lineups, rotation, or injuries say otherwise
+- Treating a tactical matchup as neutral when tactical context is missing or low confidence
 
 ## Near-Term Roadmap
 
@@ -150,8 +180,9 @@ v0.1.x foundation:
 - Provider odds resolution for slate runs
 - Data quality guardrails
 - Availability, lineup, injury, and rotation-risk context
+- Tactical matchup context
 - Best-price shopping
-- Configurable bet rules
+- Configurable market rules
 - Target odds filtering
 
 v0.2.x modeling/data:
@@ -160,8 +191,8 @@ v0.2.x modeling/data:
 - Backtesting foundation
 - Calibration checks
 
-v0.3.x betting analysis:
-- Bet ledger
+v0.3.x performance analysis:
+- Ledger
 - P&L tracking
 - ROI
 - W/L ratio
