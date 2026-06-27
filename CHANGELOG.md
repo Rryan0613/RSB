@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.9.2
+- Added `src/stage_market.py` — pure standalone module for tournament stage and market semantics validation. No imports from any other RSB module; stdlib only.
+- Exports: `StageMarketValidationError`, `VALID_STAGES`, `VALID_MARKET_TYPES`, `DRAW_ALLOWED_MARKET_TYPES`, `normalize_stage()`, `normalize_market_type()`, `allows_draw()`, `validate_stage_market()`.
+- `VALID_STAGES`: group, round_of_32, round_of_16, quarterfinal, semifinal, final, league.
+- `VALID_MARKET_TYPES`: regulation_result, to_advance.
+- Normalization contract: strip whitespace → lowercase → replace spaces and hyphens with underscores → validate against allowed set; raise `StageMarketValidationError` if unknown.
+- `allows_draw()` derived from market_type only — not from stage: `regulation_result` → True (including all knockout rounds); `to_advance` → False.
+- `validate_stage_market(stage, market_type)` returns exactly `{"stage", "market_type", "allows_draw"}` — no odds, prediction, or recommendation fields.
+- Not wired into `run_slate.py`, `validate_slate()`, `simulator.py`, `model.py`, `database.py`, or `market_selector.py` in this version.
+- Added `tests/test_stage_market.py` with 25 tests covering: all 7 canonical stages, both market types, allows_draw truth table, validate_stage_market return schema (exactly 3 keys), all knockout stages + regulation_result allow draw, all knockout stages + to_advance disallow draw, normalization (case/whitespace/hyphens/spaces), unknown values raise `StageMarketValidationError`, and AST-based banned-import check.
+- Updated model version to 0.1.9.2.
+
 ## v0.1.9.1
 - Added 4 derived ratio features to `src/features.py` (`make_features()`): `sot_accuracy_diff`, `xg_per_shot_diff`, `pressing_efficiency_diff`, `big_chance_rate_diff`.
 - All 4 features use only existing match schema fields (`shots_l5`, `sog_l5`, `xg_for_l5`, `big_chances_l5`, `ppda_l5`). No new input fields added.
