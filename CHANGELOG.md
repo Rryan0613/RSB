@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.8.8
+- Added `src/historical_replay.py` with a read-only loader: `ReplayRow` dataclass and `load_replay_rows(db_path=None)`.
+- Joins `predictions` to `results` on `match_id` using a SQLite read-only URI (`mode=ro`). Does not call `init_db()`, create tables, or write anything.
+- Derives `actual_label` ("home_win" / "draw" / "away_win") from pre-computed `results.home_win` / `results.draw` columns.
+- Sets `correct = (selection == actual_label)` and `probability_assigned_to_actual = model_probability` when correct, `None` otherwise (full 3-way probability assignment requires future schema work).
+- Respects `db_path` argument when provided; falls back to `get_db_path()` (→ `RSB_DB_PATH` env var) when omitted.
+- Returns empty list for missing DB, pre-init DB, or no joined rows.
+- Added `tests/test_historical_replay.py` with 12 tests covering: empty DB, home-win join, actual-label derivation (all three outcomes), miss/correct logic, non-matching IDs, read-only proof (mtime invariant on isolated temp DB), explicit path, env-var path, missing DB, and banned-import check. All tests use isolated temporary SQLite databases only.
+- This module is evaluation plumbing only. Training leakage guard (`load_training_rows` SQL review) is v0.1.8.9.
+- Updated model version to `0.1.8.8`.
+
 ## v0.1.8.7
 - Added `get_results_path()` to `src/paths.py`, checking `RSB_RESULTS_PATH` environment variable and falling back to `DEFAULT_RESULTS_PATH`, mirroring the existing DB/slate/model-output override pattern.
 - Updated `src/update_results.py` to call `get_results_path()` instead of using `DEFAULT_RESULTS_PATH` directly, making the results input path safely overridable at runtime.
