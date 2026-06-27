@@ -1,6 +1,6 @@
 {
   "project": "worldcup-ai",
-  "version": "0.1.9.2",
+  "version": "0.1.9.3",
   "target_market": "home_win",
   "minimum_completed_matches_to_train": 20,
   "minimum_edge": 0.03,

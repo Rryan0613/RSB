@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.9.3
+- Added `src/review_taxonomy.py` — pure standalone module for prediction review taxonomy primitives. No imports.
+- Exports: `ReviewTaxonomyValidationError`, `VALID_REVIEW_CATEGORIES`, `VALID_REVIEW_SEVERITIES`, `VALID_DATA_QUALITIES`, `normalize_review_category()`, `normalize_review_severity()`, `normalize_data_quality()`, `validate_review_taxonomy()`.
+- `VALID_REVIEW_CATEGORIES`: data_quality, market_semantics, model_calibration, feature_gap, lineup_context, injury_context, rotation_context, tactical_context, variance, leakage_risk, unknown.
+- `VALID_REVIEW_SEVERITIES`: low, medium, high, critical.
+- `VALID_DATA_QUALITIES`: strong, okay, weak, unknown.
+- Normalization contract: strip whitespace → lowercase → replace spaces and hyphens with underscores → validate against allowed set; raise `ReviewTaxonomyValidationError` if unknown.
+- `leakage_risk` is a pure taxonomy label for review/audit annotation only. Not wired into `database.py`, `load_training_rows()`, training logic, model inputs, feature generation, simulator logic, or backtest math.
+- `validate_review_taxonomy(review_category, severity, data_quality)` returns exactly `{"review_category", "severity", "data_quality"}` — no odds, prediction, or recommendation fields.
+- Not wired into `run_slate.py`, `simulator.py`, `model.py`, `database.py`, `features.py`, `backtest_report.py`, or any existing module in this version.
+- Added `tests/test_review_taxonomy.py` with 25 tests covering: all 11 canonical review categories, all 4 severities, all 4 data-quality values, mixed case, whitespace stripping, spaces/hyphens to underscores, unknown values raise `ReviewTaxonomyValidationError`, empty string raises, exact 3-key return schema, normalized compound validation, invalid compound inputs raise, leakage_risk as a valid pure taxonomy label, and AST-based banned-import check.
+- Updated model version to 0.1.9.3.
+
 ## v0.1.9.2
 - Added `src/stage_market.py` — pure standalone module for tournament stage and market semantics validation. No imports from any other RSB module; stdlib only.
 - Exports: `StageMarketValidationError`, `VALID_STAGES`, `VALID_MARKET_TYPES`, `DRAW_ALLOWED_MARKET_TYPES`, `normalize_stage()`, `normalize_market_type()`, `allows_draw()`, `validate_stage_market()`.

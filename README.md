@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.9.2
+# WorldCup AI v0.1.9.3
 
 A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
 
@@ -28,6 +28,7 @@ The project currently supports:
 - runtime path overrides via `RSB_DB_PATH`, `RSB_SLATE_PATH`, `RSB_MODEL_OUTPUT_PATH` for safe test isolation
 - dependency-free config validation with clear error messages (`src/config_validation.py`)
 - pure tournament stage and market semantics validation (`src/stage_market.py`)
+- pure prediction review taxonomy primitives (`src/review_taxonomy.py`)
 
 ## Runtime Target
 
@@ -328,6 +329,7 @@ v0.1.8.9 - training data leakage guard (database.load_training_rows SQL filter)
 v0.1.9.0 - backtest report output
 v0.1.9.1 - World Cup feature variable upgrade (4 derived ratio features)
 v0.1.9.2 - Tournament Stage and Market Semantics Validation
+v0.1.9.3 - Prediction Review Taxonomy Primitives
 ```
 
 Later (v0.2.x+):
