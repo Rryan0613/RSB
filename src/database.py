@@ -346,9 +346,28 @@ def save_result(result):
 def load_training_rows(target_market="home_win"):
     allowed_targets = {"home_win", "draw", "away_win", "btts", "over_25"}
     if target_market not in allowed_targets:
-        raise ValueError(f"Unsupported target_market: {target_market}. Allowed: {sorted(allowed_targets)}")
+        raise ValueError(
+            f"Unsupported target_market: {target_market!r}. Allowed: {sorted(allowed_targets)}"
+        )
 
     con = connect()
+    # Training-data leakage guard (v0.1.8.9):
+    # Only return rows where:
+    #   1. A feature snapshot exists (inner join guarantees this).
+    #   2. A completed result exists (inner join guarantees this).
+    #   3. features_json is non-null and non-empty.
+    #   4. The requested target column is non-null.
+    #   5. Timestamp boundary: feature snapshot was created before the result was
+    #      recorded (fs.created_at < r.updated_at). Rows with NULL timestamps on
+    #      either side pass through as a legacy-compatible fallback for
+    #      pre-existing data without timestamps.
+    #
+    # Limitation: both created_at / updated_at are our own insertion timestamps,
+    # not actual match start/end times. This guard catches snapshots written after
+    # results were recorded but cannot detect intra-second races or manually
+    # backdated timestamps. It is the strongest guard available without schema
+    # changes. Do not use predictions, simulation_outputs, odds_snapshots,
+    # model_runs, or review_notes as training features.
     query = f"""
     SELECT fs.match_id, fs.features_json, r.{target_market} AS target
     FROM feature_snapshots fs
@@ -358,13 +377,31 @@ def load_training_rows(target_market="home_win"):
         FROM feature_snapshots
         GROUP BY match_id
     )
+    AND fs.features_json IS NOT NULL
+    AND fs.features_json != ''
+    AND r.{target_market} IS NOT NULL
+    AND (
+        fs.created_at IS NULL
+        OR r.updated_at IS NULL
+        OR fs.created_at < r.updated_at
+        -- NULL on either side: legacy-compatible fallback for rows without timestamps
+    )
     """
     rows = con.execute(query).fetchall()
     con.close()
 
     training_rows = []
     for match_id, features_json, target in rows:
-        features = json.loads(features_json)
+        try:
+            features = json.loads(features_json)
+        except (json.JSONDecodeError, ValueError):
+            # Malformed JSON: skip row silently — leakage guard prefers safe
+            # exclusion over a crash that would abort the entire training load.
+            continue
+        if not isinstance(features, dict):
+            # Non-object JSON (array, scalar, null): skip — feature snapshots
+            # must be key-value dicts.
+            continue
         features["match_id"] = match_id
         features["target"] = int(target)
         training_rows.append(features)
