@@ -52,7 +52,24 @@ def make_features(match):
         "home_chance_pressure": h.get("sog_l5", 4.0) + h.get("big_chances_l5", 2.0),
         "away_chance_pressure": a.get("sog_l5", 4.0) + a.get("big_chances_l5", 2.0),
 
-        "neutral_site": int(match.get("neutral_site", True))
+        "neutral_site": int(match.get("neutral_site", True)),
+
+        "sot_accuracy_diff": (
+            h.get("sog_l5", 4.0) / max(h.get("shots_l5", 10.0), 1.0)
+            - a.get("sog_l5", 4.0) / max(a.get("shots_l5", 10.0), 1.0)
+        ),
+        "xg_per_shot_diff": (
+            h.get("xg_for_l5", 1.3) / max(h.get("shots_l5", 10.0), 1.0)
+            - a.get("xg_for_l5", 1.3) / max(a.get("shots_l5", 10.0), 1.0)
+        ),
+        "pressing_efficiency_diff": (
+            1.0 / max(h.get("ppda_l5", 10.0), 0.1)
+            - 1.0 / max(a.get("ppda_l5", 10.0), 0.1)
+        ),
+        "big_chance_rate_diff": (
+            h.get("big_chances_l5", 2.0) / max(h.get("shots_l5", 10.0), 1.0)
+            - a.get("big_chances_l5", 2.0) / max(a.get("shots_l5", 10.0), 1.0)
+        ),
     }
     features.update(availability_feature_set(match))
     features.update(tactical_feature_set(match))

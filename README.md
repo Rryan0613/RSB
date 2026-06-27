@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.9.0
+# WorldCup AI v0.1.9.1
 
 A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
 
@@ -325,8 +325,8 @@ v0.1.8.7 - results ingestion safety (update_results env override + tests)
 v0.1.8.8 - historical replay read-only loader
 v0.1.8.9 - training data leakage guard (database.load_training_rows SQL filter)
 v0.1.9.0 - backtest report output
-v0.1.9.1 - World Cup feature variable upgrade
-v0.1.9.2 - FixtureProvider foundation
+v0.1.9.1 - World Cup feature variable upgrade (4 derived ratio features)
+v0.1.9.2 - Tournament Stage and Market Semantics Validation
 ```
 
 Later (v0.2.x+):
