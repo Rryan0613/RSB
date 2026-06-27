@@ -1,12 +1,12 @@
 import json
 from database import init_db, save_result
-from paths import DEFAULT_RESULTS_PATH
+from paths import get_results_path
 from validation import validate_results
 
 
 def main():
     init_db()
-    results_path = DEFAULT_RESULTS_PATH
+    results_path = get_results_path()
     results = json.loads(results_path.read_text())
     validate_results(results)
 
