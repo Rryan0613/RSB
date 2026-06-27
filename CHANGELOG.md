@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.9.1
+- Added 4 derived ratio features to `src/features.py` (`make_features()`): `sot_accuracy_diff`, `xg_per_shot_diff`, `pressing_efficiency_diff`, `big_chance_rate_diff`.
+- All 4 features use only existing match schema fields (`shots_l5`, `sog_l5`, `xg_for_l5`, `big_chances_l5`, `ppda_l5`). No new input fields added.
+- Division guards: shot-based denominators clamped to `max(shots_l5, 1.0)`; PPDA inverted as `1.0 / max(ppda_l5, 0.1)`.
+- `pressing_efficiency_diff` corrects the sign direction of the existing `ppda_l5_diff` (lower PPDA = more pressing; `1/ppda` makes higher = better pressing) without removing `ppda_l5_diff`.
+- Features are additive only — no existing keys removed or renamed. `ppda_l5_diff`, `home_chance_pressure`, `away_chance_pressure` preserved unchanged.
+- `simulator.py` reads the match dict directly and never calls `make_features()` — simulator coefficients and Monte Carlo adjustments are untouched.
+- Dropped from scope: `net_xg_diff` (linear combination of existing `xg_for_l5_diff` and `xg_against_l5_diff`; no new signal for LogisticRegression). Deferred: `possession_adjusted_xg_diff` (possession distorted by game state in knockout contexts).
+- Added 7 tests to `tests/test_features.py`: 1 key-presence, 4 exact-value (`pytest.approx`), 2 zero-guard (no-error on `shots_l5=0`, `ppda_l5=0`).
+- Updated model version to `0.1.9.1`.
+
 ## v0.1.9.0
 - Added `src/backtest_report.py` with a pure in-memory reporting layer: `build_backtest_report(rows) -> dict`.
 - Accepts already-loaded `ReplayRow` objects; no database, filesystem, or external I/O.

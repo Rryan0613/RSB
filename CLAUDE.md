@@ -3,11 +3,11 @@
 RSB is a sportsbook analytics / +EV simulation project.
 
 Current project status:
-- Version: v0.1.9.0
+- Version: v0.1.9.1
 - Python: 3.13 virtual environment
-- Tests: pytest, currently 347 passing tests
+- Tests: pytest, currently 357 passing tests
 - Current focus: World Cup simulation engine
-- Next modeling target: audit checkpoint before v0.1.9.1 — metric validity, report wording, selected-outcome limitations, calibration gaps, feature-upgrade readiness
+- Next modeling target: v0.1.9.2 — Tournament Stage and Market Semantics Validation (stage enum, market_type enum, allows_draw boolean)
 - Future goal: automation-first sportsbook analytics website/app
 
 Completed foundation (v0.1.8.x – v0.1.9.x):
@@ -20,6 +20,7 @@ Completed foundation (v0.1.8.x – v0.1.9.x):
 - v0.1.8.8: historical replay read-only loader — ReplayRow dataclass, load_replay_rows(), SQLite mode=ro, actual-label derivation, evaluation plumbing only
 - v0.1.8.9: training data leakage guard — hardened load_training_rows() with SQL null/empty/timestamp filters, Python malformed-JSON exclusion, and 26 targeted tests
 - v0.1.9.0: backtest report output — build_backtest_report(rows) -> dict, pure in-memory selected-outcome binary metrics, no DB/filesystem/CLI
+- v0.1.9.1: World Cup feature variable upgrade — 4 derived ratio features (sot_accuracy_diff, xg_per_shot_diff, pressing_efficiency_diff, big_chance_rate_diff), additive only, no new schema fields
 
 Long-term product goal:
 The final workflow should not require manual match/team/player/odds input. The user should specify sport, date range/week, markets, sportsbooks, and number of legs. The system should automatically collect fixtures, odds, props, stats, injuries, lineups, build features, run simulations/models, compare EV, rank singles/parlays, and recommend the best sportsbook for each card.
