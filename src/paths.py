@@ -35,3 +35,8 @@ def get_slate_path() -> Path:
 def get_model_output_path() -> Path:
     override = os.environ.get("RSB_MODEL_OUTPUT_PATH")
     return Path(override) if override else DEFAULT_MODEL_OUTPUT_PATH
+
+
+def get_results_path() -> Path:
+    override = os.environ.get("RSB_RESULTS_PATH")
+    return Path(override) if override else DEFAULT_RESULTS_PATH

@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.1.8.7
+- Added `get_results_path()` to `src/paths.py`, checking `RSB_RESULTS_PATH` environment variable and falling back to `DEFAULT_RESULTS_PATH`, mirroring the existing DB/slate/model-output override pattern.
+- Updated `src/update_results.py` to call `get_results_path()` instead of using `DEFAULT_RESULTS_PATH` directly, making the results input path safely overridable at runtime.
+- Added `tests/test_update_results.py` with two subprocess tests verifying `update_results.py` runs against a `tmp_path` results file via `RSB_RESULTS_PATH` and `RSB_DB_PATH` without touching `data/input/results.json` or `data/worldcup_ai.db`.
+- Added two tests to `tests/test_paths.py` covering `get_results_path()` default and env-override behavior.
+- Updated model version to `0.1.8.7`.
+
 ## v0.1.8.6
 - Added `src/backtest.py` with pure, dependency-free backtest metric primitives: `clamp_probability`, `brier_score_binary`, `log_loss_binary`, `prediction_correct`, `probability_assigned_to_actual`, `brier_score_multiclass`, `log_loss_multiclass`, `mean`, and `accuracy`.
 - No database access, no filesystem access, no imports from `database.py`, `run_slate.py`, or path modules.

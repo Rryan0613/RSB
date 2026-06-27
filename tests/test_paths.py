@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 import paths
-from paths import get_db_path, get_slate_path, get_model_output_path
+from paths import get_db_path, get_slate_path, get_model_output_path, get_results_path
 
 ROOT = Path(__file__).resolve().parents[1]
 SLATE_PATH = ROOT / "data/input/slate.json"
@@ -75,7 +75,7 @@ def test_run_slate_module_loads_from_outside_project_root(tmp_path):
         f"import sys; sys.path.insert(0, {src!r}); "
         f"import run_slate; "
         f"from paths import MODEL_CONFIG_PATH, DEFAULT_SLATE_PATH, DEFAULT_MODEL_OUTPUT_PATH, DEFAULT_DB_PATH; "
-        f"assert run_slate.MODEL_VERSION == '0.1.8.6', run_slate.MODEL_VERSION; "
+        f"assert run_slate.MODEL_VERSION == '0.1.8.7', run_slate.MODEL_VERSION; "
         f"assert MODEL_CONFIG_PATH.is_absolute(); "
         f"assert DEFAULT_SLATE_PATH.is_absolute(); "
         f"assert DEFAULT_MODEL_OUTPUT_PATH.is_absolute(); "
@@ -122,3 +122,13 @@ def test_rsb_model_output_path_env_overrides_model_output_path(tmp_path, monkeyp
     override = tmp_path / "override_output.json"
     monkeypatch.setenv("RSB_MODEL_OUTPUT_PATH", str(override))
     assert get_model_output_path() == override
+
+
+def test_default_results_path_returns_project_root_file():
+    assert get_results_path() == ROOT / "data" / "input" / "results.json"
+
+
+def test_rsb_results_path_env_overrides_results_path(tmp_path, monkeypatch):
+    override = tmp_path / "override_results.json"
+    monkeypatch.setenv("RSB_RESULTS_PATH", str(override))
+    assert get_results_path() == override
