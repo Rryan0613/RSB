@@ -3,11 +3,11 @@
 RSB is a sportsbook analytics / +EV simulation project.
 
 Current project status:
-- Version: v0.1.8.7
+- Version: v0.1.8.8
 - Python: 3.13 virtual environment
-- Tests: pytest, currently 253 passing tests
+- Tests: pytest, currently 265 passing tests
 - Current focus: World Cup simulation engine
-- Next modeling target: historical replay read-only loader (v0.1.8.8) — not training SQL, API, frontend, or parlay
+- Next modeling target: training data leakage guard (v0.1.8.9) — database.load_training_rows SQL review
 - Future goal: automation-first sportsbook analytics website/app
 
 Completed foundation (v0.1.8.x):
@@ -17,6 +17,7 @@ Completed foundation (v0.1.8.x):
 - v0.1.8.5: project metadata/docs cleanup — synchronized versions across pyproject.toml, CLAUDE.md, README.md, model_config.json
 - v0.1.8.6: pure backtest metric primitives (brier_score_binary, log_loss_binary, brier_score_multiclass, log_loss_multiclass, mean, accuracy) — no DB dependency
 - v0.1.8.7: results ingestion safety — RSB_RESULTS_PATH override, get_results_path() helper, subprocess test isolation for update_results.py
+- v0.1.8.8: historical replay read-only loader — ReplayRow dataclass, load_replay_rows(), SQLite mode=ro, actual-label derivation, evaluation plumbing only
 
 Long-term product goal:
 The final workflow should not require manual match/team/player/odds input. The user should specify sport, date range/week, markets, sportsbooks, and number of legs. The system should automatically collect fixtures, odds, props, stats, injuries, lineups, build features, run simulations/models, compare EV, rank singles/parlays, and recommend the best sportsbook for each card.
