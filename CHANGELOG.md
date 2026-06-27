@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.9.0
+- Added `src/backtest_report.py` with a pure in-memory reporting layer: `build_backtest_report(rows) -> dict`.
+- Accepts already-loaded `ReplayRow` objects; no database, filesystem, or external I/O.
+- Evaluates each row as a selected-outcome binary prediction: `model_probability` vs. `(1 if selection == actual_label else 0)`. Correctness is recomputed from the validated `selection` and `actual_label` fields; `row.correct` is not used for scoring.
+- Skips rows with missing/invalid `market`, `selection`, `actual_label`, or `model_probability` out of `[0, 1]`; records a warning and skipped count.
+- Computes overall and per-market: `correct_count`, `accuracy`, `mean_selected_brier_score`, `mean_selected_log_loss` using primitives from `src/backtest.py`.
+- Returns `None` for all metrics when no evaluable rows are present.
+- `by_market` includes all markets with a valid non-empty name, even if all rows for that market are skipped; those entries show `evaluated_rows=0`, `skipped_rows=total_rows`, and `None` for all metric fields.
+- Report includes explicit notes: metrics are selected-outcome binary, not full three-way soccer calibration; full calibration requires complete probability distributions; report is retrospective evaluation plumbing and does not produce betting recommendations; passing metrics does not mean the model is live-betting-ready.
+- Added `tests/test_backtest_report.py` with tests covering: empty input; one correct row (known-value brier and log-loss); one incorrect row (known-value brier and log-loss); mixed rows (mean correctness); market grouping; skipped rows for None probability, out-of-range probability, empty selection, empty actual_label; warning/notes content; no betting recommendation language in report keys; no banned imports (sqlite3, database, json); `model_probability` used, not a `predicted_probability` field; no filesystem or database access needed; recompute-correctness contract (matching labels scored correct even when `row.correct=False`; mismatched labels scored incorrect even when `row.correct=True`); all-skipped market appears in `by_market` with zero evaluated rows.
+- Updated model version to `0.1.9.0`.
+
 ## v0.1.8.9
 - Hardened `database.load_training_rows()` with explicit training-data leakage guards.
 - Added SQL filters: `features_json IS NOT NULL AND features_json != ''`; `r.{target_market} IS NOT NULL`; timestamp boundary `fs.created_at < r.updated_at` (rows with NULL timestamps on either side pass through as a legacy-compatible fallback for pre-existing data without timestamps).
