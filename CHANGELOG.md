@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.8.9
+- Hardened `database.load_training_rows()` with explicit training-data leakage guards.
+- Added SQL filters: `features_json IS NOT NULL AND features_json != ''`; `r.{target_market} IS NOT NULL`; timestamp boundary `fs.created_at < r.updated_at` (rows with NULL timestamps on either side pass through as a legacy-compatible fallback for pre-existing data without timestamps).
+- Added Python-level guards: malformed `features_json` rows are silently excluded (skip, not crash); non-dict JSON objects (arrays, scalars) are excluded.
+- Timestamp limitation documented in code: both `created_at` / `updated_at` are our own insertion timestamps, not actual match times. Guard catches snapshots written after results were recorded but cannot detect intra-second races or manually backdated timestamps. No schema changes made.
+- `ValueError` error message now includes `!r` quoting for the invalid market name.
+- Added `tests/test_training_leakage_guard.py` with 26 tests covering: empty DB; both/one/neither side of the join; all five target markets; unsupported market raises `ValueError`; malformed/null/empty/non-dict features JSON excluded; null target column excluded; timestamp guard (before/after/null); output shape (no prediction, odds, or score fields); no writes to DB; no schema changes; `historical_replay` import boundary. All tests use isolated temporary SQLite databases only.
+- Updated model version to `0.1.8.9`.
+
 ## v0.1.8.8
 - Added `src/historical_replay.py` with a read-only loader: `ReplayRow` dataclass and `load_replay_rows(db_path=None)`.
 - Joins `predictions` to `results` on `match_id` using a SQLite read-only URI (`mode=ro`). Does not call `init_db()`, create tables, or write anything.

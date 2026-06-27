@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.8.8
+# WorldCup AI v0.1.8.9
 
 A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
 
