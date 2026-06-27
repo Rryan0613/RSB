@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.8.6
+- Added `src/backtest.py` with pure, dependency-free backtest metric primitives: `clamp_probability`, `brier_score_binary`, `log_loss_binary`, `prediction_correct`, `probability_assigned_to_actual`, `brier_score_multiclass`, `log_loss_multiclass`, `mean`, and `accuracy`.
+- No database access, no filesystem access, no imports from `database.py`, `run_slate.py`, or path modules.
+- Added `tests/test_backtest.py` with deterministic unit tests covering known-value binary and multiclass Brier score and log loss, epsilon clamping edge cases at p=0 and p=1, rejection of invalid inputs (NaN, infinity, out-of-range, non-numeric, missing labels, empty containers), and proof of no database/filesystem dependency.
+- Updated model version to `0.1.8.6`.
+
 ## v0.1.8.5
 - Updated `pyproject.toml` version to `0.1.8.5`.
 - Updated `config/model_config.json` version to `0.1.8.5` and replaced version-specific notes with a generic, non-stale project note.
