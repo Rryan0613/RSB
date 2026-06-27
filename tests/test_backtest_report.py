@@ -4,9 +4,6 @@ Uses in-memory synthetic ReplayRow objects only.
 No database access, no filesystem access, no load_replay_rows() calls.
 """
 
-import math
-
-import pytest
 from backtest import brier_score_binary, log_loss_binary
 from backtest_report import build_backtest_report
 from historical_replay import ReplayRow
@@ -301,6 +298,24 @@ class TestSkippedRows:
         assert report["total_rows"] == 2
         assert report["evaluated_rows"] == 1
         assert report["skipped_rows"] == 1
+
+    def test_nan_model_probability_skipped(self):
+        r = _invalid_row(model_probability=float("nan"))
+        report = build_backtest_report([r])
+        assert report["skipped_rows"] == 1
+        assert report["evaluated_rows"] == 0
+
+    def test_positive_inf_model_probability_skipped(self):
+        r = _invalid_row(model_probability=float("inf"))
+        report = build_backtest_report([r])
+        assert report["skipped_rows"] == 1
+        assert report["evaluated_rows"] == 0
+
+    def test_negative_inf_model_probability_skipped(self):
+        r = _invalid_row(model_probability=float("-inf"))
+        report = build_backtest_report([r])
+        assert report["skipped_rows"] == 1
+        assert report["evaluated_rows"] == 0
 
 
 # ---------------------------------------------------------------------------

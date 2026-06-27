@@ -66,6 +66,11 @@ def build_backtest_report(rows) -> dict:
 
     Pure function: no database access, no filesystem access, no external I/O.
     Rows must already be loaded by the caller (e.g. via load_replay_rows()).
+
+    Skipped-row accounting:
+    - A row with an invalid or empty market still increments overall skipped_rows.
+    - It does NOT appear in by_market because there is no valid market key to group it under.
+    - by_market totals therefore do not always sum to overall skipped_rows.
     """
     rows = list(rows)
     total = len(rows)
