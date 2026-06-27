@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.9.1
+# WorldCup AI v0.1.9.2
 
 A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
 
@@ -27,6 +27,7 @@ The project currently supports:
 - absolute path resolution independent of working directory (`src/paths.py`)
 - runtime path overrides via `RSB_DB_PATH`, `RSB_SLATE_PATH`, `RSB_MODEL_OUTPUT_PATH` for safe test isolation
 - dependency-free config validation with clear error messages (`src/config_validation.py`)
+- pure tournament stage and market semantics validation (`src/stage_market.py`)
 
 ## Runtime Target
 
