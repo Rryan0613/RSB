@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.9.3
+# WorldCup AI v0.1.9.4
 
 A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
 
@@ -29,6 +29,7 @@ The project currently supports:
 - dependency-free config validation with clear error messages (`src/config_validation.py`)
 - pure tournament stage and market semantics validation (`src/stage_market.py`)
 - pure prediction review taxonomy primitives (`src/review_taxonomy.py`)
+- pure prediction review note primitives (`src/review_notes.py`)
 
 ## Runtime Target
 
