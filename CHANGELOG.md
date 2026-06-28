@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.9.4
+- Added `src/review_notes.py` — pure standalone module for prediction review note primitives. Imports only `validate_review_taxonomy` from `review_taxonomy`.
+- Exports: `ReviewNoteValidationError`, `build_review_note()`.
+- `build_review_note(review_category, severity, data_quality, summary, evidence=None)` validates taxonomy fields via `validate_review_taxonomy()` (raises `ReviewTaxonomyValidationError` on bad taxonomy inputs), validates `summary` and `evidence` as note-specific fields (raises `ReviewNoteValidationError`), and returns a plain dict with exactly `{"review_category", "severity", "data_quality", "summary", "evidence"}`.
+- Exception boundary: bad taxonomy fields raise `ReviewTaxonomyValidationError`; bad `summary` or `evidence` raise `ReviewNoteValidationError`. Taxonomy errors are never caught or wrapped.
+- `summary` must be a non-empty string after stripping; returned value is stripped. Internal whitespace is preserved.
+- `evidence=None` returns `[]`. If provided, must be `list` or `tuple` of non-empty strings; items are stripped and order is preserved.
+- Not wired into `run_slate.py`, `simulator.py`, `model.py`, `database.py`, `features.py`, `backtest_report.py`, `historical_replay.py`, `stage_market.py`, or any existing module in this version.
+- Added `tests/test_review_notes.py` with 25 tests covering: exact 5-key return shape, canonical inputs, taxonomy normalization, taxonomy errors propagate as `ReviewTaxonomyValidationError` (not `ReviewNoteValidationError`), summary type/empty/whitespace validation, summary stripping (leading/trailing only), summary internal whitespace preserved, evidence=None and evidence=[] return [], valid list/tuple evidence, evidence stripping, evidence order preservation, multiple evidence items, empty/whitespace/non-string evidence items raise `ReviewNoteValidationError`, evidence non-list/tuple raises `ReviewNoteValidationError`, plain dict return, exception class distinctness, and AST-based banned-import check.
+- Updated model version to 0.1.9.4.
+
 ## v0.1.9.3
 - Added `src/review_taxonomy.py` — pure standalone module for prediction review taxonomy primitives. No imports.
 - Exports: `ReviewTaxonomyValidationError`, `VALID_REVIEW_CATEGORIES`, `VALID_REVIEW_SEVERITIES`, `VALID_DATA_QUALITIES`, `normalize_review_category()`, `normalize_review_severity()`, `normalize_data_quality()`, `validate_review_taxonomy()`.
