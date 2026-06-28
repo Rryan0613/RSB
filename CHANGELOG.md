@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.2.0
+
+- Added `src/odds.py`, a pure standalone module for odds and implied probability conversion primitives.
+- Added `OddsValidationError`.
+- Added `american_to_implied_probability()`, which converts American odds to implied probability:
+  - Positive odds formula: `100 / (odds + 100)`.
+  - Negative odds formula: `abs(odds) / (abs(odds) + 100)`.
+  - Rejects zero, bool, non-numeric values, NaN, and infinity.
+- Added `decimal_to_implied_probability()`, which converts decimal odds to implied probability using `1 / odds`.
+  - Rejects decimal odds less than or equal to `1.0`.
+  - Rejects bool, non-numeric values, NaN, and infinity.
+- Added `fractional_to_implied_probability()`, which converts fractional odds to implied probability using `denominator / (numerator + denominator)`.
+  - Rejects numerator values less than or equal to zero.
+  - Rejects denominator values less than or equal to zero.
+  - Rejects bool, non-numeric values, NaN, and infinity for either input.
+- Added `validate_probability()`, which validates normalized probabilities in the inclusive range `[0, 1]` and returns `float(probability)`.
+  - Allows exactly `0.0` and `1.0`.
+  - Rejects bool, non-numeric values, NaN, infinity, values below `0`, and values above `1`.
+- Added `tests/test_odds.py` covering valid conversions, float return types, boundary cases, bool rejection, non-numeric rejection, NaN/infinity rejection, and banned-import checks.
+- Updated the project/model version to `0.2.0`.
+- Kept `src/odds.py` isolated. It is not wired into `run_slate.py`, `validation.py`, `simulator.py`, `model.py`, `database.py`, `features.py`, `backtest.py`, `backtest_report.py`, `historical_replay.py`, `market_selector.py`, `stage_market.py`, `review_taxonomy.py`, `review_notes.py`, or any runtime flow.
+- v0.2.0 does not add recommendations, picks, edge calculations, EV calculations, vig removal, fair odds, parlays, live odds ingestion, sportsbook integrations, database changes, runtime wiring, new dependencies, or CI changes.
+
 ## v0.1.9.4
 - Added `src/review_notes.py` — pure standalone module for prediction review note primitives. Imports only `validate_review_taxonomy` from `review_taxonomy`.
 - Exports: `ReviewNoteValidationError`, `build_review_note()`.

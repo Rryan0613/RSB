@@ -1,4 +1,4 @@
-# WorldCup AI v0.1.9.4
+# WorldCup AI v0.2.0
 
 A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
 
@@ -30,6 +30,7 @@ The project currently supports:
 - pure tournament stage and market semantics validation (`src/stage_market.py`)
 - pure prediction review taxonomy primitives (`src/review_taxonomy.py`)
 - pure prediction review note primitives (`src/review_notes.py`)
+- pure odds and implied probability conversion primitives (`src/odds.py`)
 
 ## Runtime Target
 
@@ -336,7 +337,10 @@ v0.1.9.3 - Prediction Review Taxonomy Primitives
 Later (v0.2.x+):
 
 ```text
-v0.2.x - automated fixture and odds collection
+v0.2.0 - pure odds and implied probability conversion primitives
+v0.2.1 - edge calculation primitives
+v0.2.2 - candidate evaluation / pass reason primitives
+v0.2.3 - backtest review overlay
 v0.3.x - parlays only after confirmed calibration on sufficient historical matches
 v0.4.x - API backend
 v0.5.x - dashboard/frontend
