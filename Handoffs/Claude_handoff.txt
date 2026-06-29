@@ -94,36 +94,29 @@ RSB should NOT learn recklessly:
 Sports are noisy. A good bet can lose. A bad bet can win. RSB must learn from patterns
 over many outcomes, not overreact to individual misses.
 
-The primitives already built — review_taxonomy.py, review_notes.py, odds.py, edge.py, and
-candidate_evaluation.py — are early vocabulary for the future self-learning loop.
+The primitives already built — review_taxonomy.py, review_notes.py, odds.py, edge.py,
+candidate_evaluation.py, and backtest_review.py — are early vocabulary for the future self-learning loop.
 
 ═══════════════════════════════════════════════════════
 CURRENT VERIFIED STATE
 ═══════════════════════════════════════════════════════
 
-Version:        0.2.2
+Version:        0.2.3
 Branch:         main
 Status:         clean and up to date with origin/main, based on post-merge verification
-Tests passing:  643
+Tests passing:  744
 
-Latest repo event:      PR #18 — Add project handoff files (docs/ops chore) — merged
-                        https://github.com/Rryan0613/RSB/pull/18
-PR #18 merge commit:    cdf54b4 — Merge pull request #18 from Rryan0613/chore/add-handoff-files
-PR #18 impl commit:     77d7fd1 — Add project handoff files
-PR #18 files added:     Handoffs/ChatGpt_Handoff.txt, Handoffs/Claude_handoff.txt
-PR #18 checks:          passed
-PR #18 branch cleanup:  complete locally and remotely
-PR #18 post-merge verification: complete — main clean/up to date; 643 tests passed
+Latest version PR:      PR #21 — v0.2.3 Backtest Review Overlay — merged
+                        https://github.com/Rryan0613/RSB/pull/21
+Implementation commit:  9fe6cab — Add backtest review overlay
+Merge commit:           4901bc2 — Merge pull request #21 from Rryan0613/feature/v0.2.3-backtest-review-overlay
+Feature branch:         feature/v0.2.3-backtest-review-overlay
+PR #21 checks:          passed before merge
+PR #21 post-merge verification: complete — main clean/up to date; 744 tests passed
 
-Latest version PR:      PR #17 — v0.2.2 Candidate Evaluation Primitives — merged
-                        https://github.com/Rryan0613/RSB/pull/17
-Implementation commit:  5d912eb — Add candidate evaluation primitives
-Merge commit:           55ee656 — Merge pull request #17 from Rryan0613/feature/v0.2.2-candidate-evaluation-primitives
-Feature branch cleanup: complete locally and remotely
-
-Latest completed version: v0.2.2 — Candidate Evaluation Record / Pass Reason Primitives
-Next target:    v0.2.3 — Backtest Review Overlay
-v0.2.3 status:  Not started. Awaiting ChatGPT implementation prompt.
+Latest completed version: v0.2.3 — Backtest Review Overlay
+Next target:    v0.2.4 — Odds Expansion / EV Math Primitives (candidate)
+v0.2.4 status:  Not started. Awaiting ChatGPT scope definition and implementation prompt.
 
 If strict verification is needed, ask the user to run:
 
@@ -139,14 +132,12 @@ APPROVED ROADMAP
 
 v0.2.1    Edge Calculation Primitives                                        ← COMPLETE
 v0.2.2    Candidate Evaluation Record / Pass Reason Primitives               ← COMPLETE
+v0.2.3    Backtest Review Overlay                                            ← COMPLETE
 
 ── Near-term v0.2.x ──────────────────────────────────────────
 
-v0.2.3    Backtest Review Overlay
-          Use existing backtest/report/review primitives to summarize model outcomes.
-          Implementation not started.
-
 v0.2.4    Odds Expansion / EV Math Primitives (candidate)
+          Implementation not started. Awaiting ChatGPT scope definition and implementation prompt.
           Possible additions:
           - american_to_decimal_odds()
           - calculate_expected_value()
@@ -225,6 +216,18 @@ Do not suggest self-learning before v0.6.x or explicit approval.
 RECENT COMPLETED PRs
 ═══════════════════════════════════════════════════════
 
+PR #21:
+v0.2.3 Backtest Review Overlay
+https://github.com/Rryan0613/RSB/pull/21
+
+PR #20:
+Clarify Claude CLI branch workflow — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/20
+
+PR #19:
+Update handoff files after PR #18 — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/19
+
 PR #18:
 Add project handoff files — docs/ops chore (not a version)
 https://github.com/Rryan0613/RSB/pull/18
@@ -266,7 +269,93 @@ v0.1.9.0 backtest report output, build_backtest_report
 https://github.com/Rryan0613/RSB/pull/9
 
 ═══════════════════════════════════════════════════════
-v0.2.2 SUMMARY — LATEST COMPLETED VERSION
+v0.2.3 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.3 added pure backtest review overlay primitives.
+
+New files:
+
+* src/backtest_review.py
+* tests/test_backtest_review.py
+
+Files modified:
+
+* CHANGELOG.md
+* CLAUDE.md
+* README.md
+* config/model_config.json
+* pyproject.toml
+* tests/test_paths.py
+
+Implemented in src/backtest_review.py:
+
+* BacktestReviewValidationError
+* MIN_EVALUATED_ROWS = 10
+* ACCURACY_STRONG_THRESHOLD = 0.60
+* ACCURACY_WEAK_THRESHOLD = 0.40
+* VALID_REVIEW_STATUSES = frozenset({"strong", "mixed", "weak", "insufficient_data"})
+* build_backtest_review(report: dict) -> dict
+
+Return shape (always exactly 5 keys):
+
+{
+    "review_status": str,
+    "needs_review": bool,
+    "skipped_row_flag": bool,
+    "evaluated_rows": int,
+    "accuracy": float | None,
+}
+
+Validation summary:
+
+* report must be a dict
+* required keys: evaluated_rows, skipped_rows, overall
+* overall must be a dict containing accuracy
+* evaluated_rows must be a non-bool int >= 0
+* skipped_rows must be a non-bool int >= 0
+* accuracy may be None
+* non-None accuracy must be a non-bool numeric value in [0.0, 1.0]
+* NaN accuracy is rejected
+* valid numeric accuracy is returned as float
+
+Classification logic:
+
+* evaluated_rows < 10 or accuracy is None → insufficient_data
+* accuracy >= 0.60 → strong
+* accuracy >= 0.40 → mixed
+* otherwise → weak
+
+Review flags:
+
+* needs_review = review_status in ("weak", "insufficient_data") or skipped_rows > 0
+* skipped_row_flag = skipped_rows > 0
+
+No imports. NaN accuracy is rejected using an import-free self-inequality check.
+No RSB module imports.
+Not wired into any existing module in this version.
+
+Tests:
+
+* tests/test_backtest_review.py
+* Full local/GitHub test result after merge: 744 passed
+
+v0.2.3 intentionally did not add:
+
+* betting recommendations
+* picks
+* parlays
+* EV calculation
+* Kelly/staking
+* runtime wiring
+* database/schema changes
+* data file changes
+* dependencies
+* CI changes
+* self-learning automation
+
+═══════════════════════════════════════════════════════
+v0.2.2 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.2.2 added pure candidate evaluation record and pass reason primitives.
@@ -490,7 +579,7 @@ STRICT CLAUDE RULES — ALWAYS ACTIVE
 * Do not add betting recommendations unless explicitly approved.
 * Do not add parlay logic unless explicitly approved.
 * Do not wire stage_market.py, review_taxonomy.py, review_notes.py, odds.py,
-  edge.py, or candidate_evaluation.py into existing modules unless explicitly approved.
+  edge.py, candidate_evaluation.py, or backtest_review.py into existing modules unless explicitly approved.
 * Show each proposed file edit and wait for approval before writing it.
 * Do not update Handoffs/ files unless explicitly instructed by the user with ChatGPT approval.
 
@@ -576,9 +665,9 @@ WHAT I NEED FROM YOU NOW
 ═══════════════════════════════════════════════════════
 
 Do not inspect files yet.
-Do not plan v0.2.3 yet.
+Do not plan v0.2.4 yet.
 Do not edit anything.
 Do not run commands yet.
 Do not commit.
 
-Acknowledge this updated RSB context and wait for the v0.2.3 implementation prompt from ChatGPT.
+Acknowledge this updated RSB context and wait for the v0.2.4 implementation prompt from ChatGPT.
