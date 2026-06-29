@@ -3,14 +3,14 @@
 RSB is a sportsbook analytics / +EV simulation project.
 
 Current project status:
-- Version: v0.2.2
+- Version: v0.2.3
 - Python: 3.13 virtual environment
-- Tests: pytest, currently 643 passing tests
+- Tests: pytest, currently 744 passing tests
 - Current focus: World Cup simulation engine
-- Next modeling target: v0.2.3 — Backtest Review Overlay
+- Next modeling target: v0.2.4 — Odds Expansion / EV Math Primitives (candidate)
 - Future goal: automation-first sportsbook analytics website/app
 
-Completed foundation (v0.1.8.x – v0.2.2):
+Completed foundation (v0.1.8.x – v0.2.3):
 - v0.1.8.2: centralized absolute path resolution via src/paths.py
 - v0.1.8.3: runtime path overrides (RSB_DB_PATH, RSB_SLATE_PATH, RSB_MODEL_OUTPUT_PATH) for safe test isolation
 - v0.1.8.4: dependency-free config validation (ConfigValidationError, load_json_config, validate_*_config)
@@ -27,6 +27,7 @@ Completed foundation (v0.1.8.x – v0.2.2):
 - v0.2.0: pure odds and implied probability conversion primitives (OddsValidationError, american_to_implied_probability, decimal_to_implied_probability, fractional_to_implied_probability, validate_probability)
 - v0.2.1: pure edge calculation primitives (calculate_edge)
 - v0.2.2: pure candidate evaluation record and pass reason primitives (CandidateEvaluationValidationError, normalize_candidate_status, normalize_pass_reason, validate_pass_reasons, build_candidate_evaluation)
+- v0.2.3: pure backtest review overlay primitives (BacktestReviewValidationError, build_backtest_review)
 
 Long-term product goal:
 The final workflow should not require manual match/team/player/odds input. The user should specify sport, date range/week, markets, sportsbooks, and number of legs. The system should automatically collect fixtures, odds, props, stats, injuries, lineups, build features, run simulations/models, compare EV, rank singles/parlays, and recommend the best sportsbook for each card.
