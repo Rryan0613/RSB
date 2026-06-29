@@ -530,6 +530,48 @@ WORKFLOW — FOR REFERENCE ONLY
 11. Claude never commits, even after ChatGPT approval.
 
 ═══════════════════════════════════════════════════════
+CLAUDE CLI BRANCH RULE
+═══════════════════════════════════════════════════════
+
+Ryan uses Claude CLI from Terminal by running:
+
+claude
+
+Claude CLI inherits the current Terminal working directory and active git branch.
+Because of this, implementation workflow must be:
+
+1. ChatGPT approves the version/chore plan.
+2. Ryan switches to main.
+3. Ryan pulls latest main.
+4. Ryan verifies main is clean.
+5. Ryan creates/switches to the approved feature/chore branch himself using:
+
+   git switch -c <branch-name>
+
+6. Ryan verifies the active branch with:
+
+   git branch --show-current
+
+7. Only then does Ryan run claude from that same Terminal session/repo.
+8. Claude must inspect and edit only from the branch it was launched in.
+
+Do not tell Ryan to open Claude for implementation while still on main.
+
+Do not tell Ryan to create the branch after Claude has already started implementation.
+
+For plan-only inspection, Claude may inspect files before implementation only if Ryan
+intentionally launches Claude for planning, but any implementation session must start
+after Ryan is already on the approved branch.
+
+Additional workflow rules:
+
+* Ryan runs git/status/diff/test validation commands himself in Terminal and pastes
+  outputs into ChatGPT.
+* Claude should not run git validation as the source of truth unless Ryan explicitly
+  asks for a quick local observation.
+* ChatGPT remains the gatekeeper for approval before commits, pushes, PRs, and merges.
+
+═══════════════════════════════════════════════════════
 WHAT I NEED FROM YOU NOW
 ═══════════════════════════════════════════════════════
 
