@@ -61,3 +61,23 @@ def validate_probability(probability) -> float:
             f"probability must be <= 1, got {probability!r}"
         )
     return float(probability)
+
+
+def american_to_decimal_odds(odds) -> float:
+    _reject_non_numeric(odds, "odds")
+    if odds == 0:
+        raise OddsValidationError("American odds must not be zero")
+    if odds > 0:
+        return 1.0 + odds / 100.0
+    return 1.0 + 100.0 / abs(odds)
+
+
+def decimal_to_american_odds(odds) -> float:
+    _reject_non_numeric(odds, "odds")
+    if odds <= 1.0:
+        raise OddsValidationError(
+            f"Decimal odds must be greater than 1.0, got {odds!r}"
+        )
+    if odds >= 2.0:
+        return (odds - 1.0) * 100.0
+    return -100.0 / (odds - 1.0)
