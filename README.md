@@ -1,4 +1,4 @@
-# WorldCup AI v0.2.0
+# WorldCup AI v0.2.2
 
 A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
 
@@ -32,6 +32,7 @@ The project currently supports:
 - pure prediction review note primitives (`src/review_notes.py`)
 - pure odds and implied probability conversion primitives (`src/odds.py`)
 - pure edge calculation primitives (`src/edge.py`)
+- pure candidate evaluation record and pass reason primitives (`src/candidate_evaluation.py`)
 
 ## Runtime Target
 

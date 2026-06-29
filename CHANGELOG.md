@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.2.2
+
+- Added `src/candidate_evaluation.py`, a pure standalone module for candidate evaluation record and pass reason primitives.
+- Added `CandidateEvaluationValidationError`.
+- Added `VALID_CANDIDATE_STATUSES` (`frozenset`): `candidate`, `rejected`, `not_evaluable`.
+- Added `VALID_PASS_REASONS` (`frozenset`): `edge_below_minimum`, `missing_model_probability`, `missing_implied_probability`, `invalid_model_probability`, `invalid_implied_probability`, `market_semantics_unclear`, `data_quality_concern`, `manual_review_required`, `unknown`.
+- Added `normalize_candidate_status(status)`: strips whitespace, lowercases, replaces spaces and hyphens with underscores, rejects non-string, empty, whitespace-only, and unknown statuses.
+- Added `normalize_pass_reason(reason)`: same normalization contract; validates against `VALID_PASS_REASONS`.
+- Added `validate_pass_reasons(pass_reasons)`: accepts `None` (returns `[]`), `list`, or `tuple`; normalizes each item via `normalize_pass_reason()`; preserves order and duplicates; returns `list`.
+- Added `build_candidate_evaluation(status, edge=None, pass_reasons=None) -> dict`:
+  - Operation order: normalize/validate status → validate edge → validate pass_reasons → enforce structural invariant → return dict.
+  - Always returns exactly three keys: `status`, `edge`, `pass_reasons`.
+  - `edge=None` is allowed for any status. Non-`None` edge accepts `int` or `float`, rejects `bool`, non-numeric, NaN, infinity, and values outside `[-1.0, 1.0]`; returns `float(edge)`.
+  - Structural invariants: `status="candidate"` requires `pass_reasons == []`; `status="rejected"` and `status="not_evaluable"` each require at least one validated pass reason. Violations raise `CandidateEvaluationValidationError`.
+  - Whitespace-only pass reasons fail during pass-reason validation before structural invariant checks.
+- `src/candidate_evaluation.py` imports only `math`. No imports from `odds.py`, `edge.py`, `review_taxonomy.py`, `review_notes.py`, or any RSB runtime module.
+- Added `tests/test_candidate_evaluation.py` covering: error class hierarchy, all valid statuses, status normalization (strip/lowercase), status invalid inputs, all valid pass reasons (parametrized), pass reason normalization (strip/lowercase/spaces/hyphens), pass reason invalid inputs, `validate_pass_reasons` with None/empty/list/tuple/invalid inputs, order and duplicate preservation, return shape (exactly 3 keys, plain dict, edge key always present), canonical examples for all three statuses, edge validation (None allowed on all statuses, positive/negative/zero/boundary, int→float, bool/non-numeric/NaN/inf/out-of-range rejection), pass reasons normalization and tuple handling in output, all structural invariant cases, operation order enforcement, whitespace-only reason fails before invariant, and AST-based banned-import check.
+- Updated the project/model version to `0.2.2`.
+- Kept `src/candidate_evaluation.py` isolated. It is not wired into `run_slate.py`, `validation.py`, `simulator.py`, `model.py`, `database.py`, `features.py`, `backtest.py`, `backtest_report.py`, `historical_replay.py`, `market_selector.py`, `stage_market.py`, `review_taxonomy.py`, `review_notes.py`, `odds.py`, `edge.py`, or any runtime flow.
+- v0.2.2 does not add recommendations, picks, parlays, threshold comparison, auto-generated pass reasons, edge calculation from probabilities, EV calculation, Kelly sizing, stake sizing, vig removal, fair odds, live odds ingestion, sportsbook integrations, database changes, runtime wiring, new dependencies, or CI changes.
+
 ## v0.2.1
 
 - Added `src/edge.py`, a pure standalone module for edge calculation primitives.
