@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.2.3
+
+- Added `src/backtest_review.py`, a pure standalone module for backtest review overlay primitives.
+- Added `BacktestReviewValidationError`.
+- Added `MIN_EVALUATED_ROWS = 10`, `ACCURACY_STRONG_THRESHOLD = 0.60`, `ACCURACY_WEAK_THRESHOLD = 0.40`.
+- Added `VALID_REVIEW_STATUSES` (`frozenset`): `strong`, `mixed`, `weak`, `insufficient_data`.
+- Added `build_backtest_review(report: dict) -> dict`:
+  - Validates report structure: must be a dict containing `evaluated_rows`, `skipped_rows`, `overall` (dict), and `overall["accuracy"]`. Raises `BacktestReviewValidationError` on any structural violation.
+  - Validates `evaluated_rows`: must be a non-bool `int` >= 0. Raises `BacktestReviewValidationError` otherwise.
+  - Validates `skipped_rows`: must be a non-bool `int` >= 0. Raises `BacktestReviewValidationError` otherwise.
+  - Validates `accuracy`: `None` is allowed. If not `None`, must be a non-bool numeric value in `[0.0, 1.0]`; returns `float(accuracy)`.
+  - Classification: `evaluated_rows < MIN_EVALUATED_ROWS` or `accuracy is None` → `insufficient_data`; `accuracy >= 0.60` → `strong`; `accuracy >= 0.40` → `mixed`; otherwise → `weak`.
+  - Boundary behavior: `evaluated_rows == 10` enters the accuracy branch. `accuracy == 0.60` is `strong`. `accuracy == 0.40` is `mixed`. `accuracy < 0.40` is `weak`.
+  - `needs_review`: `True` when `review_status in ("weak", "insufficient_data")` or `skipped_rows > 0`; `False` otherwise.
+  - `skipped_row_flag`: `True` when `skipped_rows > 0`; `False` otherwise.
+  - Always returns exactly five keys: `review_status`, `needs_review`, `skipped_row_flag`, `evaluated_rows`, `accuracy`.
+- `src/backtest_review.py` has no imports. No stdlib, no RSB module imports.
+- Added `tests/test_backtest_review.py` covering: error class hierarchy, constants and allowed statuses, structural validation (non-dict report, missing required keys, non-dict overall), value validation for `evaluated_rows` (bool rejection, non-int, negative), `skipped_rows` (same), and `accuracy` (bool rejection, non-numeric, out-of-range, `None` allowed, int-to-float coercion), `insufficient_data` classification for `evaluated_rows < 10` and `accuracy is None`, `strong`/`mixed`/`weak` classification, boundary behavior at `MIN_EVALUATED_ROWS`, `0.60`, and `0.40`, `needs_review` behavior across all statuses and `skipped_rows > 0`, `skipped_row_flag` behavior, exact five-key return shape, plain dict return type, mirrored `evaluated_rows` and `accuracy` values in output, `accuracy` always `float` when not `None`, AST-based banned-import checks (no database, sqlite3, backtest_report, candidate_evaluation, review_taxonomy, review_notes, odds, edge, or json imports), no betting/lock/parlay/recommendation language in keys or values, and integration tests combining real `build_backtest_report()` output with `build_backtest_review()`.
+- Updated the project/model version to `0.2.3`.
+- Kept `src/backtest_review.py` isolated. It is not wired into `run_slate.py`, `validation.py`, `simulator.py`, `model.py`, `database.py`, `features.py`, `backtest.py`, `backtest_report.py`, `historical_replay.py`, `market_selector.py`, `stage_market.py`, `review_taxonomy.py`, `review_notes.py`, `odds.py`, `edge.py`, `candidate_evaluation.py`, or any runtime flow.
+- v0.2.3 does not add recommendations, picks, parlays, EV calculation, Kelly sizing, stake sizing, vig removal, fair odds, live odds ingestion, sportsbook integrations, database changes, runtime wiring, new dependencies, or CI changes.
+
 ## v0.2.2
 
 - Added `src/candidate_evaluation.py`, a pure standalone module for candidate evaluation record and pass reason primitives.
