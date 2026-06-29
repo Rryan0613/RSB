@@ -63,6 +63,38 @@ Future parlay logic must be:
 RSB should never become reckless or vibe-based. It should prefer pass/no bet when the edge is weak, data quality is poor, or the model is not calibrated enough.
 
 ═══════════════════════════════════════════════════════
+RSB NORTH STAR / PRODUCT MINDSET
+═══════════════════════════════════════════════════════
+
+RSB's long-term goal is to become an autonomous, research-backed sportsbook analytics system that can identify and rank the best +EV prop/pick candidates.
+
+The desired final product should eventually be able to:
+
+* ingest sportsbook odds and player prop markets
+* ingest or connect to player/team stats, injuries, lineups, availability, matchup context, and historical results
+* run simulations/models/backtests/calibration checks
+* compare model probability against sportsbook implied probability
+* calculate EV/edge
+* rank candidate props/picks by expected value, confidence, data quality, and risk
+* explain why each candidate is worth considering or why it should be passed
+* prefer no-bet/pass when data quality, calibration, or edge is insufficient
+
+RSB is not intended to stay as disconnected primitives forever. The primitive-by-primitive process is intentional because the final predictor must be disciplined and auditable, not a fake lock generator.
+
+Important distinction:
+When a version says it did not add live odds APIs, player prop data, sportsbook integrations, simulations, injuries, lineups, historical data, calibration, recommendations, or ranked picks, that means those items were out of scope for that specific version only. It does not mean those capabilities are banned from the project.
+
+Current development philosophy:
+
+* Build stable primitives first.
+* Add schemas/contracts before wiring.
+* Add provider ingestion only when internal records can validate it.
+* Add ranking/recommendation only after odds, EV, data quality, calibration, and backtest review foundations are strong enough.
+* Never call anything a lock.
+* Do not force picks.
+* The end goal is useful ranked +EV prop/pick candidates, but every step must preserve correctness, testability, and auditability.
+
+═══════════════════════════════════════════════════════
 LONG-TERM AUTOMATION GOAL
 ═══════════════════════════════════════════════════════
 
@@ -353,7 +385,7 @@ CURRENT VERIFIED PROJECT STATE
 ═══════════════════════════════════════════════════════
 
 Latest completed version:
-v0.2.3 — Backtest Review Overlay
+v0.2.4 — Odds Expansion / EV Math Primitives
 
 Current branch:
 main
@@ -362,41 +394,50 @@ Current status:
 main is clean and up to date with origin/main, based on user's post-merge verification report.
 
 Current local test count:
-744 passing
+830 passing
 
 Latest repo event:
-PR #21 — v0.2.3 Backtest Review Overlay
-https://github.com/Rryan0613/RSB/pull/21
+PR #23 — v0.2.4 Odds and EV Primitives
+https://github.com/Rryan0613/RSB/pull/23
 
-PR #21 status:
+PR #23 status:
 
-* Merge commit: 4901bc2 — Merge pull request #21 from Rryan0613/feature/v0.2.3-backtest-review-overlay
-* Implementation commit: 9fe6cab — Add backtest review overlay
-* GitHub Actions/checks: passed before merge
+* State: MERGED
+* Merge commit: 3c8bb4f — Merge pull request #23 from Rryan0613/feature/v0.2.4-odds-ev-primitives
+* Implementation commit: 5ab3ece — Add odds and EV primitives
+* GitHub Actions/checks: 8 successful, 0 failing, 0 pending
 * PR merged successfully
-* Feature branch: feature/v0.2.3-backtest-review-overlay
+* Feature branch: feature/v0.2.4-odds-ev-primitives
 * Post-merge local verification: main clean / up to date with origin/main
-* Tests after merge: 744 passed
+* Tests after merge: 830 passed
 
 Latest completed version:
-v0.2.3 — Backtest Review Overlay
+v0.2.4 — Odds Expansion / EV Math Primitives
 
 Latest version PR:
-PR #21 — v0.2.3 Backtest Review Overlay
-https://github.com/Rryan0613/RSB/pull/21
+PR #23 — v0.2.4 Odds and EV Primitives
+https://github.com/Rryan0613/RSB/pull/23
 
 Current implementation commit:
-9fe6cab — Add backtest review overlay
+5ab3ece — Add odds and EV primitives
 
 Merge commit:
-4901bc2 — Merge pull request #21 from Rryan0613/feature/v0.2.3-backtest-review-overlay
+3c8bb4f — Merge pull request #23 from Rryan0613/feature/v0.2.4-odds-ev-primitives
 
 Feature branch:
-feature/v0.2.3-backtest-review-overlay
+feature/v0.2.4-odds-ev-primitives
 
 ═══════════════════════════════════════════════════════
 RECENT MERGED PRs
 ═══════════════════════════════════════════════════════
+
+PR #23:
+v0.2.4 Odds and EV Primitives
+https://github.com/Rryan0613/RSB/pull/23
+
+PR #22:
+Update handoffs after v0.2.3 — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/22
 
 PR #21:
 v0.2.3 Backtest Review Overlay
@@ -496,8 +537,101 @@ Candidate Evaluation Record / Pass Reason Primitives
 v0.2.3:
 Backtest Review Overlay
 
+v0.2.4:
+Odds Expansion / EV Math Primitives
+
 ═══════════════════════════════════════════════════════
-v0.2.3 SUMMARY — LATEST COMPLETED VERSION
+v0.2.4 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.4 added odds conversion helpers and pure EV math primitives.
+
+Files modified:
+
+* CHANGELOG.md
+* CLAUDE.md
+* README.md
+* config/model_config.json
+* pyproject.toml
+* src/ev.py
+* src/odds.py
+* tests/test_ev.py
+* tests/test_odds.py
+* tests/test_paths.py
+
+Implemented in src/odds.py:
+
+* american_to_decimal_odds(odds) -> float
+* decimal_to_american_odds(odds) -> float
+
+Implemented in src/ev.py:
+
+* EVValidationError(ValueError)
+* calculate_expected_value(model_probability, decimal_odds) -> float
+* Validated backward-compatible wrappers:
+  - american_to_decimal(odds)
+  - implied_probability(odds)
+  - ev_per_unit(model_probability, odds)
+  - edge(model_probability, odds)
+
+Formula:
+
+calculate_expected_value(model_probability, decimal_odds):
+    return model_probability * decimal_odds - 1.0
+
+Validation summary:
+
+* odds conversion helpers reject bool, non-numeric values, NaN, and infinity
+* american_to_decimal_odds rejects zero American odds
+* decimal_to_american_odds rejects decimal odds <= 1.0
+* calculate_expected_value validates model_probability through odds.validate_probability()
+* invalid model_probability raises OddsValidationError
+* calculate_expected_value validates decimal_odds locally
+* invalid decimal_odds raises EVValidationError
+* decimal_odds must be numeric, non-bool, not NaN, not infinite, and > 1.0
+* no rounding
+
+Compatibility detail:
+
+* Runtime modules still import legacy ev.py public names.
+* v0.2.4 intentionally preserved those names as validated wrappers.
+* No runtime callers were edited.
+
+Tests:
+
+* tests/test_ev.py
+* tests/test_odds.py
+* Full local test result after merge: 830 passed
+* GitHub Actions: 8 successful, 0 failing, 0 pending
+
+v0.2.4 intentionally did not add:
+
+* live odds API integration
+* odds-api / github.com/odds-api/odds-api integration
+* scraping
+* sportsbook API calls
+* provider integration changes
+* database changes
+* runtime wiring
+* picks
+* recommendations
+* locks
+* parlays
+* Kelly/staking
+* bankroll advice
+* UI/API/frontend
+* new dependencies
+* CI changes
+* data file changes
+
+Important scope clarification:
+The v0.2.4 omissions are version-scoped only. RSB's long-term product goal still includes
+odds providers, sportsbook APIs, player prop data, simulations, injury/lineup data, historical
+results, model calibration, and eventually ranked +EV prop/pick candidates. v0.2.4 avoided
+those items only because it was limited to pure odds conversion and EV math primitives.
+
+═══════════════════════════════════════════════════════
+v0.2.3 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.2.3 added pure backtest review overlay primitives.
@@ -864,13 +998,16 @@ ROADMAP — CURRENT DIRECTION
 ═══════════════════════════════════════════════════════
 
 Current completed version:
-v0.2.3 — Backtest Review Overlay
+v0.2.4 — Odds Expansion / EV Math Primitives
 
 Immediate next:
-v0.2.4 — Odds Expansion / EV Math Primitives (candidate)
+v0.2.5 — Prop Market / Candidate Schema Primitives (candidate)
 
 Implementation status:
 Not started. Awaiting ChatGPT scope definition and implementation prompt.
+Likely purpose: move RSB toward structured prop/pick candidates by defining normalized
+candidate records/market schema before provider ingestion or ranking.
+Do not implement or create branch until ChatGPT provides the scope prompt.
 
 Core roadmap principle:
 RSB should move in this order:
@@ -897,20 +1034,12 @@ v0.2.3:
 Backtest Review Overlay. COMPLETE.
 
 v0.2.4:
-Odds Expansion / EV Math Primitives (candidate). Not started.
+Odds Expansion / EV Math Primitives. COMPLETE.
 
-Implementation status:
+v0.2.5 — Prop Market / Candidate Schema Primitives (candidate):
 Not started. Awaiting ChatGPT scope definition and implementation prompt.
-
-Possible additions:
-
-* american_to_decimal_odds()
-* calculate_expected_value()
-* EV per unit
-* stake-based EV
-
-Important:
-EV math is useful, but it must remain a pure primitive. It should not become recommendation logic.
+Likely purpose: move RSB toward structured prop/pick candidates by defining normalized
+candidate records/market schema before provider ingestion or ranking.
 
 Possible later v0.2.x candidate:
 Controlled staking/Kelly primitives.
@@ -1060,12 +1189,14 @@ IMMEDIATE NEXT ACTION
 ═══════════════════════════════════════════════════════
 
 Next planned version:
-v0.2.4 — Odds Expansion / EV Math Primitives (candidate)
+v0.2.5 — Prop Market / Candidate Schema Primitives (candidate)
 
 Implementation status:
 Not started. Awaiting ChatGPT scope definition and implementation prompt.
+Likely purpose: move RSB toward structured prop/pick candidates by defining normalized
+candidate records/market schema before provider ingestion or ranking.
 
-Do not create a branch or prompt Claude for v0.2.4 until ChatGPT provides the implementation prompt.
+Do not create a branch or prompt Claude for v0.2.5 until ChatGPT provides the implementation prompt.
 
 ═══════════════════════════════════════════════════════
 IMPORTANT PREFERENCES
