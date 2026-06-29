@@ -5,7 +5,7 @@ RSB is a sportsbook analytics / +EV simulation project.
 Current project status:
 - Version: v0.2.2
 - Python: 3.13 virtual environment
-- Tests: pytest, currently 641 passing tests
+- Tests: pytest, currently 643 passing tests
 - Current focus: World Cup simulation engine
 - Next modeling target: v0.2.3 — Backtest Review Overlay
 - Future goal: automation-first sportsbook analytics website/app

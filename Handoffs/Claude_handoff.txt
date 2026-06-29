@@ -105,11 +105,23 @@ Version:        0.2.2
 Branch:         main
 Status:         clean and up to date with origin/main, based on post-merge verification
 Tests passing:  643
-Latest PR:      PR #17 — v0.2.2 Candidate Evaluation Primitives — merged
-                https://github.com/Rryan0613/RSB/pull/17
+
+Latest repo event:      PR #18 — Add project handoff files (docs/ops chore) — merged
+                        https://github.com/Rryan0613/RSB/pull/18
+PR #18 merge commit:    cdf54b4 — Merge pull request #18 from Rryan0613/chore/add-handoff-files
+PR #18 impl commit:     77d7fd1 — Add project handoff files
+PR #18 files added:     Handoffs/ChatGpt_Handoff.txt, Handoffs/Claude_handoff.txt
+PR #18 checks:          passed
+PR #18 branch cleanup:  complete locally and remotely
+PR #18 post-merge verification: complete — main clean/up to date; 643 tests passed
+
+Latest version PR:      PR #17 — v0.2.2 Candidate Evaluation Primitives — merged
+                        https://github.com/Rryan0613/RSB/pull/17
 Implementation commit:  5d912eb — Add candidate evaluation primitives
 Merge commit:           55ee656 — Merge pull request #17 from Rryan0613/feature/v0.2.2-candidate-evaluation-primitives
 Feature branch cleanup: complete locally and remotely
+
+Latest completed version: v0.2.2 — Candidate Evaluation Record / Pass Reason Primitives
 Next target:    v0.2.3 — Backtest Review Overlay
 v0.2.3 status:  Not started. Awaiting ChatGPT implementation prompt.
 
@@ -212,6 +224,10 @@ Do not suggest self-learning before v0.6.x or explicit approval.
 ═══════════════════════════════════════════════════════
 RECENT COMPLETED PRs
 ═══════════════════════════════════════════════════════
+
+PR #18:
+Add project handoff files — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/18
 
 PR #17:
 v0.2.2 Candidate Evaluation Record / Pass Reason Primitives
