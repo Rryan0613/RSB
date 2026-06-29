@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.2.4
+
+- Added `american_to_decimal_odds(odds) -> float` to `src/odds.py`. Converts American odds to decimal format. Reuses existing `_reject_non_numeric` validation; rejects bool, non-numeric, NaN, infinity, and zero. Positive odds: `1 + odds / 100`. Negative odds: `1 + 100 / abs(odds)`. Always returns a float > 1.0. Raises `OddsValidationError`.
+- Added `decimal_to_american_odds(odds) -> float` to `src/odds.py`. Converts decimal odds to American format. Rejects bool, non-numeric, NaN, infinity, and values <= 1.0. Returns positive American odds when decimal >= 2.0 (`(odds - 1) * 100`), negative when decimal < 2.0 (`-100 / (odds - 1)`). Returns float. Raises `OddsValidationError`.
+- Upgraded `src/ev.py` from a legacy unvalidated helper file into a validated EV primitive module. The old file had no input validation, silently divided by zero on `american_to_decimal(0)`, and duplicated logic already present in `src/odds.py` and `src/edge.py`.
+- Added `EVValidationError(ValueError)` to `src/ev.py`.
+- Added `calculate_expected_value(model_probability, decimal_odds) -> float` to `src/ev.py`. Validates `model_probability` via `validate_probability()` from `odds.py` (raises `OddsValidationError` on invalid). Validates `decimal_odds` locally (raises `EVValidationError` on bool, non-numeric, NaN, infinity, or <= 1.0). Formula: `model_probability * decimal_odds - 1.0`. No rounding. Positive result = positive EV per unit staked.
+- Retained legacy public function names in `src/ev.py` as backward-compatible validated wrappers because runtime modules (`run_slate.py`, `market_selector.py`, `slate_odds.py`, `odds_providers/base.py`) currently import them. The wrappers now delegate to validated primitives instead of containing unvalidated logic: `american_to_decimal` delegates to `american_to_decimal_odds`; `implied_probability` delegates to `american_to_implied_probability`; `ev_per_unit` delegates to `calculate_expected_value`; `edge` delegates to `validate_probability` + `american_to_implied_probability`. No runtime wiring was changed.
+- `src/ev.py` imports only `math` and three names from `src/odds.py`. No database, runtime, or provider imports.
+- Added comprehensive tests for all new and upgraded functions to `tests/test_odds.py` and replaced `tests/test_ev.py` (previously 6 happy-path-only tests) with full validation coverage.
+- Updated the project/model version to `0.2.4`.
+- v0.2.4 does not add live odds API integration, scraping, sportsbook API calls, odds provider integration, database changes, runtime wiring, picks, recommendations, locks, parlays, Kelly sizing, staking, bankroll advice, UI, frontend, new dependencies, or CI changes.
+
 ## v0.2.3
 
 - Added `src/backtest_review.py`, a pure standalone module for backtest review overlay primitives.

@@ -2,7 +2,9 @@ import pytest
 
 from odds import (
     OddsValidationError,
+    american_to_decimal_odds,
     american_to_implied_probability,
+    decimal_to_american_odds,
     decimal_to_implied_probability,
     fractional_to_implied_probability,
     validate_probability,
@@ -259,3 +261,129 @@ def test_odds_has_no_banned_imports():
             if node.module:
                 imported.add(node.module.split(".")[0])
     assert imported.isdisjoint(banned), f"Banned imports found: {imported & banned}"
+
+
+# ---------------------------------------------------------------------------
+# american_to_decimal_odds
+# ---------------------------------------------------------------------------
+
+def test_american_to_decimal_plus_100_returns_2_0():
+    assert american_to_decimal_odds(100) == pytest.approx(2.0)
+
+
+def test_american_to_decimal_minus_100_returns_2_0():
+    assert american_to_decimal_odds(-100) == pytest.approx(2.0)
+
+
+def test_american_to_decimal_plus_100_and_minus_100_are_equal():
+    assert american_to_decimal_odds(100) == american_to_decimal_odds(-100)
+
+
+def test_american_to_decimal_plus_150_returns_2_5():
+    assert american_to_decimal_odds(150) == pytest.approx(2.5)
+
+
+def test_american_to_decimal_minus_150():
+    assert american_to_decimal_odds(-150) == pytest.approx(1.0 + 100.0 / 150.0)
+
+
+def test_american_to_decimal_plus_200_returns_3_0():
+    assert american_to_decimal_odds(200) == pytest.approx(3.0)
+
+
+def test_american_to_decimal_minus_200():
+    assert american_to_decimal_odds(-200) == pytest.approx(1.5)
+
+
+def test_american_to_decimal_returns_float():
+    assert type(american_to_decimal_odds(100)) is float
+    assert type(american_to_decimal_odds(-100)) is float
+
+
+def test_american_to_decimal_rejects_zero():
+    with pytest.raises(OddsValidationError):
+        american_to_decimal_odds(0)
+
+
+@pytest.mark.parametrize("value", [True, False])
+def test_american_to_decimal_rejects_bool(value):
+    with pytest.raises(OddsValidationError):
+        american_to_decimal_odds(value)
+
+
+@pytest.mark.parametrize("value", ["100", None, [100]])
+def test_american_to_decimal_rejects_non_numeric(value):
+    with pytest.raises(OddsValidationError):
+        american_to_decimal_odds(value)
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+def test_american_to_decimal_rejects_nan_and_inf(value):
+    with pytest.raises(OddsValidationError):
+        american_to_decimal_odds(value)
+
+
+# ---------------------------------------------------------------------------
+# decimal_to_american_odds
+# ---------------------------------------------------------------------------
+
+def test_decimal_to_american_2_0_returns_100():
+    assert decimal_to_american_odds(2.0) == pytest.approx(100.0)
+
+
+def test_decimal_to_american_2_5_returns_150():
+    assert decimal_to_american_odds(2.5) == pytest.approx(150.0)
+
+
+def test_decimal_to_american_3_0_returns_200():
+    assert decimal_to_american_odds(3.0) == pytest.approx(200.0)
+
+
+def test_decimal_to_american_1_5_returns_negative_200():
+    assert decimal_to_american_odds(1.5) == pytest.approx(-200.0)
+
+
+def test_decimal_to_american_negative_american_result():
+    assert decimal_to_american_odds(1.0 + 100.0 / 150.0) == pytest.approx(-150.0)
+
+
+def test_decimal_to_american_returns_float():
+    assert type(decimal_to_american_odds(2.0)) is float
+    assert type(decimal_to_american_odds(1.5)) is float
+
+
+def test_decimal_to_american_rejects_exactly_1_0():
+    with pytest.raises(OddsValidationError):
+        decimal_to_american_odds(1.0)
+
+
+@pytest.mark.parametrize("value", [0.5, 0.0, -1.0])
+def test_decimal_to_american_rejects_lte_1_0(value):
+    with pytest.raises(OddsValidationError):
+        decimal_to_american_odds(value)
+
+
+@pytest.mark.parametrize("value", [True, False])
+def test_decimal_to_american_rejects_bool(value):
+    with pytest.raises(OddsValidationError):
+        decimal_to_american_odds(value)
+
+
+@pytest.mark.parametrize("value", ["2.0", None, [2.0]])
+def test_decimal_to_american_rejects_non_numeric(value):
+    with pytest.raises(OddsValidationError):
+        decimal_to_american_odds(value)
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+def test_decimal_to_american_rejects_nan_and_inf(value):
+    with pytest.raises(OddsValidationError):
+        decimal_to_american_odds(value)
+
+
+def test_round_trip_positive_american_odds():
+    assert decimal_to_american_odds(american_to_decimal_odds(150)) == pytest.approx(150.0)
+
+
+def test_round_trip_negative_american_odds():
+    assert decimal_to_american_odds(american_to_decimal_odds(-120)) == pytest.approx(-120.0)
