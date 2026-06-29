@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.2.1
+
+- Added `src/edge.py`, a pure standalone module for edge calculation primitives.
+- Added `calculate_edge(model_probability, implied_probability) -> float`.
+  - Validates `model_probability` via `validate_probability()` from `src/odds.py`. Raises `OddsValidationError` on invalid input.
+  - Validates `implied_probability` via `validate_probability()` from `src/odds.py`. Raises `OddsValidationError` on invalid input.
+  - Returns `model_probability - implied_probability` as a plain Python float with no rounding.
+  - Positive result means model probability is higher than sportsbook implied probability.
+  - Negative result means model probability is lower than sportsbook implied probability.
+  - Zero result means they are equal.
+  - Valid edge range is `-1.0` to `1.0`, a natural consequence of valid probability inputs.
+- `OddsValidationError` propagates directly from `validate_probability()`. No `EdgeValidationError` is introduced — all validation in this version is probability validation delegated to `odds.py`.
+- `src/edge.py` imports only `validate_probability` from `src/odds.py`. No stdlib imports beyond what `odds.py` itself uses. No RSB runtime imports.
+- Added `tests/test_edge.py` covering: positive edge, negative edge, zero edge, max positive boundary (`1.0 - 0.0`), max negative boundary (`0.0 - 1.0`), int inputs, float return type, no-rounding behavior (native Python float subtraction), invalid `model_probability` inputs propagating `OddsValidationError` (bool, non-numeric, NaN, infinity, below 0, above 1), invalid `implied_probability` inputs propagating `OddsValidationError` (same set), and AST-based banned-import check.
+- Updated the project/model version to `0.2.1`.
+- Kept `src/edge.py` isolated. It is not wired into `run_slate.py`, `validation.py`, `simulator.py`, `model.py`, `database.py`, `features.py`, `backtest.py`, `backtest_report.py`, `historical_replay.py`, `market_selector.py`, `stage_market.py`, `review_taxonomy.py`, `review_notes.py`, or any runtime flow.
+- v0.2.1 does not add recommendations, picks, parlays, pass/no-bet logic, confidence labels, threshold logic, candidate evaluation, expected value calculation, Kelly sizing, stake sizing, vig removal, fair odds, live odds ingestion, sportsbook integrations, database changes, runtime wiring, new dependencies, or CI changes.
+
 ## v0.2.0
 
 - Added `src/odds.py`, a pure standalone module for odds and implied probability conversion primitives.
