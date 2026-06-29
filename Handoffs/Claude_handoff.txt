@@ -111,7 +111,10 @@ The desired final product should eventually be able to:
 * compare model probability against sportsbook implied probability
 * calculate EV/edge
 * rank candidate props/picks by expected value, confidence, data quality, and risk
-* explain why each candidate is worth considering or why it should be passed
+* construct analytically coherent parlays from compatible candidates
+* reject bad parlays even when individual legs look decent
+* explain why each candidate or parlay is worth considering or why it should be passed
+* track whether the model has genuine edge through CLV, calibration, and settled results
 * prefer no-bet/pass when data quality, calibration, or edge is insufficient
 
 RSB is not intended to stay as disconnected primitives forever. The primitive-by-primitive process is intentional because the final predictor must be disciplined and auditable, not a fake lock generator.
@@ -171,12 +174,47 @@ v0.2.4    Odds Expansion / EV Math Primitives                                ←
 
 ── Near-term v0.2.x ──────────────────────────────────────────
 
-v0.2.5    Prop Market / Candidate Schema Primitives (candidate)
-          Implementation not started. Awaiting ChatGPT scope definition and implementation prompt.
-          Likely purpose: move RSB toward structured prop/pick candidates by defining
-          normalized candidate records/market schema before provider ingestion or ranking.
-          Do not implement or create branch until ChatGPT provides the scope prompt.
-          No Kelly unless explicitly scoped later.
+v0.2.5    Prop Market / Candidate Schema Primitives
+          Not started. Awaiting ChatGPT scope definition and implementation prompt.
+          Purpose: define normalized prop/pick candidate identity records.
+          Good identity fields may include: sport, league, event_id / game_id,
+          player_id / player_name, team_id / team_name, opponent_id / opponent_name
+          where appropriate, market_type, selection, line, source / reference fields
+          where scoped, created_at, and limited settlement metadata support where scoped.
+          Do not require american_odds or sportsbook on the candidate record — those
+          are primarily odds snapshot / book availability concepts for v0.2.6.
+          Preserve future support for sport/book-specific settlement metadata where scoped,
+          but do not implement full settlement logic.
+          Do NOT include parlay-specific fields (correlation_group, market_family,
+          scenario_tags) — those belong in v0.7.x when their correct shape is known.
+          Do not create branch or implement until ChatGPT provides the scope prompt.
+
+v0.2.6    Odds Snapshot / Provider Record Normalization
+          Normalize sportsbook odds snapshots. Fields include: provider, sportsbook, market,
+          selection, line, odds, odds_found_at / odds_timestamp, source, staleness.
+          odds_found_at lives here, NOT on the candidate record. CLV later compares
+          odds_found_at to closing line, so this timestamp must be stored from day one.
+
+v0.2.7    Prop Result / Settlement Primitives
+          Define win/loss/push/void/pending/unknown settlement records for prop outcomes.
+          Settlement behavior is sportsbook-specific, sport-specific, market-specific,
+          and sometimes parlay-format-specific. RSB must not assume universal rules.
+          For player props, some books/markets require the player to start, some require
+          participation, some void inactive/non-starting players, and some settle once
+          the player participates. Soccer has especially important start/appearance/void-rule
+          differences, but NBA/NFL/MLB/NHL also have book-specific participation/inactive/
+          early-exit rules. Full settlement logic lives here, not in v0.2.5.
+
+v0.2.8    Candidate EV Enrichment
+          Shape: candidate + odds + caller-supplied model_probability
+               -> implied_probability, edge, EV, pass/review fields.
+          CRITICAL: v0.2.8 does NOT compute model_probability internally.
+          v0.2.8 consumes a caller-supplied model_probability only.
+          Full automated model-generated EV requires the v0.5.x sport-specific model layer.
+
+v0.2.9    Candidate Ranking Primitives
+          Rank single candidates by EV, edge, data quality, confidence, calibration state,
+          and pass reasons. Still pure/in-memory. No provider ingestion yet.
 
 v0.2.x    Controlled staking / Kelly primitives (possible, later)
           Kelly treated as stake-sizing math only, not recommendation logic.
@@ -184,67 +222,319 @@ v0.2.x    Controlled staking / Kelly primitives (possible, later)
 
 ── Mid-term v0.3.x ───────────────────────────────────────────
 
-v0.3.x    Candidate Screening and Ranking Foundation
-          First version where primitive layers are used together:
-          - model probability
-          - sportsbook implied probability
-          - edge
-          - candidate evaluation records
-          - pass reasons
-          - backtest review
-          - EV (if implemented)
-          Goal: early automated ranking of singles only. No parlays yet.
+v0.3.x    Provider / Data Ingestion
+          Integrate odds providers, sportsbook/player prop markets, normalized snapshots,
+          provider coverage, staleness detection, and API constraints.
+          Note: v0.3.x-v0.5.x are tightly coupled. Data, history, and modeling
+          must develop together and cannot be fully sequential in practice.
 
-── Automation layer v0.4.x ───────────────────────────────────
+── Historical data and calibration v0.4.x ────────────────────
 
-v0.4.x    Automation / Data Ingestion Layer
-          Build the real automated pipeline:
-          - fixture/slate ingestion
-          - sportsbook odds/props/line ingestion
-          - market snapshots
-          - stat/context collection
-          - scheduled runs
-          - automated model inputs
-          - automated candidate creation
-          User provides only high-level run parameters.
+v0.4.x    Historical Results / Closing Lines / CLV / Backtesting
+          Track settled outcomes, closing prices, CLV, calibration buckets,
+          market-specific performance, feature ablation support, and model review.
+          CLV (closing line value) is a first-class proof-of-edge metric.
+          If RSB consistently beats the closing line over a real sample, the model has
+          genuine edge. If not, wins are likely variance.
 
-── Product layer v0.5.x ──────────────────────────────────────
+── Sport-specific modeling v0.5.x ────────────────────────────
 
-v0.5.x    Product / Output Layer
-          Possible additions:
-          - dashboard
-          - API
-          - reports
-          - line shopping
-          - broader prop support
-          - sportsbook comparison
-          - richer user-facing outputs
+v0.5.x    Sport-Specific Prop Modeling + Research Context Layer
+          Build probability models using sport-specific feature hierarchies.
+          Convert injuries / news / lineup / research into structured model inputs.
+          Learn and validate recency weighting rather than hardcoding it.
+          Feature ablation: each feature must prove it improves Brier score, log loss,
+          or CLV over enough data before staying in the model.
 
-── Self-learning v0.6.x ──────────────────────────────────────
+          Basketball (NBA) tier hierarchy:
+            Tier 1 (core): minutes projection, usage/role, shot volume, assist chances,
+                           rebound chances, rotation stability, lineup/injury context
+            Tier 2 (game env): spread, total, pace, team implied total, blowout risk,
+                               rest/travel
+            Tier 3 (refinement): pick-and-roll coverage, switching, rim protection,
+                                 perimeter defense, foul tendencies, defensive scheme,
+                                 transition frequency, play-type distribution
+            Tier 4 (research): injuries, lineup news, coach quotes, beat reports,
+                               rotation changes
 
-v0.6.x    Self-Learning Feedback Loop
-          Controlled settled-result ingestion and post-event review:
-          - record pre-event decision snapshot
-          - ingest final results
-          - classify miss reasons
-          - store structured review notes
-          - generate calibration reports
-          - create feature improvement queue
-          - controlled retraining / recalibration
+          Soccer/World Cup tier hierarchy:
+            Tier 1 (core): starting lineup confirmation (including void/start risk), xG,
+                           shots on target, set-piece involvement, pressing role, tactical
+                           position in attack, matchup style, opponent strength
+            Schema must preserve support for void_condition / start_required to enable
+            correct settlement and EV modeling for non-starting players.
 
-── Parlay construction v0.7.x ────────────────────────────────
+          MLB: handedness, batting order, park factors, pitcher/batter matchups,
+               bullpen usage, weather, platoon splits, recent role context.
 
-v0.7.x    Parlay Construction
-          Only after singles are calibrated and candidate ranking is reliable:
-          - parlay leg compatibility
-          - correlation risk
-          - weakest-leg detection
-          - parlay combined odds math
-          - slip rejection logic
+          NFL: snap share, route participation, target share, red-zone usage,
+               QB/scheme/coaching changes, weather, current-season role trends.
+
+── Single candidate automation v0.6.x ───────────────────────
+
+v0.6.x    Single Candidate Automation
+          Automated scan for ranked +EV singles with explanations, guardrails, and
+          pass/no-bet discipline.
+          Long-term: must support multiple scan windows, not just one daily batch.
+            Morning: general candidate identification, baseline odds snapshot
+            Afternoon: lineup/injury update check, candidate refresh
+            Pre-game (60-90 min out): final lineup confirmation, last-second line
+                                      movement, final go/no-go
+          Injury redistribution: when a key player is out, RSB should model teammate
+          usage/minutes transfer from historical lineup-adjusted data. Markets lag on
+          secondary player adjustments — this is a first-class edge opportunity.
+
+── Parlay structural compatibility v0.7.x ────────────────────
+
+v0.7.x    Parlay Structural Compatibility Primitives
+          Detect structural parlay problems using rules/schema:
+            - same player, same team, same game exposure
+            - duplicate exposure
+            - market overlap and contradiction
+            - cannibalization (one leg's assumption invalidates another)
+            - fragile shared game-script assumptions
+          This is structural detection only — NOT empirical correlation estimation.
+          Empirical correlation requires historical outcome data (v0.4.x-v0.5.x).
+          Do not conflate structural compatibility with correlation modeling.
+
+── Scenario-robust parlay builder v0.8.x ─────────────────────
+
+v0.8.x    Scenario-Robust Parlay Builder
+          Evaluate parlays across multiple plausible game environments.
+          Optimize scenario-adjusted joint EV against sportsbook parlay price.
+          A good parlay should not be dead solely because one fragile game script fails.
+          Test each card against: close game, moderate favorite win, underdog competitive,
+          high/low pace, foul trouble, late-game rotation changes.
+          Correct correlation principle: optimize scenario-adjusted joint EV. Do not
+          assume positive, negative, or independent correlation is automatically good.
+          Same-game parlay books may already include correlation adjustments.
+
+── Product / UI / app v0.9.x+ ────────────────────────────────
+
+v0.9.x+   Product / UI / App Layer
+          User-facing workflow: choose sport, date range, markets, sportsbooks.
+          Generate ranked singles and constructed parlays.
+          Explain decisions, track results, review performance.
 
 Do not suggest pipeline wiring before it is explicitly scoped.
 Do not suggest parlay logic before v0.7.x or explicit approval.
 Do not suggest self-learning before v0.6.x or explicit approval.
+
+═══════════════════════════════════════════════════════
+EXTENDED PROJECT CONTEXT AND PRINCIPLES
+═══════════════════════════════════════════════════════
+
+RSB FINAL GOAL — SINGLES AND PARLAYS
+─────────────────────────────────────────────────────
+
+RSB's final product is a disciplined system for:
+
+1. Finding ranked +EV single prop/pick candidates.
+2. Rejecting weak, noisy, or no-edge singles.
+3. Constructing analytically coherent parlays from compatible candidates.
+4. Rejecting bad parlays even when individual legs look decent.
+5. Explaining every candidate and parlay with reasoning, data quality, uncertainty,
+   and pass conditions.
+6. Tracking whether the model has genuine edge through CLV, calibration, and settled results.
+
+PARLAY CONSTRUCTION PHILOSOPHY
+─────────────────────────────────────────────────────
+
+RSB must not bundle random +EV singles together and call it a parlay.
+
+Parlay narrative trap to avoid:
+  "Team A is better → blowout expected → Team A stars go over → Team B players go under."
+  This dies if the game is close, pace is low, starters rest in Q4, foul trouble disrupts
+  rotations, or the underdog keeps it competitive.
+
+A game can go: close, one-sided, high pace, low pace, foul-heavy, rotation-heavy,
+injury-affected, bench-heavy, or overtime.
+
+A good parlay should not be dead solely because one simple game script fails.
+The goal is not parlays immune to all outcomes — that is impossible.
+The goal is to avoid cards where every leg depends on the same brittle assumption.
+
+Parlay construction must eventually evaluate:
+  individual leg EV and edge
+  joint probability
+  scenario-adjusted joint EV
+  sportsbook parlay price
+  same-game / same-player / same-team exposure
+  market overlap, contradiction, cannibalization
+  duplicate exposure to one player/team/game environment
+  fragile shared assumptions
+  data quality, calibration strength, line movement sensitivity
+  CLV history where available
+
+Correct correlation principle:
+  Positive correlation usually increases joint hit probability vs. independent multiplication.
+  Negative correlation usually decreases joint hit probability vs. independent multiplication.
+  Neither direction is automatically good or bad.
+  The target is scenario-adjusted joint EV vs. sportsbook parlay price.
+  Same-game parlay books may already include correlation adjustments — RSB must not
+  blindly chase correlation.
+
+Structural compatibility vs. empirical correlation:
+  Structural detection (same player, same team, same game, overlap, contradiction,
+  cannibalization) can be done with rules/schema and belongs in v0.7.x.
+  Empirical correlation estimation requires historical outcome data and belongs in
+  the v0.4.x-v0.5.x historical/modeling layers. Do not conflate these two concepts.
+
+CLV — CLOSING LINE VALUE
+─────────────────────────────────────────────────────
+
+CLV is a first-class long-term proof-of-edge metric.
+
+If RSB consistently identifies candidates whose prices are better than the closing line
+over a meaningful sample, the model has genuine edge. If not, wins are likely variance.
+
+RSB should eventually track:
+  found price / odds_found_at (on the odds snapshot record, not the candidate record)
+  best available price
+  closing price and closing line
+  whether RSB beat the close
+  CLV by market, sportsbook, model version, confidence bucket, data-quality bucket
+
+TIMESTAMP SPLIT
+─────────────────────────────────────────────────────
+
+These are different timestamps — do not conflate them:
+
+  created_at:         when RSB created the candidate record
+                      Lives on the candidate schema (v0.2.5)
+
+  odds_found_at /     when the specific price was observed from a provider/source
+  odds_timestamp:     Lives on the odds snapshot record (v0.2.6)
+
+CLV comparison requires odds_found_at, not created_at. If odds_found_at is not
+captured from v0.2.6 onward, CLV calculations will be impossible to retrofit.
+
+DATASET WINDOWS — SPORT-SPECIFIC
+─────────────────────────────────────────────────────
+
+Do not hard-code "last two seasons" as a universal rule.
+
+NBA: 2 seasons is a reasonable starting window. Weight current season heavily.
+     Role/team/coach changes override raw historical averages.
+
+MLB: 2 seasons is reasonable given large sample sizes. Key context: park factors,
+     handedness, batting order, pitcher/batter matchups, bullpen usage, weather.
+
+NFL: 2 seasons can be thin (~34-38 games per team). Weight current season heavily.
+     Coaching, QB, scheme, snap share, and target share changes often matter more
+     than historical averages.
+
+World Cup / Soccer: "Last two seasons" does not translate cleanly to international
+     football. World Cup is every 4 years. Supplement with: qualifiers, UEFA Euros,
+     Copa America, AFCON, Asian Cup, Nations League. Apply uncertainty bounds for
+     small samples. Club form is relevant context.
+
+Recency weighting should be learned and validated from calibration data, not
+permanently hardcoded as fixed constants.
+
+FEATURE HIERARCHY — GENERAL PRINCIPLE
+─────────────────────────────────────────────────────
+
+Tier 1 — Core projection drivers (most important):
+  minutes / availability / usage / role / starting status / lineup context
+
+Tier 2 — Game environment:
+  spread, total, pace, team implied total, blowout risk, rest/travel, weather
+
+Tier 3 — Matchup / tactical / play-type features (model refinement layer):
+  pick-and-roll role/coverage, switching, set pieces, defensive scheme,
+  play-type distribution, transition frequency, foul tendencies, rim protection
+
+Tier 4 — Research / qualitative context (must be converted to structured inputs):
+  injury reports, lineup news, coach quotes, beat reporter notes, rotation changes,
+  load management, trade/roster moves, market movement
+
+Tactical/play-type data matters and should be encoded as structured features, not
+freeform narrative. It belongs in v0.5.x model refinement, not v0.2.5 schema.
+
+Feature ablation principle:
+  Features must earn their place. RSB should eventually test whether each feature
+  improves Brier score, log loss, or CLV over a meaningful sample. Features that
+  do not improve predictive quality should be demoted or removed.
+
+INJURY REDISTRIBUTION MODELING
+─────────────────────────────────────────────────────
+
+When a key player is out, RSB should eventually model usage/minutes redistribution
+to teammates using historical lineup-adjusted data.
+
+Example: Brunson out → KAT usage increases, secondary guards take more assist chances,
+Knicks offensive efficiency may drop, opponent defensive focus shifts.
+
+Markets lag on secondary player adjustments — this is a first-class edge opportunity.
+Must be data-validated, not treated as automatic narrative logic.
+
+RESEARCH LAYER — REAL-TIME REQUIREMENT
+─────────────────────────────────────────────────────
+
+Injury news and lineup confirmation often arrive 60-90 minutes before game time.
+A single daily batch is not the final automation architecture.
+
+Long-term, RSB should support multiple scan windows:
+  Morning: general candidate identification, baseline odds snapshot
+  Afternoon: injury/lineup update check, candidate flag refresh
+  Pre-game: final lineup confirmation, late line movement, final go/no-go
+
+The pre-game window is the highest-value window for research-based adjustments.
+
+SETTLEMENT BEHAVIOR — SPORT AND BOOK SPECIFIC
+─────────────────────────────────────────────────────
+
+Settlement behavior is sportsbook-specific, sport-specific, market-specific, and
+sometimes parlay-format-specific. RSB must not assume universal settlement rules.
+
+For player props, settlement varies significantly by book and market:
+  Some books/markets require the player to start.
+  Some require only participation (any appearance).
+  Some void props if the player is inactive or does not start.
+  Some settle once the player participates regardless of role.
+  Soccer has especially important start/appearance/void-rule differences, but
+  NBA/NFL/MLB/NHL also have book-specific participation, inactive, and early-exit rules.
+
+The schema and settlement roadmap must preserve support for fields such as:
+  start_required
+  participation_required
+  void_condition
+  settlement_rule
+  book-specific settlement metadata
+
+v0.2.5 may preserve metadata support where scoped. Full settlement logic belongs in v0.2.7.
+RSB must not assume any universal settlement behavior across sports, books, or markets.
+
+ACCOUNT HEALTH / EXECUTION CONSTRAINTS
+─────────────────────────────────────────────────────
+
+RSB can identify theoretical +EV opportunities, but execution depends on:
+  which books the user can access
+  whether limits or restrictions exist
+  whether the best available line is actually placeable
+  odds movement before placement
+  book-specific max bet constraints
+
+RSB should not assume every theoretical best price is executable.
+This is a product constraint, not a technical one.
+
+DATA BOTTLENECKS — WHAT IS ACTUALLY HARD
+─────────────────────────────────────────────────────
+
+The hardest parts of RSB are not EV math. EV math is already built. The hard parts are:
+  clean historical player prop data with settlement
+  settled prop outcomes over enough samples per market
+  closing line history for CLV
+  reliable real-time injury/lineup data
+  sportsbook/player/team ID normalization across providers
+  odds provider coverage and rate limits
+  market availability differences by sport/book
+  calibration over enough samples
+  play-type/tactical datasets, which may be expensive or unavailable
+
+RSB should not pretend it is calibrated or autonomous until the data layer supports
+that claim with verified settled results.
 
 ═══════════════════════════════════════════════════════
 RECENT COMPLETED PRs
