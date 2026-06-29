@@ -31,6 +31,7 @@ The project currently supports:
 - pure prediction review taxonomy primitives (`src/review_taxonomy.py`)
 - pure prediction review note primitives (`src/review_notes.py`)
 - pure odds and implied probability conversion primitives (`src/odds.py`)
+- pure edge calculation primitives (`src/edge.py`)
 
 ## Runtime Target
 
@@ -338,7 +339,7 @@ Later (v0.2.x+):
 
 ```text
 v0.2.0 - pure odds and implied probability conversion primitives
-v0.2.1 - edge calculation primitives
+v0.2.1 - pure edge calculation primitives (src/edge.py)
 v0.2.2 - candidate evaluation / pass reason primitives
 v0.2.3 - backtest review overlay
 v0.3.x - parlays only after confirmed calibration on sufficient historical matches
