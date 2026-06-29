@@ -1,0 +1,526 @@
+═══════════════════════════════════════════════════════
+RSB PROJECT IDENTITY
+═══════════════════════════════════════════════════════
+
+Project:    RSB — disciplined sportsbook analytics / +EV simulation
+Repo:       https://github.com/Rryan0613/RSB
+Local path: /Users/ryan/Desktop/PersonalWebsite/RSB/worldcup_ai_v0_1
+Python:     3.13 virtual environment (.venv)
+Shell:      use .venv/bin/python for Python/test commands
+
+RSB is:
+
+* a disciplined sportsbook analytics / +EV simulation project
+* a research-backed model, simulation, backtest, and review system
+* eventually intended to help build data-backed picks and parlays with reasoning behind every leg
+
+RSB is not:
+
+* a lock generator
+* a random pick generator
+* a parlay generator yet
+* a frontend/API product yet
+* a live betting bot
+* an auto-betting system
+
+Long-term vision:
+The final version of RSB should help build research-backed, data-backed picks and parlays.
+
+The goal is to move away from casual assumptions like:
+"Mbappé is a star, so he'll score."
+
+Instead, RSB should eventually justify every candidate leg using structured evidence such as:
+
+* model probability
+* sportsbook implied probability
+* estimated edge
+* historical form
+* xG / shot / chance quality
+* opponent profile
+* lineup / injury / rotation context
+* tactical / formation context
+* market semantics
+* risk flags
+* data quality flags
+* correlation risk if used in a parlay
+
+Parlays are part of the eventual long-term scope, but not yet.
+
+Future parlay logic must be:
+
+* data-backed
+* correlation-aware
+* edge-aware
+* risk-adjusted
+* capable of rejecting bad slips instead of forcing action
+
+RSB should never become reckless or vibe-based. It should prefer pass/no bet when the edge is weak.
+
+Long-term automation goal:
+The user should only need to provide high-level run parameters such as sport, date range,
+markets, sportsbooks, and risk preferences. RSB should eventually collect fixtures, pull
+sportsbook odds, pull stats/injuries/lineups, build features, run models, calculate implied
+probabilities and edge, evaluate candidates, and produce ranked outputs automatically.
+Current primitive functions take caller-supplied values only because they are being developed
+and tested in isolation. Later internal pipeline modules will supply those values automatically.
+The user will never manually input edge values, implied probabilities, or player stats
+in the final system.
+
+Long-term self-learning goal:
+RSB should eventually learn from its own prediction history through controlled feedback loops.
+The intended self-learning cycle is:
+
+1. Make prediction / candidate evaluation (pre-game snapshot)
+   - record odds, model probability, implied probability, edge, features, context
+2. Ingest final result
+   - hit / miss, final score / stat outcome, closing line, market movement
+3. Run structured post-result review
+   - classify why a leg missed: variance, bad calibration, injury surprise,
+     line movement, wrong market semantics, weak data, feature gap, correlation issue
+4. Store structured review notes and miss reasons in the database
+5. Accumulate history and use it to improve:
+   - model calibration
+   - feature engineering
+   - pass/reject rules
+   - market selection rules
+   - data quality rules
+   - parlay correlation rules
+
+RSB should NOT learn recklessly:
+* Bad: "One leg missed — change the model immediately."
+* Good: "Track this miss, classify why it happened, accumulate evidence across many
+         outcomes, then recalibrate only when patterns are statistically meaningful."
+
+Sports are noisy. A good bet can lose. A bad bet can win. RSB must learn from patterns
+over many outcomes, not overreact to individual misses.
+
+The primitives already built — review_taxonomy.py, review_notes.py, odds.py, edge.py, and
+candidate_evaluation.py — are early vocabulary for the future self-learning loop.
+
+═══════════════════════════════════════════════════════
+CURRENT VERIFIED STATE
+═══════════════════════════════════════════════════════
+
+Version:        0.2.2
+Branch:         main
+Status:         clean and up to date with origin/main, based on post-merge verification
+Tests passing:  643
+Latest PR:      PR #17 — v0.2.2 Candidate Evaluation Primitives — merged
+                https://github.com/Rryan0613/RSB/pull/17
+Implementation commit:  5d912eb — Add candidate evaluation primitives
+Merge commit:           55ee656 — Merge pull request #17 from Rryan0613/feature/v0.2.2-candidate-evaluation-primitives
+Feature branch cleanup: complete locally and remotely
+Next target:    v0.2.3 — Backtest Review Overlay
+v0.2.3 status:  Not started. Awaiting ChatGPT implementation prompt.
+
+If strict verification is needed, ask the user to run:
+
+cd /Users/ryan/Desktop/PersonalWebsite/RSB/worldcup_ai_v0_1
+git branch --show-current
+git status -sb
+git status --short
+.venv/bin/python -m pytest --tb=short -q
+
+═══════════════════════════════════════════════════════
+APPROVED ROADMAP
+═══════════════════════════════════════════════════════
+
+v0.2.1    Edge Calculation Primitives                                        ← COMPLETE
+v0.2.2    Candidate Evaluation Record / Pass Reason Primitives               ← COMPLETE
+
+── Near-term v0.2.x ──────────────────────────────────────────
+
+v0.2.3    Backtest Review Overlay
+          Use existing backtest/report/review primitives to summarize model outcomes.
+          Implementation not started.
+
+v0.2.4    Odds Expansion / EV Math Primitives (candidate)
+          Possible additions:
+          - american_to_decimal_odds()
+          - calculate_expected_value()
+          - EV per unit / stake-based EV
+          No Kelly unless explicitly scoped later.
+
+v0.2.x    Controlled staking / Kelly primitives (possible, later)
+          Kelly treated as stake-sizing math only, not recommendation logic.
+          Only after EV and calibration are stronger.
+
+── Mid-term v0.3.x ───────────────────────────────────────────
+
+v0.3.x    Candidate Screening and Ranking Foundation
+          First version where primitive layers are used together:
+          - model probability
+          - sportsbook implied probability
+          - edge
+          - candidate evaluation records
+          - pass reasons
+          - backtest review
+          - EV (if implemented)
+          Goal: early automated ranking of singles only. No parlays yet.
+
+── Automation layer v0.4.x ───────────────────────────────────
+
+v0.4.x    Automation / Data Ingestion Layer
+          Build the real automated pipeline:
+          - fixture/slate ingestion
+          - sportsbook odds/props/line ingestion
+          - market snapshots
+          - stat/context collection
+          - scheduled runs
+          - automated model inputs
+          - automated candidate creation
+          User provides only high-level run parameters.
+
+── Product layer v0.5.x ──────────────────────────────────────
+
+v0.5.x    Product / Output Layer
+          Possible additions:
+          - dashboard
+          - API
+          - reports
+          - line shopping
+          - broader prop support
+          - sportsbook comparison
+          - richer user-facing outputs
+
+── Self-learning v0.6.x ──────────────────────────────────────
+
+v0.6.x    Self-Learning Feedback Loop
+          Controlled settled-result ingestion and post-event review:
+          - record pre-event decision snapshot
+          - ingest final results
+          - classify miss reasons
+          - store structured review notes
+          - generate calibration reports
+          - create feature improvement queue
+          - controlled retraining / recalibration
+
+── Parlay construction v0.7.x ────────────────────────────────
+
+v0.7.x    Parlay Construction
+          Only after singles are calibrated and candidate ranking is reliable:
+          - parlay leg compatibility
+          - correlation risk
+          - weakest-leg detection
+          - parlay combined odds math
+          - slip rejection logic
+
+Do not suggest pipeline wiring before it is explicitly scoped.
+Do not suggest parlay logic before v0.7.x or explicit approval.
+Do not suggest self-learning before v0.6.x or explicit approval.
+
+═══════════════════════════════════════════════════════
+RECENT COMPLETED PRs
+═══════════════════════════════════════════════════════
+
+PR #17:
+v0.2.2 Candidate Evaluation Record / Pass Reason Primitives
+https://github.com/Rryan0613/RSB/pull/17
+
+PR #16:
+v0.2.1 Edge Calculation Primitives
+https://github.com/Rryan0613/RSB/pull/16
+
+PR #15:
+v0.2.0 Odds / Implied Probability Primitives
+https://github.com/Rryan0613/RSB/pull/15
+
+PR #14:
+v0.1.9.4 Prediction Review Note Primitives
+https://github.com/Rryan0613/RSB/pull/14
+
+PR #13:
+v0.1.9.3 Prediction Review Taxonomy Primitives
+https://github.com/Rryan0613/RSB/pull/13
+
+PR #12:
+v0.1.9.2 Tournament Stage and Market Semantics Validation
+https://github.com/Rryan0613/RSB/pull/12
+
+PR #11:
+v0.1.9.1 4 derived ratio features
+https://github.com/Rryan0613/RSB/pull/11
+
+PR #10:
+v0.1.9.0 audit cleanup, NaN/inf test coverage and skipped-row docs
+https://github.com/Rryan0613/RSB/pull/10
+
+PR #9:
+v0.1.9.0 backtest report output, build_backtest_report
+https://github.com/Rryan0613/RSB/pull/9
+
+═══════════════════════════════════════════════════════
+v0.2.2 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.2 added pure candidate evaluation record and pass reason primitives.
+This is the first version that defines a structured candidate vocabulary and record format.
+
+New files:
+
+* src/candidate_evaluation.py
+* tests/test_candidate_evaluation.py
+
+Files modified:
+
+* CHANGELOG.md
+* CLAUDE.md
+* README.md
+* config/model_config.json
+* pyproject.toml
+* tests/test_paths.py
+
+Implemented in src/candidate_evaluation.py:
+
+* CandidateEvaluationValidationError
+* VALID_CANDIDATE_STATUSES
+* VALID_PASS_REASONS
+* normalize_candidate_status(status: str) -> str
+* normalize_pass_reason(reason: str) -> str
+* validate_pass_reasons(pass_reasons) -> list[str]
+* build_candidate_evaluation(status, edge=None, pass_reasons=None) -> dict
+* _validate_edge() — private helper, not exported
+
+Only import: stdlib math (for NaN/inf checks in _validate_edge).
+No imports from odds.py, edge.py, review_taxonomy.py, review_notes.py, database, or runtime modules.
+Not wired into any existing module in this version.
+
+Constants:
+
+VALID_CANDIDATE_STATUSES = {
+    "candidate",
+    "rejected",
+    "not_evaluable",
+}
+
+VALID_PASS_REASONS = {
+    "edge_below_minimum",
+    "missing_model_probability",
+    "missing_implied_probability",
+    "invalid_model_probability",
+    "invalid_implied_probability",
+    "market_semantics_unclear",
+    "data_quality_concern",
+    "manual_review_required",
+    "unknown",
+}
+
+Return shape (always exactly 3 keys):
+
+{
+    "status": "candidate",
+    "edge": 0.05,
+    "pass_reasons": [],
+}
+
+or:
+
+{
+    "status": "rejected",
+    "edge": 0.01,
+    "pass_reasons": ["edge_below_minimum"],
+}
+
+or:
+
+{
+    "status": "not_evaluable",
+    "edge": None,
+    "pass_reasons": ["missing_model_probability"],
+}
+
+Structural invariants enforced by build_candidate_evaluation():
+
+* status="candidate"     → pass_reasons must be exactly []
+* status="rejected"      → pass_reasons must have at least one validated reason
+* status="not_evaluable" → pass_reasons must have at least one validated reason
+* Violating these raises CandidateEvaluationValidationError
+
+Operation order inside build_candidate_evaluation():
+
+1. Normalize and validate status → CandidateEvaluationValidationError if unknown
+2. Validate edge via _validate_edge() → CandidateEvaluationValidationError if invalid
+3. Normalize and validate pass_reasons via validate_pass_reasons() → list
+4. Enforce structural invariant → CandidateEvaluationValidationError if violated
+5. Return dict
+
+Edge validation rules (_validate_edge):
+
+* None → None (allowed on any status)
+* bool → reject
+* non-numeric → reject
+* NaN → reject
+* infinity → reject
+* edge < -1.0 → reject
+* edge > 1.0 → reject
+* valid → return float(edge)
+
+Normalization contract (matching prior RSB primitive pattern):
+strip whitespace → lowercase → replace spaces and hyphens with underscores → validate
+
+validate_pass_reasons(None) returns [].
+pass_reasons accepts list or tuple; tuple is returned as list.
+Order is preserved. Duplicates are preserved.
+Empty or whitespace-only pass reasons raise CandidateEvaluationValidationError.
+Unknown pass reasons raise CandidateEvaluationValidationError.
+
+Tests:
+
+* tests/test_candidate_evaluation.py
+* Full local/GitHub test result after merge: 643 passed
+
+v0.2.2 intentionally did not add:
+
+* minimum_edge parameter
+* threshold comparison
+* auto-generated pass reasons
+* data_quality parameter
+* recommendations
+* picks
+* parlays
+* EV or Kelly math
+* runtime wiring
+* database schema changes
+* model or simulator changes
+* CI changes
+* new dependencies
+* any imports from odds.py, edge.py, review_taxonomy.py, or review_notes.py
+
+═══════════════════════════════════════════════════════
+v0.2.1 SUMMARY — FOR REFERENCE
+═══════════════════════════════════════════════════════
+
+v0.2.1 added pure edge calculation primitives.
+This is the first version that computes a numeric edge signal.
+
+New files:
+
+* src/edge.py
+* tests/test_edge.py
+
+Implemented in src/edge.py:
+* calculate_edge()
+
+Imports only validate_probability from src/odds.py.
+No stdlib imports. No other RSB module imports.
+
+Function contract:
+
+calculate_edge(model_probability, implied_probability):
+* Validates model_probability via validate_probability() from odds.py.
+  Raises OddsValidationError on invalid input.
+* Validates implied_probability via validate_probability() from odds.py.
+  Raises OddsValidationError on invalid input.
+* Returns model_probability - implied_probability as a plain Python float.
+* No rounding. Native Python float arithmetic.
+* Positive: model probability is higher than sportsbook implied probability.
+* Negative: model probability is lower than sportsbook implied probability.
+* Zero: they are equal.
+* Valid edge range: -1.0 to 1.0 (natural consequence of valid probability inputs).
+
+No EdgeValidationError. All validation is probability validation delegated to odds.py.
+
+Tests:
+* tests/test_edge.py — 33 tests
+* Full project test count: 545 passing
+
+═══════════════════════════════════════════════════════
+v0.2.0 SUMMARY — FOR REFERENCE
+═══════════════════════════════════════════════════════
+
+v0.2.0 added pure odds and implied probability conversion primitives.
+This is the first +EV math foundation version.
+
+New files:
+
+* src/odds.py
+* tests/test_odds.py
+
+Implemented in src/odds.py:
+* OddsValidationError
+* american_to_implied_probability()
+* decimal_to_implied_probability()
+* fractional_to_implied_probability()
+* validate_probability()
+
+Imports only stdlib math. No RSB module imports.
+
+Tests:
+* tests/test_odds.py — 80 tests
+* Full project test count: 512 passing
+
+═══════════════════════════════════════════════════════
+STRICT CLAUDE RULES — ALWAYS ACTIVE
+═══════════════════════════════════════════════════════
+
+* Do not inspect files until ChatGPT provides a version-specific prompt.
+* Do not plan until ChatGPT provides a version-specific prompt.
+* Do not edit any files before ChatGPT approves a plan.
+* Do not commit.
+* Do not push.
+* Do not create PRs.
+* Do not use auto mode.
+* Do not use "allow all edits during this session."
+* Do not use update-config.
+* Do not create memory/ files or unrelated files.
+* Do not modify real data files:
+  * data/input/*.json
+  * data/output/*.json
+  * data/worldcup_ai.db
+* Do not add pip dependencies without explicit ChatGPT approval.
+* Do not change CI without explicit ChatGPT approval.
+* Do not loosen betting, data, or model guardrails.
+* Do not change simulator coefficients unless explicitly approved.
+* Do not add betting recommendations unless explicitly approved.
+* Do not add parlay logic unless explicitly approved.
+* Do not wire stage_market.py, review_taxonomy.py, review_notes.py, odds.py,
+  edge.py, or candidate_evaluation.py into existing modules unless explicitly approved.
+* Show each proposed file edit and wait for approval before writing it.
+* Do not update Handoffs/ files unless explicitly instructed by the user with ChatGPT approval.
+
+═══════════════════════════════════════════════════════
+HANDOFF MAINTENANCE RULE
+═══════════════════════════════════════════════════════
+
+After every completed version, or whenever roadmap/guardrails/workflow/current-state decisions
+change, update both:
+- Handoffs/ChatGpt_Handoff.txt
+- Handoffs/Claude_handoff.txt
+
+Claude may update these files only when explicitly instructed. Claude must not invent roadmap
+changes or silently rewrite handoffs. ChatGPT remains the gatekeeper for what belongs in the
+handoffs.
+
+═══════════════════════════════════════════════════════
+WORKFLOW — FOR REFERENCE ONLY
+═══════════════════════════════════════════════════════
+
+1. ChatGPT finalizes version scope.
+2. ChatGPT writes a version-specific implementation prompt for Claude.
+3. Claude receives that prompt, runs approved read-only verification, inspects approved files,
+   and returns a plan only.
+4. User pastes Claude's plan into ChatGPT for approval.
+5. ChatGPT approves, refines, or rejects the plan.
+6. Claude implements only approved scope, one file at a time with per-edit approval.
+7. Ryan runs git/status/diff/test review commands directly in Terminal.
+   Claude provides the review package commands to run.
+   For long review output, ChatGPT should give Ryan a command that writes the full review
+   package to /tmp/rsb_<version>_review.txt and opens it, instead of making Ryan scroll
+   through Terminal.
+   Use git diff HEAD in review packages when staged changes may exist.
+8. User pastes review package output into ChatGPT.
+9. ChatGPT approves commit.
+10. User commits manually.
+11. Claude never commits, even after ChatGPT approval.
+
+═══════════════════════════════════════════════════════
+WHAT I NEED FROM YOU NOW
+═══════════════════════════════════════════════════════
+
+Do not inspect files yet.
+Do not plan v0.2.3 yet.
+Do not edit anything.
+Do not run commands yet.
+Do not commit.
+
+Acknowledge this updated RSB context and wait for the v0.2.3 implementation prompt from ChatGPT.

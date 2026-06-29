@@ -1,0 +1,938 @@
+═══════════════════════════════════════════════════════
+PROJECT IDENTITY
+═══════════════════════════════════════════════════════
+
+RSB is my disciplined sportsbook analytics / +EV simulation project.
+
+RSB is:
+
+* a research-backed sportsbook analytics project
+* a +EV simulation and review system
+* a disciplined model/backtest/evaluation framework
+* eventually intended to help build data-backed picks and parlays with reasoning behind every leg
+* automation-first in its long-term design
+* intended to become self-learning through controlled feedback loops
+
+RSB is not:
+
+* a lock generator
+* a random pick generator
+* a parlay generator yet
+* a frontend/API product yet
+* a live betting bot
+* an auto-betting system
+* a prompt-to-pick system
+* an LLM-vibe betting assistant
+* an uncontrolled self-modifying model
+
+Long-term vision:
+The final version of RSB should help me build research-backed, data-backed picks and parlays.
+
+The goal is to move away from casual assumptions like:
+
+"Mbappé is a star, so he'll score."
+
+Instead, RSB should eventually justify every candidate leg using structured evidence such as:
+
+* model probability
+* sportsbook implied probability
+* estimated edge
+* expected value
+* historical form
+* xG / shot / chance quality
+* opponent profile
+* lineup / injury / rotation context
+* tactical / formation context
+* market semantics
+* risk flags
+* data quality flags
+* review taxonomy labels
+* structured review notes
+* correlation risk if used in a parlay
+
+Parlays are part of the eventual long-term scope, but not yet.
+
+Future parlay logic must be:
+
+* data-backed
+* correlation-aware
+* edge-aware
+* risk-adjusted
+* capable of rejecting bad slips instead of forcing action
+
+RSB should never become reckless or vibe-based. It should prefer pass/no bet when the edge is weak, data quality is poor, or the model is not calibrated enough.
+
+═══════════════════════════════════════════════════════
+LONG-TERM AUTOMATION GOAL
+═══════════════════════════════════════════════════════
+
+The final workflow should not require manual match/team/player/odds/props/stat input.
+
+The user should only provide high-level run parameters, such as:
+
+* sport
+* league
+* date range / week
+* markets
+* sportsbooks
+* singles vs. number of parlay legs
+* risk preference / strictness level
+
+Example future user command:
+
+"Run RSB for NBA player props this week across DraftKings and FanDuel."
+
+or:
+
+"Run RSB for World Cup games this weekend and show the best +EV markets."
+
+RSB should eventually automate:
+
+1. Collecting fixtures / games / slates
+2. Collecting sportsbook odds, props, and lines
+3. Collecting team/player stats
+4. Collecting injuries, lineups, rest, rotation, travel, weather, and contextual signals where available
+5. Building features
+6. Running simulations/models
+7. Producing model probabilities
+8. Converting sportsbook odds to implied probabilities
+9. Calculating edge
+10. Calculating EV when that layer exists
+11. Evaluating candidate eligibility/pass reasons
+12. Applying risk/data-quality/calibration checks
+13. Ranking opportunities
+14. Producing a report/dashboard/output
+15. Saying "pass/no bet" when the candidate is weak or insufficiently supported
+
+Important clarification:
+When current primitive specs say "the caller supplies edge/status/pass_reasons," "caller" means internal RSB code, not the user manually typing those values.
+
+Current primitive functions take caller-supplied values only because they are being developed and tested in isolation. Later internal pipeline/orchestrator modules will supply those values automatically.
+
+Example future automated chain:
+
+odds provider / sportsbook ingestion
+→ implied probability
+
+model / simulation
+→ model probability
+
+calculate_edge(model_probability, implied_probability)
+→ edge
+
+candidate screening / evaluation code
+→ status and pass_reasons
+
+build_candidate_evaluation(status, edge, pass_reasons)
+→ candidate record
+
+ranking/output layer
+→ ranked opportunities or pass/no-bet report
+
+The user should not manually calculate or input edge in the final product.
+
+═══════════════════════════════════════════════════════
+LONG-TERM SELF-LEARNING / FEEDBACK LOOP GOAL
+═══════════════════════════════════════════════════════
+
+RSB should eventually become self-learning through controlled feedback loops.
+
+After a prediction, candidate leg, or parlay settles, RSB should automatically:
+
+1. Record the original pre-event decision snapshot:
+
+   * fixture/game
+   * sport/league
+   * market/prop
+   * sportsbook
+   * line and odds
+   * implied probability
+   * model probability
+   * edge
+   * candidate evaluation status
+   * pass/reject reasons if applicable
+   * available features/context at decision time
+   * injury/lineup/rest/rotation/travel/weather context where available
+   * model version / simulation version
+   * timestamp of the decision snapshot
+
+2. Ingest the final result:
+
+   * hit / miss / push / void
+   * final score or player stat result
+   * final box score / event result
+   * closing line where available
+   * market movement where available
+   * whether the market moved for or against the model
+
+3. Run structured post-event review:
+
+   * Was the miss likely normal variance?
+   * Was the model miscalibrated?
+   * Was data quality weak?
+   * Was there a missing injury/lineup/rotation signal?
+   * Was the market semantics wrong?
+   * Was the matchup/context feature incomplete?
+   * Did the line move against the model?
+   * Was the number stale?
+   * Was there unexpected usage/role change?
+   * Was there parlay correlation risk?
+   * Did the model overvalue a feature?
+   * Did the model underweight a known risk?
+
+4. Store structured review notes / miss reasons in the database.
+
+5. Use accumulated history to improve future:
+
+   * model calibration
+   * feature engineering
+   * data-quality checks
+   * candidate evaluation rules
+   * pass/no-bet logic
+   * market selection
+   * parlay correlation rules
+   * risk scoring
+   * retraining datasets
+   * simulation assumptions
+
+Important guardrail:
+RSB should not blindly change its model after a single miss. A good bet can lose and a bad bet can win. Self-learning must be controlled, audited, data-backed, and based on patterns across many settled outcomes.
+
+Bad self-learning:
+
+"One leg missed, so immediately change the model."
+
+Good self-learning:
+
+"Record the miss, classify possible causes, add structured review data, and use accumulated evidence for future retraining/calibration."
+
+The long-term architecture should move toward:
+
+prediction database
+→ result ingestion
+→ post-event review engine
+→ miss reason taxonomy
+→ calibration reports
+→ feature improvement queue
+→ controlled retraining/recalibration
+→ better future candidate evaluation
+
+Important:
+Self-learning should be audited and controlled. RSB should not allow unverified narratives, LLM guesses, or one-off misses to directly mutate model logic. Post-event review can propose hypotheses, but model updates should be based on verified data, sufficient sample size, calibration checks, and explicit versioned retraining.
+
+═══════════════════════════════════════════════════════
+REPO / LOCAL PATH
+═══════════════════════════════════════════════════════
+
+Repo:
+https://github.com/Rryan0613/RSB
+
+Local path:
+/Users/ryan/Desktop/PersonalWebsite/RSB/worldcup_ai_v0_1
+
+Python:
+3.13 virtual environment
+
+Use:
+.venv/bin/python
+
+═══════════════════════════════════════════════════════
+ROLES
+═══════════════════════════════════════════════════════
+
+ChatGPT role:
+
+* architecture reviewer
+* roadmap controller
+* audit controller
+* prompt designer
+* commit/merge gatekeeper
+* final scope controller
+
+Claude Code role:
+
+* implementation agent only
+* Claude writes code only after ChatGPT approves the plan
+* Claude must start in plan mode
+* Claude must not edit until ChatGPT approves
+* Claude must not commit
+* Claude must not push
+* Claude must not create PRs
+* Claude must not use auto mode
+* Claude must not use update-config
+* Claude must not make unsupervised architecture decisions
+
+═══════════════════════════════════════════════════════
+WORKFLOW
+═══════════════════════════════════════════════════════
+
+1. I start a fresh Claude chat for each version.
+2. ChatGPT gives Claude the implementation prompt.
+3. Claude starts in plan mode only.
+4. I paste Claude's plan into ChatGPT.
+5. ChatGPT approves, refines, or rejects the plan.
+6. Claude implements only approved scope.
+7. I manually approve expected Claude edits only.
+8. I never choose "allow all edits during this session."
+9. Ryan runs git/status/diff/test review commands directly in Terminal.
+10. I paste git status, git diff --stat, git diff HEAD, full contents of new files if needed,
+    and pytest result into ChatGPT for review.
+    For long review output, ChatGPT should give Ryan a command that writes the full review
+    package to /tmp/rsb_<version>_review.txt and opens it, instead of making Ryan scroll
+    through Terminal.
+    Use git diff HEAD in review packages when staged changes may exist.
+11. ChatGPT reviews the implementation.
+12. Only after ChatGPT approval do I commit.
+13. Then I push the branch.
+14. Then I create a PR.
+15. Then I wait for GitHub Actions.
+16. Merge only after ChatGPT approval.
+17. After merge, I pull main and verify tests.
+18. Then I optionally delete the local and remote feature branch.
+
+No commits, pushes, PRs, or merges without ChatGPT approval.
+
+Claude never commits. The user commits manually only after ChatGPT approval.
+
+═══════════════════════════════════════════════════════
+HANDOFF MAINTENANCE RULE
+═══════════════════════════════════════════════════════
+
+After every completed version, or whenever roadmap/guardrails/workflow/current-state decisions
+change, update both:
+- Handoffs/ChatGpt_Handoff.txt
+- Handoffs/Claude_handoff.txt
+
+Claude may update these files only when explicitly instructed. Claude must not invent roadmap
+changes or silently rewrite handoffs. ChatGPT remains the gatekeeper for what belongs in the
+handoffs.
+
+═══════════════════════════════════════════════════════
+CURRENT VERIFIED PROJECT STATE
+═══════════════════════════════════════════════════════
+
+Latest completed version:
+v0.2.2 — Candidate Evaluation Record / Pass Reason Primitives
+
+Current branch:
+main
+
+Current status:
+main is clean and up to date with origin/main, based on user's post-merge verification report.
+
+Current local test count:
+643 passing
+
+Latest completed PR:
+PR #17 — v0.2.2 Candidate Evaluation Primitives
+https://github.com/Rryan0613/RSB/pull/17
+
+PR #17 status:
+
+* Branch pushed successfully
+* PR created successfully
+* GitHub Actions/checks: passed
+* ChatGPT approved merge after checks passed
+* PR merged successfully
+* User reported post-merge local verification:
+
+  * branch: main
+  * status: clean / up to date with origin/main
+  * tests: 643 passed
+
+Current implementation commit:
+5d912eb — Add candidate evaluation primitives
+
+Merge commit:
+55ee656 — Merge pull request #17 from Rryan0613/feature/v0.2.2-candidate-evaluation-primitives
+
+Feature branch:
+feature/v0.2.2-candidate-evaluation-primitives
+
+Feature branch cleanup status:
+Complete — deleted locally and remotely.
+
+═══════════════════════════════════════════════════════
+RECENT MERGED PRs
+═══════════════════════════════════════════════════════
+
+PR #17:
+v0.2.2 Candidate Evaluation Record / Pass Reason Primitives
+https://github.com/Rryan0613/RSB/pull/17
+
+PR #16:
+v0.2.1 Edge Calculation Primitives
+https://github.com/Rryan0613/RSB/pull/16
+
+PR #15:
+v0.2.0 Odds / Implied Probability Primitives
+https://github.com/Rryan0613/RSB/pull/15
+
+PR #14:
+v0.1.9.4 Prediction Review Note Primitives
+https://github.com/Rryan0613/RSB/pull/14
+
+PR #13:
+v0.1.9.3 Prediction Review Taxonomy Primitives
+https://github.com/Rryan0613/RSB/pull/13
+
+PR #12:
+v0.1.9.2 Tournament Stage and Market Semantics Validation
+https://github.com/Rryan0613/RSB/pull/12
+
+PR #11:
+v0.1.9.1 feature variable upgrade
+https://github.com/Rryan0613/RSB/pull/11
+
+PR #10:
+v0.1.9.0 audit cleanup
+https://github.com/Rryan0613/RSB/pull/10
+
+PR #9:
+v0.1.9.0 backtest report
+https://github.com/Rryan0613/RSB/pull/9
+
+═══════════════════════════════════════════════════════
+COMPLETED VERSION HISTORY
+═══════════════════════════════════════════════════════
+
+v0.1.8.6:
+pure backtest metric primitives in src/backtest.py
+
+v0.1.8.7:
+results ingestion safety with RSB_RESULTS_PATH
+
+v0.1.8.8:
+read-only historical replay loader in src/historical_replay.py
+
+v0.1.8.9:
+training data leakage guard in database.load_training_rows()
+
+v0.1.9.0:
+pure in-memory backtest report output
+
+v0.1.9.0 audit cleanup:
+NaN/inf test coverage and skipped-row documentation clarification
+
+v0.1.9.1:
+World Cup feature variable upgrade with 4 derived ratio features
+
+v0.1.9.2:
+Tournament Stage and Market Semantics Validation
+
+v0.1.9.3:
+Prediction Review Taxonomy Primitives
+
+v0.1.9.4:
+Prediction Review Note Primitives
+
+v0.2.0:
+Odds / Implied Probability Primitives
+
+v0.2.1:
+Edge Calculation Primitives
+
+v0.2.2:
+Candidate Evaluation Record / Pass Reason Primitives
+
+═══════════════════════════════════════════════════════
+v0.2.2 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.2 added pure candidate evaluation record and pass reason primitives.
+
+Files added:
+
+* src/candidate_evaluation.py
+* tests/test_candidate_evaluation.py
+
+Files modified:
+
+* CHANGELOG.md
+* CLAUDE.md
+* README.md
+* config/model_config.json
+* pyproject.toml
+* tests/test_paths.py
+
+Implemented in src/candidate_evaluation.py:
+
+* CandidateEvaluationValidationError
+* VALID_CANDIDATE_STATUSES
+* VALID_PASS_REASONS
+* normalize_candidate_status(status)
+* normalize_pass_reason(reason)
+* validate_pass_reasons(pass_reasons)
+* build_candidate_evaluation(status, edge=None, pass_reasons=None)
+* _validate_edge() — private helper, not exported
+
+Constants:
+
+VALID_CANDIDATE_STATUSES = {
+    "candidate",
+    "rejected",
+    "not_evaluable",
+}
+
+VALID_PASS_REASONS = {
+    "edge_below_minimum",
+    "missing_model_probability",
+    "missing_implied_probability",
+    "invalid_model_probability",
+    "invalid_implied_probability",
+    "market_semantics_unclear",
+    "data_quality_concern",
+    "manual_review_required",
+    "unknown",
+}
+
+Return shape (always exactly 3 keys):
+
+{
+    "status": "candidate",
+    "edge": 0.05,
+    "pass_reasons": [],
+}
+
+or:
+
+{
+    "status": "rejected",
+    "edge": 0.01,
+    "pass_reasons": ["edge_below_minimum"],
+}
+
+or:
+
+{
+    "status": "not_evaluable",
+    "edge": None,
+    "pass_reasons": ["missing_model_probability"],
+}
+
+Structural invariants enforced by build_candidate_evaluation():
+
+* status="candidate"     → pass_reasons must be []
+* status="rejected"      → pass_reasons must have at least one validated reason
+* status="not_evaluable" → pass_reasons must have at least one validated reason
+* Violating these raises CandidateEvaluationValidationError
+
+Operation order inside build_candidate_evaluation():
+
+1. Normalize and validate status
+2. Validate edge via _validate_edge()
+3. Normalize and validate pass_reasons via validate_pass_reasons()
+4. Enforce structural invariant
+5. Return dict
+
+Edge validation rules (_validate_edge):
+
+* None → None (allowed on any status)
+* bool → reject
+* non-numeric → reject
+* NaN → reject
+* infinity → reject
+* edge < -1.0 → reject
+* edge > 1.0 → reject
+* valid → return float(edge)
+
+Only import: stdlib math (for _validate_edge NaN/inf checks).
+No imports from odds.py, edge.py, review_taxonomy.py, review_notes.py, database, or runtime modules.
+Not wired into any existing module in this version.
+
+Tests:
+
+* tests/test_candidate_evaluation.py
+* Full local test result after merge: 643 passed
+* GitHub Actions: passed
+
+v0.2.2 intentionally did not add:
+
+* minimum_edge parameter
+* threshold comparison
+* auto-generated pass reasons
+* data_quality parameter
+* betting recommendations
+* picks
+* parlays
+* EV calculation
+* Kelly sizing
+* stake sizing
+* confidence labels
+* runtime wiring
+* database schema changes
+* model or simulator changes
+* CI changes
+* new dependencies
+* any imports from odds.py, edge.py, review_taxonomy.py, or review_notes.py
+
+═══════════════════════════════════════════════════════
+v0.2.1 SUMMARY — FOR REFERENCE
+═══════════════════════════════════════════════════════
+
+v0.2.1 added pure edge calculation primitives.
+
+Files added:
+
+* src/edge.py
+* tests/test_edge.py
+
+Files modified:
+
+* CHANGELOG.md
+* CLAUDE.md
+* README.md
+* config/model_config.json
+* pyproject.toml
+* tests/test_paths.py
+
+Implemented in src/edge.py:
+
+* calculate_edge(model_probability, implied_probability)
+
+Core behavior:
+
+calculate_edge(model_probability, implied_probability):
+
+* Validates model_probability using validate_probability() from odds.py
+* Validates implied_probability using validate_probability() from odds.py
+* Invalid model_probability raises OddsValidationError from validate_probability()
+* Invalid implied_probability raises OddsValidationError from validate_probability()
+* Does not catch or wrap OddsValidationError
+* Returns model_probability - implied_probability as a plain Python float
+* Positive edge means model probability is higher than sportsbook implied probability
+* Negative edge means model probability is lower than sportsbook implied probability
+* Zero edge means they are equal
+* Does not round
+* Preserves native Python float behavior
+* Valid edge range is naturally -1.0 to 1.0 because both inputs must be valid probabilities
+
+Tests:
+
+* tests/test_edge.py
+* 33 tests
+* Full local test result after merge: 545 passed
+* GitHub Actions for PR #16: passed
+
+═══════════════════════════════════════════════════════
+v0.2.0 SUMMARY — FOR REFERENCE
+═══════════════════════════════════════════════════════
+
+v0.2.0 added pure odds and implied probability conversion primitives.
+
+Files added:
+
+* src/odds.py
+* tests/test_odds.py
+
+Files modified:
+
+* CHANGELOG.md
+* CLAUDE.md
+* README.md
+* config/model_config.json
+* pyproject.toml
+* tests/test_paths.py
+
+Implemented in src/odds.py:
+
+* OddsValidationError
+* american_to_implied_probability()
+* decimal_to_implied_probability()
+* fractional_to_implied_probability()
+* validate_probability()
+
+Tests:
+
+* tests/test_odds.py
+* 80 tests
+* Full local test result after merge: 512 passed
+* GitHub Actions for PR #15: passed
+
+═══════════════════════════════════════════════════════
+PROP BET LAB COMPARISON — DECISIONS
+═══════════════════════════════════════════════════════
+
+A separate Claude chat generated a single-file HTML/CSS/JS "Prop Bet Lab" with:
+
+* Prop Analyzer
+* EV Calculator
+* Parlay Builder
+* Line Compare
+* direct Claude API calls
+* AI-generated fair probabilities, grades, recommendations, and parlay/line analysis
+
+Decision:
+Do not implement or copy Prop Bet Lab directly into RSB.
+
+Reason:
+Prop Bet Lab is a frontend-first prompt-to-pick prototype. RSB is a backend-first, tested, deterministic analytics engine. RSB should not use Claude/LLM guesses as fair probability, edge, or recommendation inputs.
+
+Useful ideas to keep for future consideration:
+
+* american_to_decimal_odds() as a future odds helper
+* calculate_expected_value() as a future EV primitive
+* parlay combined odds math for v0.3.x+ only
+* structured result schemas as a conceptual pattern
+* pass/reject reason structures — now implemented as part of v0.2.2
+
+Ideas to defer or reject:
+
+* Reject LLM-estimated fair probability
+* Reject AI-generated "Strong Over / Strong Under" recommendations
+* Reject direct browser API calls for production RSB
+* Defer frontend/UI
+* Defer Kelly/stake sizing
+* Defer parlay builder
+* Defer line compare / sharp-vs-public claims until real market data exists
+
+═══════════════════════════════════════════════════════
+CURRENT GUARDRAILS
+═══════════════════════════════════════════════════════
+
+* No real data file changes unless explicitly approved.
+* Do not modify data/input/*.json.
+* Do not modify data/worldcup_ai.db.
+* Do not modify data/output/*.json.
+* No database schema changes unless explicitly approved.
+* No simulator coefficient changes unless explicitly approved.
+* No betting recommendations yet.
+* No "locks."
+* Prefer pass/no bet over forced action.
+* No API/frontend work unless explicitly approved.
+* No parlay logic unless explicitly approved.
+* No live odds collection unless explicitly approved.
+* No live news/context ingestion unless explicitly approved.
+* No scraping unless explicitly approved.
+* No arbitrage tooling unless explicitly approved.
+* No new dependencies unless explicitly approved.
+* No CI changes unless explicitly approved.
+* Keep changes small, deterministic, tested, and reviewable.
+* Prefer pure functions and isolated tests.
+* Use tmp_path/monkeypatch where needed.
+* Do not weaken betting/data/model guardrails.
+* Do not wire pure primitive modules into runtime flows until explicitly approved.
+* Do not add uncontrolled self-learning or automatic model mutation.
+* Any future learning loop must be audited, versioned, and based on verified settled-result data.
+
+═══════════════════════════════════════════════════════
+ROADMAP — CURRENT DIRECTION
+═══════════════════════════════════════════════════════
+
+Current completed version:
+v0.2.2 — Candidate Evaluation Record / Pass Reason Primitives
+
+Immediate next:
+v0.2.3 — Backtest Review Overlay
+
+Implementation status:
+Not started.
+
+Core roadmap principle:
+RSB should move in this order:
+
+1. Pure primitives
+2. Review/evaluation records
+3. Backtest/calibration overlays
+4. Candidate screening/ranking
+5. Automated data ingestion
+6. Product/output layer
+7. Controlled self-learning feedback loop
+8. Parlay construction only after singles are reliable
+
+Do not jump from pure primitives directly to betting recommendations, parlays, scraping, live odds automation, self-learning automation, or product UI.
+
+────────────────────────────────────────
+v0.2.x — primitives and review foundations
+────────────────────────────────────────
+
+v0.2.2:
+Candidate Evaluation Record / Pass Reason Primitives. COMPLETE.
+
+v0.2.3:
+Backtest Review Overlay or Review Summary.
+
+Purpose:
+Use existing backtest/report/review primitives to summarize model outcomes more clearly and support future calibration review.
+
+Possible future v0.2.x candidate:
+Odds expansion / EV math primitives.
+
+Possible additions:
+
+* american_to_decimal_odds()
+* calculate_expected_value()
+* EV per unit
+* stake-based EV
+
+Important:
+EV math is useful, but it must remain a pure primitive. It should not become recommendation logic.
+
+Possible later v0.2.x candidate:
+Controlled staking/Kelly primitives.
+
+Important:
+Kelly should be treated as stake-sizing math, not recommendation logic. It should only be considered after EV and calibration are stronger. Full Kelly is aggressive and should not be introduced casually.
+
+────────────────────────────────────────
+v0.3.x — candidate screening and ranking foundation
+────────────────────────────────────────
+
+Goal:
+Begin using the primitive layers together.
+
+This is where RSB can start combining:
+
+* model probability
+* sportsbook implied probability
+* edge
+* candidate evaluation records
+* pass reasons
+* backtest review
+* EV if implemented
+* data-quality checks
+* calibration checks
+
+Expected direction:
+Early automated ranking of singles only.
+
+Important:
+v0.3.x may begin candidate screening, but it should still be cautious. "Candidate" does not mean "bet it." RSB must still prefer pass/no bet when evidence is weak.
+
+Do not add parlay construction yet.
+
+────────────────────────────────────────
+v0.4.x — automation and data ingestion layer
+────────────────────────────────────────
+
+Goal:
+Start building the real automated pipeline.
+
+Possible components:
+
+* fixture/slate ingestion
+* sportsbook odds/props/line ingestion
+* market snapshots
+* stat/context collection
+* injury/lineup/rest/rotation/travel/weather collection where available
+* scheduled runs
+* automated model inputs
+* automated candidate creation
+
+Important:
+This is where the long-term automation goal starts becoming real.
+
+────────────────────────────────────────
+v0.5.x+ — product/output layer
+────────────────────────────────────────
+
+Goal:
+Build user-facing outputs once the engine is reliable enough.
+
+Possible additions:
+
+* dashboard
+* API
+* reports
+* line shopping
+* sportsbook comparison
+* broader prop support
+* richer candidate cards
+* model/backtest summary views
+* scheduled weekly reports
+
+Important:
+Frontend/product work should not happen before the engine has stable data contracts, candidate records, backtest review, and early automated ranking.
+
+────────────────────────────────────────
+v0.6.x+ — controlled self-learning feedback loop
+────────────────────────────────────────
+
+Goal:
+Add settled-result ingestion and post-event review so RSB can improve over time.
+
+Possible components:
+
+* record pre-event decision snapshots
+* ingest final results
+* classify hit / miss / push / void
+* capture closing line and market movement
+* classify miss reasons
+* store structured post-event review notes
+* generate calibration reports
+* maintain a feature improvement queue
+* support controlled retraining/recalibration
+
+Important:
+Self-learning must be controlled, audited, versioned, and based on verified settled-result data.
+
+────────────────────────────────────────
+v0.7.x+ / much later — parlay construction
+────────────────────────────────────────
+
+Goal:
+Add parlay construction only after singles are calibrated and candidate ranking is reliable.
+
+Possible components:
+
+* parlay leg compatibility checks
+* correlation risk detection
+* weakest-leg detection
+* parlay combined odds math
+* slip rejection logic
+* parlay EV/risk review
+* sportsbook-specific parlay comparison
+
+Important:
+Parlays are a long-term goal, but not an early feature.
+
+═══════════════════════════════════════════════════════
+ROADMAP GUARDRAIL
+═══════════════════════════════════════════════════════
+
+Near-term RSB should stay disciplined:
+
+v0.2.x = primitives and review foundations
+v0.3.x = candidate screening/ranking
+v0.4.x = automation/data ingestion
+v0.5.x = product/output layer
+v0.6.x = self-learning feedback loop
+v0.7.x+ = careful parlay construction
+
+Do not skip ahead to:
+
+* betting recommendations
+* parlays
+* scraping
+* live odds automation
+* self-learning automation
+* product UI
+* bankroll/staking advice
+
+until the foundation is tested, calibrated, and reviewed.
+
+═══════════════════════════════════════════════════════
+IMMEDIATE NEXT ACTION
+═══════════════════════════════════════════════════════
+
+Next planned version:
+v0.2.3 — Backtest Review Overlay
+
+Implementation status:
+Not started. Awaiting ChatGPT scope definition and implementation prompt.
+
+Do not create a branch or prompt Claude for v0.2.3 until ChatGPT provides the implementation prompt.
+
+═══════════════════════════════════════════════════════
+IMPORTANT PREFERENCES
+═══════════════════════════════════════════════════════
+
+* Always give me the PR link after branch push/PR context.
+* If a PR number, merge status, test count, branch state, or local cleanliness is unknown, mark it UNKNOWN.
+* Tell me exactly what command or screenshot to provide when something is unknown.
+* Do not assume anything that was not verified.
+* Be strict about scope control.
+* Be willing to say "not yet" if an idea is future scope but not safe for the current version.
+* Keep RSB disciplined: data-backed, evidence-backed, reviewable, automation-first, self-learning over time through controlled feedback loops, and never a lock generator.
+* For long review output, give Ryan a command that writes the full review package to /tmp/rsb_<version>_review.txt and opens it, instead of making Ryan scroll through Terminal.
+* Use git diff HEAD in review packages when staged changes may exist.
