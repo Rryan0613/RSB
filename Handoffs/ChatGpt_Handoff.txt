@@ -388,51 +388,56 @@ CURRENT VERIFIED PROJECT STATE
 ═══════════════════════════════════════════════════════
 
 Latest completed version:
-v0.2.6 — Odds Snapshot / Provider Record Normalization
+v0.2.7 — Prop Result / Settlement Primitives
 
 Current branch:
 main
 
 Current status:
-main is clean and up to date with origin/main, based on user's post-merge verification report.
+main is clean and up to date with origin/main, based on Ryan's post-merge verification.
 
 Current local test count:
-1125 passing
+1309 passing
 
 Latest repo event:
-PR #28 — v0.2.6 Odds Snapshot Provider Records
-https://github.com/Rryan0613/RSB/pull/28
+PR #30 — v0.2.7 Prop Result Settlement Primitives
+https://github.com/Rryan0613/RSB/pull/30
 
-PR #28 status:
+PR #30 status:
 
 * State: MERGED
-* Implementation commit: afdc4d1 — Add odds snapshot provider records
-* Merge commit: 54add95 on main after local pull
+* Merge commit: 9922209 (full: 992220997851fcde9b836f6ce32217a54dd95ea7)
+* Merged at: 2026-06-30T15:16:07Z
+* Feature branch: feature/v0.2.7-prop-result-settlement-primitives
+* Feature branch deleted locally and remotely after merge
 * GitHub Actions/checks: 8 successful, 0 failing, 0 pending
-* PR merged successfully
-* Feature branch: feature/v0.2.6-odds-snapshot-provider-record
 * Post-merge local verification: main clean / up to date with origin/main
-* Tests after merge: 1125 passed
+* Tests after merge: 1309 passed
 
 Latest completed version:
-v0.2.6 — Odds Snapshot / Provider Record Normalization
+v0.2.7 — Prop Result / Settlement Primitives
 
 Latest version PR:
-PR #28 — v0.2.6 Odds Snapshot Provider Records
-https://github.com/Rryan0613/RSB/pull/28
-
-Current implementation commit:
-afdc4d1 — Add odds snapshot provider records
+PR #30 — v0.2.7 Prop Result Settlement Primitives
+https://github.com/Rryan0613/RSB/pull/30
 
 Merge commit:
-54add95 on main after local pull
+9922209 on main (full: 992220997851fcde9b836f6ce32217a54dd95ea7)
 
 Feature branch:
-feature/v0.2.6-odds-snapshot-provider-record
+feature/v0.2.7-prop-result-settlement-primitives
 
 ═══════════════════════════════════════════════════════
 RECENT MERGED PRs
 ═══════════════════════════════════════════════════════
+
+PR #30:
+v0.2.7 Prop Result Settlement Primitives
+https://github.com/Rryan0613/RSB/pull/30
+
+PR #29:
+Update handoffs after v0.2.6 — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/29
 
 PR #28:
 v0.2.6 Odds Snapshot Provider Records
@@ -569,8 +574,142 @@ Prop Market / Candidate Schema Primitives
 v0.2.6:
 Odds Snapshot / Provider Record Normalization
 
+v0.2.7:
+Prop Result / Settlement Primitives
+
 ═══════════════════════════════════════════════════════
-v0.2.6 SUMMARY — LATEST COMPLETED VERSION
+v0.2.7 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.7 added pure prop result / settlement record normalization primitives.
+
+Files added:
+
+* src/prop_result.py
+* tests/test_prop_result.py
+
+Files modified:
+
+* CHANGELOG.md
+* CLAUDE.md
+* README.md
+* config/model_config.json
+* pyproject.toml
+* tests/test_paths.py
+
+Implemented in src/prop_result.py:
+
+* PropResultValidationError(ValueError)
+* VALID_SETTLEMENT_STATUSES = frozenset({"won", "lost", "push", "void", "pending", "unknown"})
+* FINAL_SETTLEMENT_STATUSES = frozenset({"won", "lost", "push", "void"})
+* normalize_market_type(market_type)
+* normalize_selection(selection)
+* normalize_settlement_status(status)
+* build_prop_result(...) -> dict
+
+build_prop_result signature:
+
+build_prop_result(
+*,
+event_id,
+market_type,
+selection,
+line=None,
+actual_value=None,
+settlement_status,
+settled_at=None,
+source=None,
+settlement_rule=None,
+start_required=None,
+participation_required=None,
+void_condition=None,
+void_reason=None,
+metadata=None,
+) -> dict
+
+Return shape (always exactly 14 keys):
+
+{
+    "event_id":               str,
+    "market_type":            str,
+    "selection":              str,
+    "line":                   float | None,
+    "actual_value":           float | None,
+    "settlement_status":      str,
+    "settled_at":             str | None,
+    "source":                 str | None,
+    "settlement_rule":        str | None,
+    "start_required":         bool | None,
+    "participation_required": bool | None,
+    "void_condition":         str | None,
+    "void_reason":            str | None,
+    "metadata":               dict,
+}
+
+Validation summary:
+
+* event_id is a required stripped string; case is preserved
+* market_type and selection are required slug-normalized strings
+* line is optional numeric; rejects bool, non-numeric, NaN, and infinity; returns float
+* actual_value is optional numeric; rejects bool, non-numeric, NaN, and infinity; returns float
+* settlement_status is required, slug-normalized, and must be one of VALID_SETTLEMENT_STATUSES
+* settled_at is an optional stripped string or None; no datetime parsing
+* Final statuses (won, lost, push, void) require settled_at to be present
+* Pending and unknown statuses require settled_at to be None
+* source is an optional stripped string or None
+* settlement_rule is an optional stripped string or None
+* start_required is an optional bool or None; rejects non-bool when not None
+* participation_required is an optional bool or None; rejects non-bool when not None
+* void_condition is an optional stripped string or None
+* void_reason is an optional stripped string or None
+* void_reason is only allowed when settlement_status is "void"
+* settlement_status "void" may have void_reason of None because providers may not expose a reason
+* metadata defaults to {}, must be a dict, and is shallow copied
+* No automatic grading or inference
+
+Tests:
+
+* tests/test_prop_result.py
+* Full local test result after merge: 1309 passed
+* GitHub Actions/checks for PR #30: 8 successful, 0 failing, 0 pending
+
+v0.2.7 intentionally did not add:
+
+* sportsbook settlement rule engine
+* stat-based over/under grading
+* automatic win/loss/push/void inference
+* provider ingestion
+* live odds
+* scraping
+* database schema changes
+* runtime wiring
+* prop candidate attachment or enrichment
+* implied probability
+* edge
+* EV
+* CLV
+* calibration
+* historical result ingestion
+* ranking
+* recommendations
+* picks
+* locks
+* parlays
+* frontend, API, or UI
+* new dependencies
+* CI changes
+* data/input changes
+* data/output changes
+* data/worldcup_ai.db changes
+
+Important scope clarification:
+The v0.2.7 omissions are version-scoped only. RSB's long-term product goal still includes
+odds providers, sportsbook APIs, player prop data, simulations, injury/lineup data, historical
+results, model calibration, and eventually ranked +EV prop/pick candidates. v0.2.7 avoided
+those items only because it was limited to pure prop result / settlement record normalization primitives.
+
+═══════════════════════════════════════════════════════
+v0.2.6 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.2.6 added pure odds snapshot / provider record normalization primitives.
@@ -1176,7 +1315,7 @@ CURRENT GUARDRAILS
 * Use tmp_path/monkeypatch where needed.
 * Do not weaken betting/data/model guardrails.
 * Do not wire pure primitive modules into runtime flows until explicitly approved.
-* Do not wire odds_snapshot.py, prop_candidate.py, odds.py, ev.py, edge.py, candidate_evaluation.py, backtest_review.py, review_notes.py, review_taxonomy.py, or stage_market.py into runtime flows unless explicitly approved.
+* Do not wire prop_result.py, odds_snapshot.py, prop_candidate.py, odds.py, ev.py, edge.py, candidate_evaluation.py, backtest_review.py, review_notes.py, review_taxonomy.py, or stage_market.py into runtime flows unless explicitly approved.
 * Do not add uncontrolled self-learning or automatic model mutation.
 * Any future learning loop must be audited, versioned, and based on verified settled-result data.
 
@@ -1185,10 +1324,10 @@ ROADMAP — CURRENT DIRECTION
 ═══════════════════════════════════════════════════════
 
 Current completed version:
-v0.2.6 — Odds Snapshot / Provider Record Normalization
+v0.2.7 — Prop Result / Settlement Primitives
 
 Immediate next:
-v0.2.7 — Prop Result / Settlement Primitives
+v0.2.8 — Candidate EV Enrichment
 
 Implementation status:
 Not started. Awaiting ChatGPT scope definition and implementation prompt.
@@ -1223,20 +1362,11 @@ v0.2.3: Backtest Review Overlay. COMPLETE.
 v0.2.4: Odds Expansion / EV Math Primitives. COMPLETE.
 v0.2.5: Prop Market / Candidate Schema Primitives. COMPLETE.
 v0.2.6: Odds Snapshot / Provider Record Normalization. COMPLETE.
-
-v0.2.7 — Prop Result / Settlement Primitives:
-Not started. Awaiting ChatGPT scope definition and implementation prompt.
-(Existing roadmap context only — not approved implementation scope.)
-Define win/loss/push/void/pending/unknown settlement records.
-Settlement behavior is sportsbook-specific, sport-specific, market-specific, and
-sometimes parlay-format-specific. RSB must not assume universal rules.
-For player props, some books/markets require the player to start, some require
-participation, some void inactive/non-starting players, and some settle once the
-player participates. Soccer has especially important start/appearance/void-rule
-differences, but NBA/NFL/MLB/NHL also have book-specific participation/inactive/
-early-exit rules. Full settlement logic belongs here, not in v0.2.5.
+v0.2.7: Prop Result / Settlement Primitives. COMPLETE.
 
 v0.2.8 — Candidate EV Enrichment:
+Not started. Awaiting ChatGPT scope definition and implementation prompt.
+(Existing roadmap context only — not approved implementation scope.)
 Shape: candidate + odds + caller-supplied model_probability
      -> implied_probability, edge, EV, pass/review fields.
 CRITICAL: v0.2.8 does NOT compute model_probability internally.
@@ -1280,6 +1410,37 @@ Convert injuries / news / lineup / research into structured model inputs.
 Learn and validate recency weighting rather than hardcoding it.
 Feature ablation: each feature must prove it improves Brier score, log loss,
 or CLV over enough data before staying in the model.
+
+Sport-modeling clarification:
+The NBA, MLB, NFL, and Soccer/World Cup feature tier lists below are illustrative
+examples, not exhaustive model specifications. Future v0.5.x sport models should
+organize their features into the following families:
+
+  availability / role:         active/inactive status, projected start, expected
+                               minutes, snap share, route share, lineup confirmation,
+                               rotation role
+  opportunity volume:          shots, touches, targets, carries, plate appearances,
+                               rebound chances, assist chances, shots on target,
+                               set-piece involvement
+  efficiency / skill:          xG/shot, xA, usage efficiency, yards after catch,
+                               xwOBA, strikeout/walk profile, completion over expected
+  matchup:                     opponent defensive scheme, pitcher/batter handedness,
+                               coverage type, rim protection, pressing style, park
+                               factors, weather where relevant
+  game environment:            pace, spread, total, team implied total, rest/travel,
+                               altitude, tournament stage, game script, weather
+  market context:              opening line, current line, closing line, sportsbook,
+                               odds movement, vig, limits, market availability
+  data quality / uncertainty:  stale injury news, low sample size, role change, new
+                               coach or manager, tournament small-sample risk, provider
+                               coverage gaps
+  calibration / feature ablation: features should earn their place by improving Brier
+                               score, log loss, CLV, or other validation metrics over
+                               meaningful samples before staying in the model
+
+These feature families are future v0.5.x roadmap context only. They are not v0.2.8
+implementation scope and must not be added to any v0.2.x version without explicit
+ChatGPT approval.
 
 Basketball (NBA):
   Tier 1 (core): minutes projection, usage/role, shot volume, assist chances,
@@ -1554,7 +1715,7 @@ The schema and settlement roadmap must preserve support for fields such as:
   settlement_rule
   book-specific settlement metadata
 
-v0.2.5 may preserve metadata support where scoped. Full settlement logic belongs in v0.2.7.
+v0.2.5 preserved metadata support where scoped. Full settlement primitives were implemented in v0.2.7.
 RSB must not assume any universal settlement behavior across sports, books, or markets.
 
 ACCOUNT HEALTH / EXECUTION CONSTRAINTS
@@ -1592,12 +1753,16 @@ IMMEDIATE NEXT ACTION
 ═══════════════════════════════════════════════════════
 
 Next planned version:
-v0.2.7 — Prop Result / Settlement Primitives
+v0.2.8 — Candidate EV Enrichment
 
 Implementation status:
 Not started. Awaiting ChatGPT scope definition and implementation prompt.
 
-Do not create a branch or prompt Claude for v0.2.7 — Prop Result / Settlement Primitives until ChatGPT provides the implementation prompt.
+Critical note: v0.2.8 does not compute model_probability internally. It consumes a
+caller-supplied model_probability only. Full model-generated EV automation requires
+the v0.5.x sport-specific model layer.
+
+Do not create a branch or prompt Claude for v0.2.8 — Candidate EV Enrichment until ChatGPT provides the implementation prompt.
 
 ═══════════════════════════════════════════════════════
 IMPORTANT PREFERENCES
