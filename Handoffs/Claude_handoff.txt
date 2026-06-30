@@ -95,7 +95,7 @@ Sports are noisy. A good bet can lose. A bad bet can win. RSB must learn from pa
 over many outcomes, not overreact to individual misses.
 
 The primitives already built — review_taxonomy.py, review_notes.py, odds.py, edge.py,
-candidate_evaluation.py, backtest_review.py, and ev.py — are early vocabulary for the future self-learning loop.
+candidate_evaluation.py, backtest_review.py, ev.py, prop_candidate.py, and odds_snapshot.py — are early vocabulary for the future self-learning loop.
 
 ═══════════════════════════════════════════════════════
 RSB NORTH STAR / PRODUCT MINDSET
@@ -136,21 +136,22 @@ Current development philosophy:
 CURRENT VERIFIED STATE
 ═══════════════════════════════════════════════════════
 
-Version:        0.2.5
+Version:        0.2.6
 Branch:         main
 Status:         clean and up to date with origin/main, based on post-merge verification
-Tests passing:  956
+Tests passing:  1125
 
-Latest version PR:      PR #26 — v0.2.5 Prop Candidate Schema Primitives — merged
-                        https://github.com/Rryan0613/RSB/pull/26
-Implementation commit:  da81562 — Add prop candidate schema primitives
-Merge commit:           208dd8c — Merge pull request #26 from Rryan0613/feature/v0.2.5-prop-candidate-schema-primitives
-Feature branch:         feature/v0.2.5-prop-candidate-schema-primitives
-PR #26 post-merge verification: complete — main clean/up to date; 956 tests passed
+Latest version PR:      PR #28 — v0.2.6 Odds Snapshot Provider Records — merged
+                        https://github.com/Rryan0613/RSB/pull/28
+Implementation commit:  afdc4d1 — Add odds snapshot provider records
+Merge commit:           54add95 on main after local pull
+Feature branch:         feature/v0.2.6-odds-snapshot-provider-record
+GitHub Actions/checks:  8 successful, 0 failing, 0 pending
+PR #28 post-merge verification: complete — main clean/up to date; 1125 tests passed
 
-Latest completed version: v0.2.5 — Prop Market / Candidate Schema Primitives
-Next target:    v0.2.6 — Odds Snapshot / Provider Record Normalization
-v0.2.6 status:  Not started. Awaiting ChatGPT scope definition and implementation prompt.
+Latest completed version: v0.2.6 — Odds Snapshot / Provider Record Normalization
+Next target:    v0.2.7 — Prop Result / Settlement Primitives
+v0.2.7 status:  Not started. Awaiting ChatGPT scope definition and implementation prompt.
 
 If strict verification is needed, ask the user to run:
 
@@ -169,17 +170,18 @@ v0.2.2    Candidate Evaluation Record / Pass Reason Primitives               ←
 v0.2.3    Backtest Review Overlay                                            ← COMPLETE
 v0.2.4    Odds Expansion / EV Math Primitives                                ← COMPLETE
 v0.2.5    Prop Market / Candidate Schema Primitives                          ← COMPLETE
+v0.2.6    Odds Snapshot / Provider Record Normalization                      ← COMPLETE
 
 ── Near-term v0.2.x ──────────────────────────────────────────
 
-v0.2.6    Odds Snapshot / Provider Record Normalization
-          Not started. Awaiting ChatGPT scope definition and implementation prompt.
-          Normalize sportsbook odds snapshots. Fields include: provider, sportsbook, market,
-          selection, line, odds, odds_found_at / odds_timestamp, source, staleness.
-          odds_found_at lives here, NOT on the candidate record. CLV later compares
-          odds_found_at to closing line, so this timestamp must be stored from day one.
+v0.2.6    Odds Snapshot / Provider Record Normalization                              ← COMPLETE
+          src/odds_snapshot.py — pure snapshot/provider record normalization primitives.
+          odds_found_at lives on the snapshot record, not the candidate record.
+          CLV later compares odds_found_at to closing line.
 
 v0.2.7    Prop Result / Settlement Primitives
+          Not started. Awaiting ChatGPT scope definition and implementation prompt.
+          (Existing roadmap context only — not approved implementation scope.)
           Define win/loss/push/void/pending/unknown settlement records for prop outcomes.
           Settlement behavior is sportsbook-specific, sport-specific, market-specific,
           and sometimes parlay-format-specific. RSB must not assume universal rules.
@@ -524,6 +526,14 @@ that claim with verified settled results.
 RECENT COMPLETED PRs
 ═══════════════════════════════════════════════════════
 
+PR #28:
+v0.2.6 Odds Snapshot Provider Records
+https://github.com/Rryan0613/RSB/pull/28
+
+PR #27:
+Update handoffs after v0.2.5 — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/27
+
 PR #26:
 v0.2.5 Prop Candidate Schema Primitives
 https://github.com/Rryan0613/RSB/pull/26
@@ -597,7 +607,92 @@ v0.1.9.0 backtest report output, build_backtest_report
 https://github.com/Rryan0613/RSB/pull/9
 
 ═══════════════════════════════════════════════════════
-v0.2.5 SUMMARY — LATEST COMPLETED VERSION
+v0.2.6 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.6 added pure odds snapshot / provider record normalization primitives.
+
+New files:
+
+* src/odds_snapshot.py
+* tests/test_odds_snapshot.py
+
+Implemented in src/odds_snapshot.py:
+
+* OddsSnapshotValidationError(ValueError)
+* VALID_ODDS_FORMATS = frozenset({"american", "decimal"})
+* normalize_provider(provider)
+* normalize_sportsbook(sportsbook)
+* normalize_market_type(market_type)
+* normalize_selection(selection)
+* normalize_odds_format(odds_format)
+* build_odds_snapshot(...) -> dict
+
+Return shape (always exactly 11 keys):
+
+{
+    "provider":      str,
+    "sportsbook":    str,
+    "event_id":      str,
+    "market_type":   str,
+    "selection":     str,
+    "line":          float | None,
+    "odds":          float,
+    "odds_format":   str,
+    "odds_found_at": str,
+    "source":        str | None,
+    "metadata":      dict,
+}
+
+Validation summary:
+
+* provider/sportsbook/market_type/selection are required slug-normalized strings
+* event_id is required stripped string, case preserved
+* line is optional numeric; rejects bool/non-numeric/NaN/infinity
+* odds_format supports "american" and "decimal" only
+* odds validation is format-specific: american rejects 0; decimal rejects <= 1.0
+* odds_found_at is required non-empty stripped string (future CLV depends on observed price timestamp)
+* source is optional stripped string or None
+* metadata defaults to {}, must be dict, shallow copied
+
+Pure/in-memory only. Imports math only. No RSB module imports.
+
+Tests:
+
+* tests/test_odds_snapshot.py
+* Full local test result after merge: 1125 passed
+* GitHub Actions/checks for PR #28: 8 successful, 0 failing, 0 pending
+
+v0.2.6 intentionally did not add:
+
+* live odds API
+* scraping
+* provider credentials
+* sportsbook integration
+* implied probability
+* edge
+* EV
+* prop candidate attachment
+* settlement
+* CLV calculation
+* ranking
+* picks
+* recommendations
+* locks
+* parlays
+* runtime wiring
+* database changes
+* new dependencies
+* CI changes
+
+Important scope clarification:
+The v0.2.6 omissions are version-scoped only. RSB's long-term product goal still includes
+odds providers, sportsbook APIs, player prop data, simulations, injury/lineup data, historical
+results, model calibration, and eventually ranked +EV prop/pick candidates. v0.2.6 avoided
+those items only because it was limited to pure odds snapshot / provider record normalization primitives.
+
+═══════════════════════════════════════════════════════
+v0.2.5 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.2.5 added pure prop/pick candidate schema primitives.
@@ -1071,7 +1166,7 @@ STRICT CLAUDE RULES — ALWAYS ACTIVE
 * Do not add betting recommendations unless explicitly approved.
 * Do not add parlay logic unless explicitly approved.
 * Do not wire stage_market.py, review_taxonomy.py, review_notes.py, odds.py,
-  edge.py, candidate_evaluation.py, backtest_review.py, ev.py, or prop_candidate.py into existing modules unless explicitly approved.
+  edge.py, candidate_evaluation.py, backtest_review.py, ev.py, prop_candidate.py, or odds_snapshot.py into existing modules unless explicitly approved.
 * Show each proposed file edit and wait for approval before writing it.
 * Do not update Handoffs/ files unless explicitly instructed by the user with ChatGPT approval.
 
@@ -1157,9 +1252,9 @@ WHAT I NEED FROM YOU NOW
 ═══════════════════════════════════════════════════════
 
 Do not inspect files yet.
-Do not plan v0.2.6 — Odds Snapshot / Provider Record Normalization yet.
+Do not plan v0.2.7 — Prop Result / Settlement Primitives yet.
 Do not edit anything.
 Do not run commands yet.
 Do not commit.
 
-Acknowledge this updated RSB context and wait for the v0.2.6 implementation prompt from ChatGPT.
+Acknowledge this updated RSB context and wait for the v0.2.7 — Prop Result / Settlement Primitives implementation prompt from ChatGPT.
