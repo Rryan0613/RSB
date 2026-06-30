@@ -388,7 +388,7 @@ CURRENT VERIFIED PROJECT STATE
 ═══════════════════════════════════════════════════════
 
 Latest completed version:
-v0.2.4 — Odds Expansion / EV Math Primitives
+v0.2.5 — Prop Market / Candidate Schema Primitives
 
 Current branch:
 main
@@ -397,42 +397,54 @@ Current status:
 main is clean and up to date with origin/main, based on user's post-merge verification report.
 
 Current local test count:
-830 passing
+956 passing
 
 Latest repo event:
-PR #23 — v0.2.4 Odds and EV Primitives
-https://github.com/Rryan0613/RSB/pull/23
+PR #26 — v0.2.5 Prop Candidate Schema Primitives
+https://github.com/Rryan0613/RSB/pull/26
 
-PR #23 status:
+PR #26 status:
 
 * State: MERGED
-* Merge commit: 3c8bb4f — Merge pull request #23 from Rryan0613/feature/v0.2.4-odds-ev-primitives
-* Implementation commit: 5ab3ece — Add odds and EV primitives
+* Merge commit: 208dd8c — Merge pull request #26 from Rryan0613/feature/v0.2.5-prop-candidate-schema-primitives
+* Implementation commit: da81562 — Add prop candidate schema primitives
 * GitHub Actions/checks: 8 successful, 0 failing, 0 pending
 * PR merged successfully
-* Feature branch: feature/v0.2.4-odds-ev-primitives
+* Feature branch: feature/v0.2.5-prop-candidate-schema-primitives
 * Post-merge local verification: main clean / up to date with origin/main
-* Tests after merge: 830 passed
+* Tests after merge: 956 passed
 
 Latest completed version:
-v0.2.4 — Odds Expansion / EV Math Primitives
+v0.2.5 — Prop Market / Candidate Schema Primitives
 
 Latest version PR:
-PR #23 — v0.2.4 Odds and EV Primitives
-https://github.com/Rryan0613/RSB/pull/23
+PR #26 — v0.2.5 Prop Candidate Schema Primitives
+https://github.com/Rryan0613/RSB/pull/26
 
 Current implementation commit:
-5ab3ece — Add odds and EV primitives
+da81562 — Add prop candidate schema primitives
 
 Merge commit:
-3c8bb4f — Merge pull request #23 from Rryan0613/feature/v0.2.4-odds-ev-primitives
+208dd8c — Merge pull request #26 from Rryan0613/feature/v0.2.5-prop-candidate-schema-primitives
 
 Feature branch:
-feature/v0.2.4-odds-ev-primitives
+feature/v0.2.5-prop-candidate-schema-primitives
 
 ═══════════════════════════════════════════════════════
 RECENT MERGED PRs
 ═══════════════════════════════════════════════════════
+
+PR #26:
+v0.2.5 Prop Candidate Schema Primitives
+https://github.com/Rryan0613/RSB/pull/26
+
+PR #25:
+Update RSB long-term handoff context — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/25
+
+PR #24:
+Update handoffs after v0.2.4 — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/24
 
 PR #23:
 v0.2.4 Odds and EV Primitives
@@ -543,8 +555,83 @@ Backtest Review Overlay
 v0.2.4:
 Odds Expansion / EV Math Primitives
 
+v0.2.5:
+Prop Market / Candidate Schema Primitives
+
 ═══════════════════════════════════════════════════════
-v0.2.4 SUMMARY — LATEST COMPLETED VERSION
+v0.2.5 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.5 added pure prop/pick candidate schema primitives.
+
+Files added:
+
+* src/prop_candidate.py
+* tests/test_prop_candidate.py
+
+Implemented in src/prop_candidate.py:
+
+* PropCandidateValidationError
+* normalize_sport(sport)
+* normalize_league(league)
+* normalize_market_type(market_type)
+* normalize_selection(selection)
+* build_prop_candidate(...) -> dict
+
+Return shape (always exactly 14 keys):
+
+{
+    "sport":         str,
+    "league":        str,
+    "event_id":      str,
+    "market_type":   str,
+    "selection":     str,
+    "line":          float | None,
+    "player_id":     str | None,
+    "player_name":   str | None,
+    "team_id":       str | None,
+    "team_name":     str | None,
+    "opponent_id":   str | None,
+    "opponent_name": str | None,
+    "created_at":    str | None,
+    "metadata":      dict,
+}
+
+Pure/in-memory only. No RSB runtime module imports.
+
+Tests:
+
+* tests/test_prop_candidate.py
+* Full local test result after merge: 956 passed
+
+v0.2.5 intentionally did not add:
+
+* odds
+* sportsbook
+* provider
+* implied probability
+* edge
+* EV
+* settlement
+* CLV
+* ranking
+* picks
+* recommendations
+* locks
+* parlays
+* runtime wiring
+* database changes
+* new dependencies
+* CI changes
+
+Important scope clarification:
+The v0.2.5 omissions are version-scoped only. RSB's long-term product goal still includes
+odds providers, sportsbook APIs, player prop data, simulations, injury/lineup data, historical
+results, model calibration, and eventually ranked +EV prop/pick candidates. v0.2.5 avoided
+those items only because it was limited to pure prop/pick candidate identity schema primitives.
+
+═══════════════════════════════════════════════════════
+v0.2.4 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.2.4 added odds conversion helpers and pure EV math primitives.
@@ -1001,10 +1088,10 @@ ROADMAP — CURRENT DIRECTION
 ═══════════════════════════════════════════════════════
 
 Current completed version:
-v0.2.4 — Odds Expansion / EV Math Primitives
+v0.2.5 — Prop Market / Candidate Schema Primitives
 
 Immediate next:
-v0.2.5 — Prop Market / Candidate Schema Primitives
+v0.2.6 — Odds Snapshot / Provider Record Normalization
 
 Implementation status:
 Not started. Awaiting ChatGPT scope definition and implementation prompt.
@@ -1037,21 +1124,10 @@ v0.2.x — schema, snapshots, settlement, enrichment, ranking
 v0.2.2: Candidate Evaluation Record / Pass Reason Primitives. COMPLETE.
 v0.2.3: Backtest Review Overlay. COMPLETE.
 v0.2.4: Odds Expansion / EV Math Primitives. COMPLETE.
-
-v0.2.5 — Prop Market / Candidate Schema Primitives:
-Not started. Awaiting ChatGPT scope definition and implementation prompt.
-Purpose: define normalized prop/pick candidate identity records.
-Good identity fields may include: sport, league, event_id / game_id,
-player_id / player_name, team_id / team_name, opponent_id / opponent_name where
-appropriate, market_type, selection, line, source / reference fields where scoped,
-created_at, and limited settlement metadata support where scoped.
-Do not require american_odds or sportsbook on the candidate record — those are
-primarily odds snapshot / book availability concepts for v0.2.6.
-Do not implement full settlement logic in v0.2.5.
-Do NOT include parlay-specific fields (correlation_group, market_family,
-scenario_tags) — those belong in v0.7.x when their correct shape is known.
+v0.2.5: Prop Market / Candidate Schema Primitives. COMPLETE.
 
 v0.2.6 — Odds Snapshot / Provider Record Normalization:
+Not started. Awaiting ChatGPT scope definition and implementation prompt.
 Normalize sportsbook odds snapshots. Fields include: provider, sportsbook, market,
 selection, line, odds, odds_found_at / odds_timestamp, source, staleness.
 odds_found_at lives here, NOT on the candidate record.
@@ -1423,12 +1499,12 @@ IMMEDIATE NEXT ACTION
 ═══════════════════════════════════════════════════════
 
 Next planned version:
-v0.2.5 — Prop Market / Candidate Schema Primitives
+v0.2.6 — Odds Snapshot / Provider Record Normalization
 
 Implementation status:
 Not started. Awaiting ChatGPT scope definition and implementation prompt.
 
-Do not create a branch or prompt Claude for v0.2.5 until ChatGPT provides the implementation prompt.
+Do not create a branch or prompt Claude for v0.2.6 until ChatGPT provides the implementation prompt.
 
 ═══════════════════════════════════════════════════════
 IMPORTANT PREFERENCES

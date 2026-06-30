@@ -136,24 +136,21 @@ Current development philosophy:
 CURRENT VERIFIED STATE
 ═══════════════════════════════════════════════════════
 
-Version:        0.2.4
+Version:        0.2.5
 Branch:         main
 Status:         clean and up to date with origin/main, based on post-merge verification
-Tests passing:  830
+Tests passing:  956
 
-Latest version PR:      PR #23 — v0.2.4 Odds and EV Primitives — merged
-                        https://github.com/Rryan0613/RSB/pull/23
-Implementation commit:  5ab3ece — Add odds and EV primitives
-Merge commit:           3c8bb4f — Merge pull request #23 from Rryan0613/feature/v0.2.4-odds-ev-primitives
-Feature branch:         feature/v0.2.4-odds-ev-primitives
-PR #23 checks:          8 successful, 0 failing, 0 pending
-PR #23 post-merge verification: complete — main clean/up to date; 830 tests passed
+Latest version PR:      PR #26 — v0.2.5 Prop Candidate Schema Primitives — merged
+                        https://github.com/Rryan0613/RSB/pull/26
+Implementation commit:  da81562 — Add prop candidate schema primitives
+Merge commit:           208dd8c — Merge pull request #26 from Rryan0613/feature/v0.2.5-prop-candidate-schema-primitives
+Feature branch:         feature/v0.2.5-prop-candidate-schema-primitives
+PR #26 post-merge verification: complete — main clean/up to date; 956 tests passed
 
-Latest completed version: v0.2.4 — Odds Expansion / EV Math Primitives
-Next target:    v0.2.5 — Prop Market / Candidate Schema Primitives (candidate)
-v0.2.5 status:  Not started. Awaiting ChatGPT scope definition and implementation prompt.
-                Likely purpose: move RSB toward structured prop/pick candidates by defining
-                normalized candidate records/market schema before provider ingestion or ranking.
+Latest completed version: v0.2.5 — Prop Market / Candidate Schema Primitives
+Next target:    v0.2.6 — Odds Snapshot / Provider Record Normalization
+v0.2.6 status:  Not started. Awaiting ChatGPT scope definition and implementation prompt.
 
 If strict verification is needed, ask the user to run:
 
@@ -171,25 +168,12 @@ v0.2.1    Edge Calculation Primitives                                        ←
 v0.2.2    Candidate Evaluation Record / Pass Reason Primitives               ← COMPLETE
 v0.2.3    Backtest Review Overlay                                            ← COMPLETE
 v0.2.4    Odds Expansion / EV Math Primitives                                ← COMPLETE
+v0.2.5    Prop Market / Candidate Schema Primitives                          ← COMPLETE
 
 ── Near-term v0.2.x ──────────────────────────────────────────
 
-v0.2.5    Prop Market / Candidate Schema Primitives
-          Not started. Awaiting ChatGPT scope definition and implementation prompt.
-          Purpose: define normalized prop/pick candidate identity records.
-          Good identity fields may include: sport, league, event_id / game_id,
-          player_id / player_name, team_id / team_name, opponent_id / opponent_name
-          where appropriate, market_type, selection, line, source / reference fields
-          where scoped, created_at, and limited settlement metadata support where scoped.
-          Do not require american_odds or sportsbook on the candidate record — those
-          are primarily odds snapshot / book availability concepts for v0.2.6.
-          Preserve future support for sport/book-specific settlement metadata where scoped,
-          but do not implement full settlement logic.
-          Do NOT include parlay-specific fields (correlation_group, market_family,
-          scenario_tags) — those belong in v0.7.x when their correct shape is known.
-          Do not create branch or implement until ChatGPT provides the scope prompt.
-
 v0.2.6    Odds Snapshot / Provider Record Normalization
+          Not started. Awaiting ChatGPT scope definition and implementation prompt.
           Normalize sportsbook odds snapshots. Fields include: provider, sportsbook, market,
           selection, line, odds, odds_found_at / odds_timestamp, source, staleness.
           odds_found_at lives here, NOT on the candidate record. CLV later compares
@@ -540,6 +524,18 @@ that claim with verified settled results.
 RECENT COMPLETED PRs
 ═══════════════════════════════════════════════════════
 
+PR #26:
+v0.2.5 Prop Candidate Schema Primitives
+https://github.com/Rryan0613/RSB/pull/26
+
+PR #25:
+Update RSB long-term handoff context — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/25
+
+PR #24:
+Update handoffs after v0.2.4 — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/24
+
 PR #23:
 v0.2.4 Odds and EV Primitives
 https://github.com/Rryan0613/RSB/pull/23
@@ -601,7 +597,81 @@ v0.1.9.0 backtest report output, build_backtest_report
 https://github.com/Rryan0613/RSB/pull/9
 
 ═══════════════════════════════════════════════════════
-v0.2.4 SUMMARY — LATEST COMPLETED VERSION
+v0.2.5 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.5 added pure prop/pick candidate schema primitives.
+
+New files:
+
+* src/prop_candidate.py
+* tests/test_prop_candidate.py
+
+Implemented in src/prop_candidate.py:
+
+* PropCandidateValidationError
+* normalize_sport(sport)
+* normalize_league(league)
+* normalize_market_type(market_type)
+* normalize_selection(selection)
+* build_prop_candidate(...) -> dict
+
+Return shape (always exactly 14 keys):
+
+{
+    "sport":         str,
+    "league":        str,
+    "event_id":      str,
+    "market_type":   str,
+    "selection":     str,
+    "line":          float | None,
+    "player_id":     str | None,
+    "player_name":   str | None,
+    "team_id":       str | None,
+    "team_name":     str | None,
+    "opponent_id":   str | None,
+    "opponent_name": str | None,
+    "created_at":    str | None,
+    "metadata":      dict,
+}
+
+No RSB runtime module imports.
+Pure/in-memory only. No DB, no wiring.
+
+Tests:
+
+* tests/test_prop_candidate.py
+* Full local test result after merge: 956 passed
+* GitHub Actions/checks for PR #26: 8 successful, 0 failing, 0 pending
+
+v0.2.5 intentionally did not add:
+
+* odds
+* sportsbook
+* provider
+* implied probability
+* edge
+* EV
+* settlement
+* CLV
+* ranking
+* picks
+* recommendations
+* locks
+* parlays
+* runtime wiring
+* database changes
+* new dependencies
+* CI changes
+
+Important scope clarification:
+The v0.2.5 omissions are version-scoped only. RSB's long-term product goal still includes
+odds providers, sportsbook APIs, player prop data, simulations, injury/lineup data, historical
+results, model calibration, and eventually ranked +EV prop/pick candidates. v0.2.5 avoided
+those items only because it was limited to pure prop/pick candidate identity schema primitives.
+
+═══════════════════════════════════════════════════════
+v0.2.4 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.2.4 added odds conversion helpers and pure EV math primitives.
@@ -1001,7 +1071,7 @@ STRICT CLAUDE RULES — ALWAYS ACTIVE
 * Do not add betting recommendations unless explicitly approved.
 * Do not add parlay logic unless explicitly approved.
 * Do not wire stage_market.py, review_taxonomy.py, review_notes.py, odds.py,
-  edge.py, candidate_evaluation.py, backtest_review.py, or ev.py into existing modules unless explicitly approved.
+  edge.py, candidate_evaluation.py, backtest_review.py, ev.py, or prop_candidate.py into existing modules unless explicitly approved.
 * Show each proposed file edit and wait for approval before writing it.
 * Do not update Handoffs/ files unless explicitly instructed by the user with ChatGPT approval.
 
@@ -1087,9 +1157,9 @@ WHAT I NEED FROM YOU NOW
 ═══════════════════════════════════════════════════════
 
 Do not inspect files yet.
-Do not plan v0.2.5 — Prop Market / Candidate Schema Primitives yet.
+Do not plan v0.2.6 — Odds Snapshot / Provider Record Normalization yet.
 Do not edit anything.
 Do not run commands yet.
 Do not commit.
 
-Acknowledge this updated RSB context and wait for the v0.2.5 implementation prompt from ChatGPT.
+Acknowledge this updated RSB context and wait for the v0.2.6 implementation prompt from ChatGPT.
