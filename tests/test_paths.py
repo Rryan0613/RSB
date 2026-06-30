@@ -75,7 +75,7 @@ def test_run_slate_module_loads_from_outside_project_root(tmp_path):
         f"import sys; sys.path.insert(0, {src!r}); "
         f"import run_slate; "
         f"from paths import MODEL_CONFIG_PATH, DEFAULT_SLATE_PATH, DEFAULT_MODEL_OUTPUT_PATH, DEFAULT_DB_PATH; "
-        f"assert run_slate.MODEL_VERSION == '0.2.7', run_slate.MODEL_VERSION;"
+        f"assert run_slate.MODEL_VERSION == '0.2.8', run_slate.MODEL_VERSION;"
         f"assert MODEL_CONFIG_PATH.is_absolute(); "
         f"assert DEFAULT_SLATE_PATH.is_absolute(); "
         f"assert DEFAULT_MODEL_OUTPUT_PATH.is_absolute(); "
