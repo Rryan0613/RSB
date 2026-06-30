@@ -388,7 +388,7 @@ CURRENT VERIFIED PROJECT STATE
 ═══════════════════════════════════════════════════════
 
 Latest completed version:
-v0.2.7 — Prop Result / Settlement Primitives
+v0.2.8 — Candidate EV Enrichment
 
 Current branch:
 main
@@ -397,39 +397,48 @@ Current status:
 main is clean and up to date with origin/main, based on Ryan's post-merge verification.
 
 Current local test count:
-1309 passing
+1444 passing
 
 Latest repo event:
-PR #30 — v0.2.7 Prop Result Settlement Primitives
-https://github.com/Rryan0613/RSB/pull/30
+PR #32 — v0.2.8 Candidate EV Enrichment
+https://github.com/Rryan0613/RSB/pull/32
 
-PR #30 status:
+PR #32 status:
 
 * State: MERGED
-* Merge commit: 9922209 (full: 992220997851fcde9b836f6ce32217a54dd95ea7)
-* Merged at: 2026-06-30T15:16:07Z
-* Feature branch: feature/v0.2.7-prop-result-settlement-primitives
+* Merge commit: 096336dd499808a9b71be8a3bf3a66a0d3b98f27
+* Short merge commit: 096336d
+* Merged at: 2026-06-30T18:04:01Z
+* Feature branch: feature/v0.2.8-candidate-ev-enrichment
 * Feature branch deleted locally and remotely after merge
 * GitHub Actions/checks: 8 successful, 0 failing, 0 pending
 * Post-merge local verification: main clean / up to date with origin/main
-* Tests after merge: 1309 passed
+* Tests after merge: 1444 passed
 
 Latest completed version:
-v0.2.7 — Prop Result / Settlement Primitives
+v0.2.8 — Candidate EV Enrichment
 
 Latest version PR:
-PR #30 — v0.2.7 Prop Result Settlement Primitives
-https://github.com/Rryan0613/RSB/pull/30
+PR #32 — v0.2.8 Candidate EV Enrichment
+https://github.com/Rryan0613/RSB/pull/32
 
 Merge commit:
-9922209 on main (full: 992220997851fcde9b836f6ce32217a54dd95ea7)
+096336d on main (full: 096336dd499808a9b71be8a3bf3a66a0d3b98f27)
 
 Feature branch:
-feature/v0.2.7-prop-result-settlement-primitives
+feature/v0.2.8-candidate-ev-enrichment
 
 ═══════════════════════════════════════════════════════
 RECENT MERGED PRs
 ═══════════════════════════════════════════════════════
+
+PR #32:
+v0.2.8 Candidate EV Enrichment
+https://github.com/Rryan0613/RSB/pull/32
+
+PR #31:
+Update handoffs after v0.2.7 — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/31
 
 PR #30:
 v0.2.7 Prop Result Settlement Primitives
@@ -577,8 +586,144 @@ Odds Snapshot / Provider Record Normalization
 v0.2.7:
 Prop Result / Settlement Primitives
 
+v0.2.8:
+Candidate EV Enrichment
+
 ═══════════════════════════════════════════════════════
-v0.2.7 SUMMARY — LATEST COMPLETED VERSION
+v0.2.8 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.8 added pure in-memory candidate EV enrichment primitives.
+
+Files added:
+
+* src/candidate_ev.py
+* tests/test_candidate_ev.py
+
+Files modified:
+
+* CHANGELOG.md
+* CLAUDE.md
+* README.md
+* config/model_config.json
+* pyproject.toml
+* tests/test_paths.py
+
+Implemented in src/candidate_ev.py:
+
+* CandidateEVValidationError(ValueError)
+* build_candidate_ev_enrichment(*, candidate, odds_snapshot, model_probability, minimum_edge=0.0, metadata=None) -> dict
+
+Approved imports used:
+
+* math
+* candidate_evaluation.build_candidate_evaluation
+* edge.calculate_edge
+* ev.calculate_expected_value
+* odds.american_to_decimal_odds
+* odds.american_to_implied_probability
+* odds.decimal_to_implied_probability
+* odds.validate_probability
+
+Return shape, always exactly 13 keys:
+
+{
+    "candidate":            dict,
+    "odds_snapshot":        dict,
+    "event_id":             str,
+    "market_type":          str,
+    "selection":            str,
+    "line":                 float | None,
+    "model_probability":    float,
+    "implied_probability":  float,
+    "edge":                 float,
+    "expected_value":       float,
+    "minimum_edge":         float,
+    "candidate_evaluation": dict,
+    "metadata":             dict,
+}
+
+Validation and behavior summary:
+
+* candidate is required and must be dict
+* candidate must contain event_id, market_type, selection, and line
+* odds_snapshot is required and must be dict
+* odds_snapshot must contain event_id, market_type, selection, line, odds, and odds_format
+* candidate and odds_snapshot are shallow copied into the returned record
+* caller inputs are not mutated
+* candidate and odds_snapshot event_id must match exactly
+* candidate and odds_snapshot market_type must match exactly
+* candidate and odds_snapshot selection must match exactly
+* identity fields are not normalized in candidate_ev.py; they should already be normalized by earlier primitives
+* candidate line and odds_snapshot line are locally validated
+* line may be int, float, or None
+* line rejects bool, non-numeric, NaN, and infinity
+* if both lines are not None, they must match after float conversion
+* returned line is candidate line if present, otherwise odds_snapshot line if present, otherwise None
+* model_probability is required and caller-supplied
+* model_probability is validated by odds.validate_probability()
+* model_probability is never generated, estimated, inferred, fetched, or modeled internally
+* odds_format supports american and decimal only
+* unsupported odds_format raises CandidateEVValidationError
+* american odds path uses odds.american_to_implied_probability() and odds.american_to_decimal_odds()
+* decimal odds path uses odds.decimal_to_implied_probability() and decimal odds directly for EV
+* implied_probability is calculated from odds and odds_format
+* edge is calculated with edge.calculate_edge(model_probability, implied_probability)
+* expected_value is calculated with ev.calculate_expected_value(model_probability, decimal_odds)
+* minimum_edge is caller-supplied, defaults to 0.0, must be numeric, non-bool, finite, and within [0.0, 1.0]
+* minimum_edge is not read from config/model_config.json
+* candidate_evaluation is built with candidate_evaluation.build_candidate_evaluation()
+* if edge >= minimum_edge, candidate_evaluation status is "candidate" with pass_reasons []
+* if edge < minimum_edge, candidate_evaluation status is "rejected" with pass_reasons ["edge_below_minimum"]
+* metadata defaults to {}, must be dict if provided, and is shallow copied
+* returns a plain dict
+* no rounding
+* no runtime wiring
+
+Tests:
+
+* tests/test_candidate_ev.py
+* 135 new tests
+* Full local test result after merge: 1444 passed
+* GitHub Actions/checks for PR #32: 8 successful, 0 failing, 0 pending
+
+v0.2.8 intentionally did not add:
+
+* internal model_probability computation
+* model/simulation changes
+* sport-specific feature engineering
+* v0.5.x sport model feature families as implementation
+* provider ingestion
+* live odds
+* scraping
+* database schema changes
+* runtime wiring
+* prop result / settlement usage
+* CLV calculation
+* historical result ingestion
+* candidate ranking
+* recommendations
+* picks
+* locks
+* parlays
+* staking/Kelly/bankroll
+* frontend/API/UI
+* new dependencies
+* CI changes
+* data/input changes
+* data/output changes
+* data/worldcup_ai.db changes
+* handoff file updates during feature implementation
+
+Important scope clarification:
+The v0.2.8 omissions are version-scoped only. RSB's long-term product goal still includes
+provider ingestion, sportsbook APIs, player prop data, simulations, injury/lineup data,
+historical results, model calibration, ranked +EV prop/pick candidates, and eventually
+disciplined parlay construction. v0.2.8 avoided those items only because it was limited to
+pure candidate EV enrichment with caller-supplied model_probability.
+
+═══════════════════════════════════════════════════════
+v0.2.7 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.2.7 added pure prop result / settlement record normalization primitives.
@@ -1315,7 +1460,7 @@ CURRENT GUARDRAILS
 * Use tmp_path/monkeypatch where needed.
 * Do not weaken betting/data/model guardrails.
 * Do not wire pure primitive modules into runtime flows until explicitly approved.
-* Do not wire prop_result.py, odds_snapshot.py, prop_candidate.py, odds.py, ev.py, edge.py, candidate_evaluation.py, backtest_review.py, review_notes.py, review_taxonomy.py, or stage_market.py into runtime flows unless explicitly approved.
+* Do not wire prop_result.py, odds_snapshot.py, prop_candidate.py, odds.py, ev.py, edge.py, candidate_evaluation.py, candidate_ev.py, backtest_review.py, review_notes.py, review_taxonomy.py, or stage_market.py into runtime flows unless explicitly approved.
 * Do not add uncontrolled self-learning or automatic model mutation.
 * Any future learning loop must be audited, versioned, and based on verified settled-result data.
 
@@ -1324,10 +1469,10 @@ ROADMAP — CURRENT DIRECTION
 ═══════════════════════════════════════════════════════
 
 Current completed version:
-v0.2.7 — Prop Result / Settlement Primitives
+v0.2.8 — Candidate EV Enrichment
 
 Immediate next:
-v0.2.8 — Candidate EV Enrichment
+v0.2.9 — Candidate Ranking Primitives
 
 Implementation status:
 Not started. Awaiting ChatGPT scope definition and implementation prompt.
@@ -1363,19 +1508,15 @@ v0.2.4: Odds Expansion / EV Math Primitives. COMPLETE.
 v0.2.5: Prop Market / Candidate Schema Primitives. COMPLETE.
 v0.2.6: Odds Snapshot / Provider Record Normalization. COMPLETE.
 v0.2.7: Prop Result / Settlement Primitives. COMPLETE.
-
-v0.2.8 — Candidate EV Enrichment:
-Not started. Awaiting ChatGPT scope definition and implementation prompt.
-(Existing roadmap context only — not approved implementation scope.)
-Shape: candidate + odds + caller-supplied model_probability
-     -> implied_probability, edge, EV, pass/review fields.
-CRITICAL: v0.2.8 does NOT compute model_probability internally.
-v0.2.8 consumes a caller-supplied model_probability only.
-Full model-generated EV automation requires the v0.5.x sport-specific model layer.
+v0.2.8: Candidate EV Enrichment. COMPLETE.
 
 v0.2.9 — Candidate Ranking Primitives:
+Not started. Awaiting ChatGPT scope definition and implementation prompt.
+(Existing roadmap context only — not approved implementation scope.)
+Do not implement or create branch until ChatGPT provides the scope prompt.
 Rank single candidates by EV, edge, data quality, confidence, calibration state,
-and pass reasons. Still pure/in-memory. No provider ingestion yet.
+and pass reasons. Still pure/in-memory. No provider ingestion yet. No recommendations,
+picks, locks, or parlays. No runtime wiring unless explicitly scoped by ChatGPT.
 
 v0.2.x — Controlled staking / Kelly primitives (possible, later):
 Kelly treated as stake-sizing math only, not recommendation logic.
@@ -1438,9 +1579,8 @@ organize their features into the following families:
                                score, log loss, CLV, or other validation metrics over
                                meaningful samples before staying in the model
 
-These feature families are future v0.5.x roadmap context only. They are not v0.2.8
-implementation scope and must not be added to any v0.2.x version without explicit
-ChatGPT approval.
+These feature families are future v0.5.x roadmap context only. They are not v0.2.x
+implementation scope unless explicitly approved by ChatGPT.
 
 Basketball (NBA):
   Tier 1 (core): minutes projection, usage/role, shot volume, assist chances,
@@ -1753,16 +1893,16 @@ IMMEDIATE NEXT ACTION
 ═══════════════════════════════════════════════════════
 
 Next planned version:
-v0.2.8 — Candidate EV Enrichment
+v0.2.9 — Candidate Ranking Primitives
 
 Implementation status:
 Not started. Awaiting ChatGPT scope definition and implementation prompt.
 
-Critical note: v0.2.8 does not compute model_probability internally. It consumes a
-caller-supplied model_probability only. Full model-generated EV automation requires
-the v0.5.x sport-specific model layer.
+v0.2.9 will rank single candidates by EV, edge, data quality, confidence, calibration
+state, and pass reasons. Still pure/in-memory. No provider ingestion, recommendations,
+picks, locks, or parlays. No runtime wiring unless explicitly scoped by ChatGPT.
 
-Do not create a branch or prompt Claude for v0.2.8 — Candidate EV Enrichment until ChatGPT provides the implementation prompt.
+Do not create a branch or prompt Claude for v0.2.9 — Candidate Ranking Primitives until ChatGPT provides the implementation prompt.
 
 ═══════════════════════════════════════════════════════
 IMPORTANT PREFERENCES
