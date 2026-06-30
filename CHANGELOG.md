@@ -1,5 +1,34 @@
 # Changelog
 
+## v0.2.6
+
+- Added `src/odds_snapshot.py`, a pure standalone module for odds snapshot / provider record normalization primitives.
+- Added `OddsSnapshotValidationError(ValueError)`.
+- Added `VALID_ODDS_FORMATS = frozenset({"american", "decimal"})`.
+- Added `normalize_provider(provider: str) -> str`: strips whitespace, lowercases, replaces spaces and hyphens with underscores. Rejects non-string, empty, and whitespace-only inputs.
+- Added `normalize_sportsbook(sportsbook: str) -> str`: same normalization contract as `normalize_provider`.
+- Added `normalize_market_type(market_type: str) -> str`: same normalization contract.
+- Added `normalize_selection(selection: str) -> str`: same normalization contract.
+- Added `normalize_odds_format(odds_format: str) -> str`: applies slug normalization, then validates against `VALID_ODDS_FORMATS`. Rejects non-string, empty, whitespace-only, and unsupported format values.
+- Added `build_odds_snapshot(provider, sportsbook, event_id, market_type, selection, odds, odds_format, odds_found_at, *, line=None, source=None, metadata=None) -> dict`.
+  - `provider`, `sportsbook`, `market_type`, `selection`: required strings, normalized via `_normalize_slug` (strip → lowercase → spaces/hyphens → underscore). Open-form — no additional frozenset validation for provider or sportsbook at this stage.
+  - `event_id`: required string, stripped only, case preserved (it is an identifier, not a canonical slug).
+  - `odds_format`: required string, normalized slug, validated against `VALID_ODDS_FORMATS`. Raises `OddsSnapshotValidationError` if unsupported.
+  - `odds`: required numeric; rejects `bool`, non-numeric, `NaN`, and infinity for all formats. Format-specific rules: `"american"` rejects zero; `"decimal"` rejects values `<= 1.0`. Validated after `odds_format` is confirmed. Returns `float(odds)`. No implied probability is calculated.
+  - `odds_found_at`: required non-empty stripped string, case preserved. No ISO format parsing. This timestamp records when the price was observed and is required because CLV comparison depends on it.
+  - `line`: `None` allowed; non-`None` rejects `bool`, non-numeric, `NaN`, and `inf`; returns `float(line)`.
+  - `source`: `None` allowed; non-`None` must be a non-empty string after stripping; case preserved.
+  - `metadata`: `None` defaults to `{}`; non-`None` must be a `dict`; returned as `dict(metadata)` (shallow copy — does not mutate caller-provided dict).
+  - Optional fields are keyword-only (enforced via `*` separator).
+  - Operation order: `provider` → `sportsbook` → `event_id` → `market_type` → `selection` → `line` → `odds_format` → `odds` (using validated `odds_format`) → `odds_found_at` → `source` → `metadata`.
+  - Always returns exactly 11 keys in stable order: `provider`, `sportsbook`, `event_id`, `market_type`, `selection`, `line`, `odds`, `odds_format`, `odds_found_at`, `source`, `metadata`.
+  - Returns a plain `dict`. No rounding.
+- `src/odds_snapshot.py` imports only `math`. No imports from `odds.py`, `ev.py`, `edge.py`, `candidate_evaluation.py`, `backtest_review.py`, `review_taxonomy.py`, `review_notes.py`, `prop_candidate.py`, or any RSB runtime module.
+- Added `tests/test_odds_snapshot.py` covering: error class hierarchy, `VALID_ODDS_FORMATS` contents and type, all five normalizer functions (valid normalization, strip/lowercase/space/hyphen handling, non-string/empty/whitespace-only rejection; `normalize_odds_format` also tests frozenset rejection of unknown values), return shape (exactly 11 keys, plain dict, all keys always present), canonical examples for both `"american"` and `"decimal"` formats, minimal required-only call with correct optional defaults, required field validation for all eight required fields, event_id case preservation and strip-only behavior, `odds_format` normalization applied in output and frozenset validation, odds validation for American format (negative/positive valid, zero rejection, bool/non-numeric/NaN/inf rejection), odds validation for decimal format (valid above 1.0, rejection at or below 1.0, bool/NaN/inf rejection, negative American odds correctly rejected as decimal), `odds_found_at` validation (required, strips, case preserved, non-string/empty/whitespace-only rejection), line validation (None, int→float, float, negative, zero, bool/non-numeric/NaN/inf rejection), source validation (None, valid string, strips, case preserved, empty/whitespace-only/non-string rejection), metadata validation (None→{}, passed dict, plain dict type, top-level mutation isolation, non-dict/string rejection), normalization applied in output for all slug fields with event_id case preserved, operation order (bad provider raises before odds_format check; bad odds_format raises before odds check; bad line raises before odds_format check), and AST-based banned-import check.
+- Updated `tests/test_paths.py`: updated `MODEL_VERSION` assertion from `'0.2.5'` to `'0.2.6'`.
+- Updated the project/model version to `0.2.6`.
+- v0.2.6 does not add live odds API calls, scraping, provider credentials, sportsbook integration, implied probability calculation, edge calculation, EV calculation, attachment to `prop_candidate.py`, settlement, CLV calculation, ranking, picks, recommendations, locks, parlays, runtime wiring, database changes, new dependencies, or CI changes.
+
 ## v0.2.5
 
 - Added `src/prop_candidate.py`, a pure standalone module for prop/pick candidate schema primitives.
