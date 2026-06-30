@@ -3,14 +3,14 @@
 RSB is a sportsbook analytics / +EV simulation project.
 
 Current project status:
-- Version: v0.2.6
+- Version: v0.2.7
 - Python: 3.13 virtual environment
-- Tests: pytest, currently 1125 passing tests
+- Tests: pytest, currently 1309 passing tests
 - Current focus: World Cup simulation engine
-- Next modeling target: v0.2.7 (candidate)
+- Next modeling target: v0.2.8 (candidate)
 - Future goal: automation-first sportsbook analytics website/app
 
-Completed foundation (v0.1.8.x – v0.2.6):
+Completed foundation (v0.1.8.x – v0.2.7):
 - v0.1.8.2: centralized absolute path resolution via src/paths.py
 - v0.1.8.3: runtime path overrides (RSB_DB_PATH, RSB_SLATE_PATH, RSB_MODEL_OUTPUT_PATH) for safe test isolation
 - v0.1.8.4: dependency-free config validation (ConfigValidationError, load_json_config, validate_*_config)
@@ -31,6 +31,7 @@ Completed foundation (v0.1.8.x – v0.2.6):
 - v0.2.4: odds expansion / EV math primitives — american_to_decimal_odds, decimal_to_american_odds (src/odds.py); EVValidationError, calculate_expected_value, validated backward-compatible wrappers (src/ev.py)
 - v0.2.5: pure prop/pick candidate schema primitives — PropCandidateValidationError, normalize_sport, normalize_league, normalize_market_type, normalize_selection, build_prop_candidate (src/prop_candidate.py)
 - v0.2.6: pure odds snapshot / provider record normalization primitives — OddsSnapshotValidationError, VALID_ODDS_FORMATS, normalize_provider, normalize_sportsbook, normalize_market_type, normalize_selection, normalize_odds_format, build_odds_snapshot (src/odds_snapshot.py)
+- v0.2.7: pure prop result / settlement record normalization primitives — PropResultValidationError, VALID_SETTLEMENT_STATUSES, FINAL_SETTLEMENT_STATUSES, normalize_market_type, normalize_selection, normalize_settlement_status, build_prop_result (src/prop_result.py)
 
 Long-term product goal:
 The final workflow should not require manual match/team/player/odds input. The user should specify sport, date range/week, markets, sportsbooks, and number of legs. The system should automatically collect fixtures, odds, props, stats, injuries, lineups, build features, run simulations/models, compare EV, rank singles/parlays, and recommend the best sportsbook for each card.

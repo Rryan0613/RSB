@@ -1,4 +1,4 @@
-# WorldCup AI v0.2.6
+# WorldCup AI v0.2.7
 
 A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
 
@@ -38,6 +38,7 @@ The project currently supports:
 - pure EV math primitives with validated backward-compatible wrappers (`src/ev.py`)
 - pure prop/pick candidate schema primitives (`src/prop_candidate.py`)
 - pure odds snapshot / provider record normalization primitives (`src/odds_snapshot.py`)
+- pure prop result / settlement record normalization primitives (`src/prop_result.py`)
 
 ## Runtime Target
 

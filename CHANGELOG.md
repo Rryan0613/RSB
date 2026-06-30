@@ -1,5 +1,43 @@
 # Changelog
 
+## v0.2.7
+
+- Added `src/prop_result.py`, a pure standalone module for prop result / settlement record normalization primitives.
+- Added `PropResultValidationError(ValueError)`.
+- Added `VALID_SETTLEMENT_STATUSES = frozenset({"won", "lost", "push", "void", "pending", "unknown"})`.
+- Added `FINAL_SETTLEMENT_STATUSES = frozenset({"won", "lost", "push", "void"})`.
+- Added `normalize_market_type(market_type: str) -> str`: strips whitespace, lowercases, replaces spaces and hyphens with underscores. Rejects non-string, empty, and whitespace-only inputs.
+- Added `normalize_selection(selection: str) -> str`: same normalization contract as `normalize_market_type`.
+- Added `normalize_settlement_status(status: str) -> str`: applies slug normalization, then validates against `VALID_SETTLEMENT_STATUSES`. Rejects non-string, empty, whitespace-only, and unsupported status values.
+- Added `build_prop_result(*, event_id, market_type, selection, line=None, actual_value=None, settlement_status, settled_at=None, source=None, settlement_rule=None, start_required=None, participation_required=None, void_condition=None, void_reason=None, metadata=None) -> dict`.
+  - All parameters are keyword-only (enforced via leading `*`).
+  - `event_id`: required string, stripped only, case preserved (it is an identifier, not a canonical slug).
+  - `market_type`, `selection`: required strings, normalized via `_normalize_slug` (strip → lowercase → spaces/hyphens → underscore). Open-form — no frozenset validation at this stage.
+  - `line`: `None` allowed; non-`None` rejects `bool`, non-numeric, `NaN`, and `inf`; returns `float(line)`.
+  - `actual_value`: same validation contract as `line`. Not required even for final statuses — some markets may be caller-settled without a numeric stat in this primitive layer.
+  - `settlement_status`: required string, normalized slug, validated against `VALID_SETTLEMENT_STATUSES`. Raises `PropResultValidationError` if unsupported.
+  - `settled_at`: `None` allowed; non-`None` must be a non-empty string after stripping; no ISO format parsing; case preserved.
+  - `source`: `None` allowed; non-`None` must be a non-empty string after stripping; case preserved.
+  - `settlement_rule`: `None` allowed; non-`None` must be a non-empty string after stripping; case preserved.
+  - `start_required`: `None` allowed; non-`None` must be exactly `bool`; rejects int, str, and other non-bool types.
+  - `participation_required`: same contract as `start_required`.
+  - `void_condition`: `None` allowed; non-`None` must be a non-empty string after stripping; case preserved.
+  - `void_reason`: `None` allowed; non-`None` must be a non-empty string after stripping; case preserved.
+  - `metadata`: `None` defaults to `{}`; non-`None` must be a `dict`; returned as `dict(metadata)` (shallow copy — does not mutate caller-provided dict).
+  - Structural invariants (enforced after all field-level validation):
+    - `settlement_status in FINAL_SETTLEMENT_STATUSES` requires `settled_at` to be non-`None`.
+    - `settlement_status in {"pending", "unknown"}` requires `settled_at` to be `None`.
+    - `settlement_status != "void"` requires `void_reason` to be `None`.
+  - No automatic grading or inference. `line` and `actual_value` coexisting in the record do not trigger any comparison, win/loss/push/void determination, or market-rule evaluation. The caller supplies the settlement outcome.
+  - Operation order: `event_id` → `market_type` → `selection` → `line` → `actual_value` → `settlement_status` → `settled_at` → `source` → `settlement_rule` → `start_required` → `participation_required` → `void_condition` → `void_reason` → `metadata` → cross-field invariants.
+  - Always returns exactly 14 keys in stable order: `event_id`, `market_type`, `selection`, `line`, `actual_value`, `settlement_status`, `settled_at`, `source`, `settlement_rule`, `start_required`, `participation_required`, `void_condition`, `void_reason`, `metadata`.
+  - Returns a plain `dict`. No rounding.
+- `src/prop_result.py` imports only `math`. No imports from `odds.py`, `ev.py`, `edge.py`, `candidate_evaluation.py`, `backtest_review.py`, `review_taxonomy.py`, `review_notes.py`, `prop_candidate.py`, `odds_snapshot.py`, or any RSB runtime module.
+- Added `tests/test_prop_result.py` covering: error class hierarchy, `VALID_SETTLEMENT_STATUSES` and `FINAL_SETTLEMENT_STATUSES` contents and types, `FINAL_SETTLEMENT_STATUSES` as a subset of `VALID_SETTLEMENT_STATUSES`, all three normalizer functions (valid normalization, strip/lowercase/space/hyphen handling, non-string/empty/whitespace-only rejection; `normalize_settlement_status` also tests frozenset rejection of unknown values), return shape (exactly 14 keys, plain dict, all keys always present), canonical examples for won/lost/push/void/pending/unknown statuses, minimal required-only call with correct optional defaults, required field validation for `event_id`/`market_type`/`selection`/`settlement_status`, `event_id` case preservation and strip-only behavior, `market_type` and `selection` normalization applied in output, `line` and `actual_value` validation (None, int→float, float, negative, zero, bool/non-numeric/NaN/inf rejection, independence from each other), `settlement_status` normalization applied in output and frozenset rejection, `settled_at` validation (optional str, strip, reject empty string, reject non-string), `source`/`settlement_rule`/`void_condition` validation (None, valid string, strips, case preserved, empty/whitespace-only/non-string rejection), `start_required` and `participation_required` (True/False/None accepted, int/str/list rejected), `void_reason` (accepted for void status, raises for non-void when not None, optional str validation), metadata (None→{}, passed dict, plain dict type, top-level mutation isolation, non-dict/string rejection), all three structural invariants (final statuses require settled_at; pending/unknown reject settled_at; non-void rejects void_reason), no automatic settlement inference (won/lost without actual_value, line and actual_value coexisting without outcome change), operation order, and AST-based banned-import check.
+- Updated `tests/test_paths.py`: updated `MODEL_VERSION` assertion from `'0.2.6'` to `'0.2.7'`.
+- Updated the project/model version to `0.2.7`.
+- v0.2.7 does not add sportsbook settlement rule engine, stat-based over/under grading, automatic win/loss/push/void inference, provider ingestion, live odds, scraping, database schema changes, runtime wiring, prop candidate attachment/enrichment, implied probability, edge, EV, CLV, calibration, historical result ingestion, ranking, recommendations, picks, locks, parlays, frontend/API/UI, new dependencies, CI changes, or data file changes.
+
 ## v0.2.6
 
 - Added `src/odds_snapshot.py`, a pure standalone module for odds snapshot / provider record normalization primitives.
