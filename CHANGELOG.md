@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.2.5
+
+- Added `src/prop_candidate.py`, a pure standalone module for prop/pick candidate schema primitives.
+- Added `PropCandidateValidationError(ValueError)`.
+- Added `normalize_sport(sport: str) -> str`: strips whitespace, lowercases, replaces spaces and hyphens with underscores. Rejects non-string, empty, and whitespace-only inputs.
+- Added `normalize_league(league: str) -> str`: same normalization contract as `normalize_sport`.
+- Added `normalize_market_type(market_type: str) -> str`: same normalization contract.
+- Added `normalize_selection(selection: str) -> str`: same normalization contract.
+- Added `build_prop_candidate(sport, league, event_id, market_type, selection, *, line=None, player_id=None, player_name=None, team_id=None, team_name=None, opponent_id=None, opponent_name=None, created_at=None, metadata=None) -> dict`.
+  - Required string fields (`sport`, `league`, `event_id`, `market_type`, `selection`): must be non-empty strings after stripping. Raises `PropCandidateValidationError` on non-string, empty, or whitespace-only input.
+  - `sport`, `league`, `market_type`, `selection`: normalized via `_normalize_slug` (strip → lowercase → spaces/hyphens → underscore). Open-form — no frozenset validation at this stage.
+  - `event_id`: stripped only, case preserved (it is an identifier, not a canonical slug).
+  - Optional id fields (`player_id`, `team_id`, `opponent_id`): `None` allowed; non-`None` must be a non-empty string after stripping; returned stripped with case preserved.
+  - Optional display name fields (`player_name`, `team_name`, `opponent_name`): `None` allowed; non-`None` must be a non-empty string after stripping; returned stripped with case preserved (not lowercased).
+  - `line`: `None` allowed; non-`None` rejects `bool`, non-numeric, `NaN`, and `inf`; returns `float(line)`.
+  - `created_at`: `None` allowed; non-`None` must be a non-empty string after stripping; no format validation.
+  - `metadata`: `None` defaults to `{}`; non-`None` must be a `dict`; returned as `dict(metadata)` (shallow copy — does not mutate caller-provided dict).
+  - Optional fields are keyword-only (enforced via `*` separator).
+  - Always returns exactly 14 keys in stable order: `sport`, `league`, `event_id`, `market_type`, `selection`, `line`, `player_id`, `player_name`, `team_id`, `team_name`, `opponent_id`, `opponent_name`, `created_at`, `metadata`.
+  - Returns a plain `dict`. No rounding.
+- `src/prop_candidate.py` imports only `math`. No imports from `odds.py`, `ev.py`, `edge.py`, `candidate_evaluation.py`, `backtest_review.py`, `review_taxonomy.py`, `review_notes.py`, or any RSB runtime module.
+- Added `tests/test_prop_candidate.py` covering: error class hierarchy, all four normalizer functions (valid normalization, strip/lowercase/space/hyphen handling, non-string/empty/whitespace-only rejection), return shape (exactly 14 keys, plain dict, all keys always present), canonical example with all fields, minimal required-only call with correct optional defaults, required field validation for all five required fields, event_id case preservation and strip-only behavior, optional id fields (None accepted, non-empty string accepted, empty/whitespace-only rejected), display name fields (None accepted, case preserved, stripped), line validation (None, int→float, float, negative, zero, bool rejection, non-numeric rejection, NaN/inf rejection), created_at validation (None, valid string, strips, empty/whitespace-only/non-string rejection), metadata validation (None→{}, passed dict, plain dict type, top-level mutation isolation, non-dict rejection), normalization applied in output for slug fields and case preserved for event_id, operation order, and AST-based banned-import check.
+- Updated the project/model version to `0.2.5`.
+- v0.2.5 does not add sportsbook, provider, odds, odds_found_at, implied probability, edge, EV, settlement, CLV, ranking, picks, recommendations, locks, parlay fields, live odds integration, database changes, runtime wiring, new dependencies, or CI changes.
+
 ## v0.2.4
 
 - Added `american_to_decimal_odds(odds) -> float` to `src/odds.py`. Converts American odds to decimal format. Reuses existing `_reject_non_numeric` validation; rejects bool, non-numeric, NaN, infinity, and zero. Positive odds: `1 + odds / 100`. Negative odds: `1 + 100 / abs(odds)`. Always returns a float > 1.0. Raises `OddsValidationError`.

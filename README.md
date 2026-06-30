@@ -1,4 +1,4 @@
-# WorldCup AI v0.2.4
+# WorldCup AI v0.2.5
 
 A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
 
@@ -36,6 +36,7 @@ The project currently supports:
 - pure backtest review overlay primitives (`src/backtest_review.py`)
 - American/decimal odds format conversion helpers (`src/odds.py`)
 - pure EV math primitives with validated backward-compatible wrappers (`src/ev.py`)
+- pure prop/pick candidate schema primitives (`src/prop_candidate.py`)
 
 ## Runtime Target
 
