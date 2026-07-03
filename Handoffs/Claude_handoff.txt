@@ -134,25 +134,38 @@ Current development philosophy:
 * The end goal is useful ranked +EV prop/pick candidates, but every step must preserve correctness, testability, and auditability.
 
 ═══════════════════════════════════════════════════════
+ROADMAP PLANNING CADENCE — WORKFLOW DECISION
+═══════════════════════════════════════════════════════
+
+Going forward, RSB should plan 2-4 versions ahead at a time instead of one version at a time.
+
+* Implementation still remains one version per branch and one PR at a time.
+* Claude may propose a 2-4 version roadmap plan only when ChatGPT asks for it.
+* ChatGPT remains the roadmap/scope gatekeeper.
+* Do not implement v0.2.10 yet.
+* Do not create a v0.2.10 branch until ChatGPT approves the next roadmap batch.
+
+═══════════════════════════════════════════════════════
 CURRENT VERIFIED STATE
 ═══════════════════════════════════════════════════════
 
-Version:        0.2.8
+Version:        0.2.9
 Branch:         main
 Status:         clean and up to date with origin/main, based on Ryan's post-merge verification
-Tests passing:  1444
+Tests passing:  1564
 
-Latest version PR:      PR #32 — v0.2.8 Candidate EV Enrichment — merged
-                        https://github.com/Rryan0613/RSB/pull/32
-Merge commit:           096336d (full: 096336dd499808a9b71be8a3bf3a66a0d3b98f27)
-Merged at:              2026-06-30T18:04:01Z
-Feature branch:         feature/v0.2.8-candidate-ev-enrichment
-GitHub Actions/checks:  8 successful, 0 failing, 0 pending
-PR #32 post-merge verification: complete — main clean/up to date; 1444 tests passed
+Latest version PR:      PR #34 — v0.2.9 Candidate Ranking Primitives — merged
+                        https://github.com/Rryan0613/RSB/pull/34
+Merge commit:           b54ade3 (full: b54ade35b891ae36a0f92ab987e7bc511539fc50)
+Head commit:            5c023fa (full: 5c023fa57cb0ad95c57b57491959801c84b63c2f)
+Merged at:              2026-07-03T15:19:41Z
+Feature branch:         feature/v0.2.9-candidate-ranking-primitives
+GitHub Actions/checks:  not recorded in this handoff update
+PR #34 post-merge verification: complete — main clean/up to date; 1564 tests passed
 
-Latest completed version: v0.2.8 — Candidate EV Enrichment
-Next target:    v0.2.9 — Candidate Ranking Primitives
-v0.2.9 status:  Not started. Awaiting ChatGPT scope definition and implementation prompt.
+Latest completed version: v0.2.9 — Candidate Ranking Primitives
+Next target:    Plan the next 2-4 versions after v0.2.9.
+Next status:    Not started. Awaiting ChatGPT-approved roadmap batch. Do not implement v0.2.10.
 
 If strict verification is needed, ask the user to run:
 
@@ -174,6 +187,7 @@ v0.2.5    Prop Market / Candidate Schema Primitives                          ←
 v0.2.6    Odds Snapshot / Provider Record Normalization                      ← COMPLETE
 v0.2.7    Prop Result / Settlement Primitives                                ← COMPLETE
 v0.2.8    Candidate EV Enrichment                                            ← COMPLETE
+v0.2.9    Candidate Ranking Primitives                                       ← COMPLETE
 
 ── Near-term v0.2.x ──────────────────────────────────────────
 
@@ -202,13 +216,24 @@ v0.2.8    Candidate EV Enrichment                                               
           model_probability only. Full automated model-generated EV requires the
           v0.5.x sport-specific model layer.
 
-v0.2.9    Candidate Ranking Primitives
-          Not started. Awaiting ChatGPT scope definition and implementation prompt.
-          Do not implement or create branch until ChatGPT provides the scope prompt.
-          Rank single candidates by EV, edge, data quality, confidence, calibration state,
-          and pass reasons. Still pure/in-memory. No provider ingestion yet. No
-          recommendations, picks, locks, or parlays. No runtime wiring unless explicitly
-          scoped by ChatGPT.
+v0.2.9    Candidate Ranking Primitives                                                ← COMPLETE
+          src/candidate_ranking.py — pure in-memory candidate ranking primitives.
+          CandidateRankingValidationError. rank_candidate_ev_enrichments(candidate_evs,
+          *, data_quality_scores=None, confidence_scores=None, calibration_scores=None,
+          metadata=None) ranks v0.2.8 candidate EV enrichment records by expected_value
+          descending, edge descending, optional data_quality_score descending (None
+          last), optional confidence_score descending (None last), optional
+          calibration_score descending (None last), then original input index
+          ascending. Ranked records get a 1-based rank. Records whose embedded
+          candidate_evaluation status is rejected or not_evaluable are excluded from
+          ranking and returned after ranked records with rank=None, preserving original
+          input order. Still pure/in-memory. No provider ingestion, recommendations,
+          picks, locks, parlays, or runtime wiring.
+
+v0.2.10+  Next roadmap batch
+          Not started. Awaiting ChatGPT-approved roadmap batch covering the next 2-4
+          versions. Do not implement or create a branch until that roadmap batch is
+          approved.
 
 v0.2.x    Controlled staking / Kelly primitives (possible, later)
           Kelly treated as stake-sizing math only, not recommendation logic.
@@ -569,6 +594,14 @@ that claim with verified settled results.
 RECENT COMPLETED PRs
 ═══════════════════════════════════════════════════════
 
+PR #34:
+v0.2.9 Candidate Ranking Primitives
+https://github.com/Rryan0613/RSB/pull/34
+
+PR #33:
+Update handoffs after v0.2.8 — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/33
+
 PR #32:
 v0.2.8 Candidate EV Enrichment
 https://github.com/Rryan0613/RSB/pull/32
@@ -666,7 +699,74 @@ v0.1.9.0 backtest report output, build_backtest_report
 https://github.com/Rryan0613/RSB/pull/9
 
 ═══════════════════════════════════════════════════════
-v0.2.8 SUMMARY — LATEST COMPLETED VERSION
+v0.2.9 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.9 added pure in-memory candidate ranking primitives.
+
+New files:
+
+* src/candidate_ranking.py
+* tests/test_candidate_ranking.py
+
+Implemented in src/candidate_ranking.py:
+
+* CandidateRankingValidationError(ValueError)
+* rank_candidate_ev_enrichments(candidate_evs, *, data_quality_scores=None, confidence_scores=None, calibration_scores=None, metadata=None) -> list[dict]
+
+Behavior summary:
+
+* Pure in-memory candidate ranking only, no runtime wiring
+* Ranks v0.2.8 candidate EV enrichment records by, in order:
+  1. expected_value descending
+  2. edge descending
+  3. data_quality_score descending, None last
+  4. confidence_score descending, None last
+  5. calibration_score descending, None last
+  6. original input index ascending
+* Ranked records receive a 1-based rank
+* Records whose embedded candidate_evaluation status is "rejected" or "not_evaluable"
+  are excluded from ranking and returned after ranked records with rank=None
+* Excluded records preserve original input order
+* Validates candidate EV record shape, line, edge, expected_value, optional
+  data_quality_scores/confidence_scores/calibration_scores lists, embedded
+  candidate_evaluation, and metadata
+* Function-level metadata is copied independently onto each ranking output record
+* No rounding
+* No runtime wiring
+
+Tests:
+
+* tests/test_candidate_ranking.py
+* Full local test result after merge: 1564 passed
+
+v0.2.9 intentionally did not add:
+
+* provider ingestion
+* live odds
+* scraping
+* database/schema changes
+* runtime wiring
+* recommendations
+* picks
+* locks
+* parlays
+* staking/Kelly/bankroll
+* frontend/API/UI
+* new dependencies
+* CI changes
+* data/input changes
+* data/output changes
+* data/worldcup_ai.db changes
+
+Important scope clarification:
+The v0.2.9 omissions are version-scoped only. RSB's long-term product goal still includes
+provider ingestion, sportsbook APIs, player prop data, simulations, injury/lineup data,
+historical results, model calibration, and eventually disciplined parlay construction.
+v0.2.9 avoided those items only because it was limited to pure candidate ranking primitives.
+
+═══════════════════════════════════════════════════════
+v0.2.8 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.2.8 added pure in-memory candidate EV enrichment primitives.
@@ -1461,8 +1561,8 @@ STRICT CLAUDE RULES — ALWAYS ACTIVE
 * Do not add parlay logic unless explicitly approved.
 * Do not wire stage_market.py, review_taxonomy.py, review_notes.py, odds.py,
   edge.py, candidate_evaluation.py, backtest_review.py, ev.py, prop_candidate.py,
-  odds_snapshot.py, prop_result.py, or candidate_ev.py into existing modules unless
-  explicitly approved.
+  odds_snapshot.py, prop_result.py, candidate_ev.py, or candidate_ranking.py into
+  existing modules unless explicitly approved.
 * Show each proposed file edit and wait for approval before writing it.
 * Do not update Handoffs/ files unless explicitly instructed by the user with ChatGPT approval.
 
@@ -1548,9 +1648,11 @@ WHAT I NEED FROM YOU NOW
 ═══════════════════════════════════════════════════════
 
 Do not inspect files yet.
-Do not plan v0.2.9 — Candidate Ranking Primitives yet.
+Do not plan v0.2.10 or any specific next version yet.
 Do not edit anything.
 Do not run commands yet.
 Do not commit.
 
-Acknowledge this updated RSB context and wait for the v0.2.9 — Candidate Ranking Primitives implementation prompt from ChatGPT.
+Acknowledge this updated RSB context and wait for ChatGPT to provide the next roadmap
+batch (2-4 versions planned ahead). Implementation still proceeds one version per branch
+and one PR at a time; do not create a v0.2.10 branch until that roadmap batch is approved.
