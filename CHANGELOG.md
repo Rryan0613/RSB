@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.2.9
+
+- Added `src/candidate_ranking.py`, a pure standalone module for ranking candidate EV enrichment records produced by `build_candidate_ev_enrichment()` (v0.2.8). This is the first version that ranks candidates rather than just building/enriching them.
+- Added `CandidateRankingValidationError(ValueError)`.
+- Added `rank_candidate_ev_enrichments(candidate_evs, *, data_quality_scores=None, confidence_scores=None, calibration_scores=None, metadata=None) -> list[dict]`.
+  - `candidate_evs`: required non-empty `list` or `tuple` of dicts. Empty sequence, non-sequence, or non-dict items raise `CandidateRankingValidationError`.
+  - Each item must contain `event_id`, `market_type`, `selection`, `line`, `edge`, `expected_value`, and `candidate_evaluation`. Missing any required key raises `CandidateRankingValidationError`.
+  - `line`: locally validated — `None` allowed; `bool` rejected; non-(int|float) rejected; `NaN`/infinity rejected; valid numeric returned as `float`.
+  - `edge` and `expected_value`: locally validated as numeric, non-bool, non-NaN, non-infinite; no range restriction (matches `ev.py`/`edge.py`'s unrestricted output range). No re-derivation — the top-level values from the input record are the source of truth for sorting.
+  - `candidate_evaluation`: required dict containing `status`, `edge`, and `pass_reasons`. `status` validated via `candidate_evaluation.normalize_candidate_status()`; `pass_reasons` validated via `candidate_evaluation.validate_pass_reasons()` (both propagate `CandidateEvaluationValidationError` unwrapped, matching the v0.2.8 propagation pattern for called primitives). Embedded `edge` may be `None`, otherwise must be numeric, non-bool, finite, and within `[-1.0, 1.0]`. No equality is required between the embedded edge and the top-level `edge`.
+  - Records with `candidate_evaluation.status == "candidate"` are rankable; `"rejected"` and `"not_evaluable"` are excluded from ranking.
+  - Ranked candidates are sorted by `expected_value` descending, then `edge` descending, then `data_quality_score` descending (`None` last), then `confidence_score` descending (`None` last), then `calibration_score` descending (`None` last), then original input index ascending as the final deterministic tie-breaker. Ranked records receive a 1-based `rank`.
+  - Excluded records always follow all ranked records in the returned list, ordered by original input index ascending, with `rank=None`.
+  - `data_quality_scores`, `confidence_scores`, `calibration_scores`: each optional; if provided, must be a `list`/`tuple` with the same length as `candidate_evs`. Each item may be `None` or numeric in `[0.0, 1.0]`; rejects `bool`, non-numeric, `NaN`, infinity, and out-of-range values. Missing items remain `None` and sort after real scores.
+  - `metadata`: function-level parameter only. `None` defaults to `{}`; non-`None` must be a `dict`. Validated once, then an independent shallow copy is attached to every returned record (not shared, not the same object). The embedded `candidate_ev["metadata"]` field is never used as ranking metadata.
+  - `candidate_ev` (the original input record) is shallow-copied into each output record; caller inputs are never mutated.
+  - Return shape: a list of plain dicts, each with exactly 16 stable keys: `rank`, `ranking_status`, `candidate_ev`, `event_id`, `market_type`, `selection`, `line`, `edge`, `expected_value`, `candidate_status`, `pass_reasons`, `data_quality_score`, `confidence_score`, `calibration_score`, `original_index`, `metadata`.
+  - No rounding. Pure/in-memory only. No provider ingestion, recommendations, picks, locks, parlays, staking, database/schema changes, or runtime wiring.
+
 ## v0.2.8
 
 - Added `src/candidate_ev.py`, a pure standalone module for candidate EV enrichment primitives. This is the first version that composes existing pure primitives (odds.py, edge.py, ev.py, candidate_evaluation.py) into a single enrichment record.

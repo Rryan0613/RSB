@@ -1,4 +1,4 @@
-# WorldCup AI v0.2.8
+# WorldCup AI v0.2.9
 
 A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
 
@@ -40,6 +40,7 @@ The project currently supports:
 - pure odds snapshot / provider record normalization primitives (`src/odds_snapshot.py`)
 - pure prop result / settlement record normalization primitives (`src/prop_result.py`)
 - pure candidate EV enrichment primitives (`src/candidate_ev.py`)
+- pure candidate ranking primitives (`src/candidate_ranking.py`)
 
 ## Runtime Target
 
@@ -350,6 +351,7 @@ v0.2.0 - pure odds and implied probability conversion primitives
 v0.2.1 - pure edge calculation primitives (src/edge.py)
 v0.2.2 - candidate evaluation / pass reason primitives
 v0.2.3 - backtest review overlay
+v0.2.9 - candidate ranking primitives (src/candidate_ranking.py)
 v0.3.x - parlays only after confirmed calibration on sufficient historical matches
 v0.4.x - API backend
 v0.5.x - dashboard/frontend
