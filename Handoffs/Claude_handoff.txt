@@ -142,30 +142,38 @@ Going forward, RSB should plan 2-4 versions ahead at a time instead of one versi
 * Implementation still remains one version per branch and one PR at a time.
 * Claude may propose a 2-4 version roadmap plan only when ChatGPT asks for it.
 * ChatGPT remains the roadmap/scope gatekeeper.
-* Do not implement v0.2.10 yet.
-* Do not create a v0.2.10 branch until ChatGPT approves the next roadmap batch.
+* The approved next roadmap batch (v0.2.11, v0.2.12, v0.3.0) is recorded below.
+* Do not implement v0.2.11 or create a v0.2.11 branch until ChatGPT provides the
+  v0.2.11 version-specific implementation prompt.
 
 ═══════════════════════════════════════════════════════
 CURRENT VERIFIED STATE
 ═══════════════════════════════════════════════════════
 
-Version:        0.2.9
-Branch:         main
-Status:         clean and up to date with origin/main, based on Ryan's post-merge verification
-Tests passing:  1564
+Version:        0.2.10
+Project verified state (main): clean and up to date with origin/main, based on Ryan's
+                post-merge verification of PR #36.
+Tests passing:  1614
 
-Latest version PR:      PR #34 — v0.2.9 Candidate Ranking Primitives — merged
-                        https://github.com/Rryan0613/RSB/pull/34
-Merge commit:           b54ade3 (full: b54ade35b891ae36a0f92ab987e7bc511539fc50)
-Head commit:            5c023fa (full: 5c023fa57cb0ad95c57b57491959801c84b63c2f)
-Merged at:              2026-07-03T15:19:41Z
-Feature branch:         feature/v0.2.9-candidate-ranking-primitives
-GitHub Actions/checks:  not recorded in this handoff update
-PR #34 post-merge verification: complete — main clean/up to date; 1564 tests passed
+Current task branch: chore/update-handoffs-after-v0.2.10 — a docs/ops handoff-update
+                chore only. This branch does not change the verified project state
+                above, which reflects main after the v0.2.10 merge.
 
-Latest completed version: v0.2.9 — Candidate Ranking Primitives
-Next target:    Plan the next 2-4 versions after v0.2.9.
-Next status:    Not started. Awaiting ChatGPT-approved roadmap batch. Do not implement v0.2.10.
+Latest version PR:      PR #36 — v0.2.10 Ranked Candidate Report Primitives — merged
+                        https://github.com/Rryan0613/RSB/pull/36
+Merge commit:           b06db1e (full: b06db1e41f7ab49142d29dace1c8bcf433924d66)
+Head commit:            ca28a23 (full: ca28a2302051eb390d58d7b9c7f244f8aa5974d2)
+Merged at:              2026-07-03T17:46:06Z
+Feature branch:         feature/v0.2.10-ranked-candidate-report-primitives
+                        (deleted locally and remotely after merge)
+GitHub Actions/checks:  tests completed successfully before merge
+PR #36 post-merge verification: complete — main clean/up to date; 1614 tests passed
+
+Latest completed version: v0.2.10 — Ranked Candidate Report Primitives
+Next target:    v0.2.11 — Sport / Market Capability Profile Primitives
+Next status:    Not started. Awaiting the ChatGPT-authored version-specific Claude
+                prompt for v0.2.11. Do not create a v0.2.11 branch until that prompt
+                is provided.
 
 If strict verification is needed, ask the user to run:
 
@@ -188,6 +196,7 @@ v0.2.6    Odds Snapshot / Provider Record Normalization                      ←
 v0.2.7    Prop Result / Settlement Primitives                                ← COMPLETE
 v0.2.8    Candidate EV Enrichment                                            ← COMPLETE
 v0.2.9    Candidate Ranking Primitives                                       ← COMPLETE
+v0.2.10   Ranked Candidate Report Primitives                                 ← COMPLETE
 
 ── Near-term v0.2.x ──────────────────────────────────────────
 
@@ -230,10 +239,35 @@ v0.2.9    Candidate Ranking Primitives                                          
           input order. Still pure/in-memory. No provider ingestion, recommendations,
           picks, locks, parlays, or runtime wiring.
 
-v0.2.10+  Next roadmap batch
-          Not started. Awaiting ChatGPT-approved roadmap batch covering the next 2-4
-          versions. Do not implement or create a branch until that roadmap batch is
-          approved.
+v0.2.10   Ranked Candidate Report Primitives                                          ← COMPLETE
+          src/candidate_report.py — pure in-memory ranked candidate report primitives.
+          CandidateReportValidationError. build_candidate_report(ranked_candidates, *,
+          top_n=None, metadata=None) consumes v0.2.9 ranked candidate records and
+          produces a report/audit dict with total_records, ranked_count,
+          excluded_count, top_n, top_ranked_candidates, excluded_candidates,
+          pass_reason_counts, ranking_status_counts, and metadata. Validates required
+          ranked-record keys (rank, ranking_status, candidate_status, pass_reasons,
+          original_index), enforces strict sequential positive rank for ranked records
+          and rank=None for excluded records, and reuses
+          candidate_evaluation.validate_pass_reasons(). Accepts empty input and returns
+          a valid all-zero report. Still pure/in-memory. No provider ingestion,
+          recommendations, picks, locks, parlays, file output, or runtime wiring.
+
+v0.2.11   Sport / Market Capability Profile Primitives
+          Not started. Approved as part of the next roadmap batch. Awaiting the
+          ChatGPT-authored version-specific Claude prompt.
+
+v0.2.12   World Cup Capability Profile Seed
+          Not started. Approved as part of the next roadmap batch. Awaiting v0.2.11
+          completion and its own version-specific Claude prompt.
+
+v0.3.0    Provider Source Contract / Identity Normalization Primitives
+          Not started. Approved as part of the next roadmap batch. Awaiting v0.2.11
+          and v0.2.12 completion and its own version-specific Claude prompt.
+
+          Important roadmap note: provider batch normalization and provider
+          coverage/staleness diagnostics are delayed until after the sport/market
+          capability profile layer (v0.2.11-v0.2.12) exists.
 
 v0.2.x    Controlled staking / Kelly primitives (possible, later)
           Kelly treated as stake-sizing math only, not recommendation logic.
@@ -594,6 +628,10 @@ that claim with verified settled results.
 RECENT COMPLETED PRs
 ═══════════════════════════════════════════════════════
 
+PR #36:
+v0.2.10 Ranked Candidate Report Primitives
+https://github.com/Rryan0613/RSB/pull/36
+
 PR #34:
 v0.2.9 Candidate Ranking Primitives
 https://github.com/Rryan0613/RSB/pull/34
@@ -699,7 +737,91 @@ v0.1.9.0 backtest report output, build_backtest_report
 https://github.com/Rryan0613/RSB/pull/9
 
 ═══════════════════════════════════════════════════════
-v0.2.9 SUMMARY — LATEST COMPLETED VERSION
+v0.2.10 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.10 added pure in-memory ranked candidate report primitives.
+
+Files added:
+
+* src/candidate_report.py
+* tests/test_candidate_report.py
+
+Implemented in src/candidate_report.py:
+
+* CandidateReportValidationError(ValueError)
+* build_candidate_report(ranked_candidates, *, top_n=None, metadata=None) -> dict
+
+Return shape:
+
+{
+    "total_records":         int,
+    "ranked_count":          int,
+    "excluded_count":        int,
+    "top_n":                 int | None,
+    "top_ranked_candidates": list[dict],
+    "excluded_candidates":   list[dict],
+    "pass_reason_counts":    dict[str, int],
+    "ranking_status_counts": dict[str, int],
+    "metadata":              dict,
+}
+
+Behavior summary:
+
+* Pure in-memory report/audit primitive only
+* Consumes ranked candidate records produced by candidate_ranking.rank_candidate_ev_enrichments()
+* Accepts list or tuple input
+* Accepts empty input and returns a valid all-zero report
+* Validates required ranked-record keys: rank, ranking_status, candidate_status, pass_reasons, original_index
+* ranking_status must be exactly "ranked" or "excluded"
+* ranked records require positive non-bool integer rank in strict sequential order
+* excluded records require rank=None
+* Reuses candidate_evaluation.validate_pass_reasons()
+* top_n, if provided, must be a non-bool integer >= 0
+* metadata must be a dict if provided and is shallow-copied
+* Output candidate records are shallow copies
+* top_ranked_candidates contains ranked records only and applies top_n
+* excluded_candidates contains excluded records only
+* pass_reason_counts counts validated pass reasons
+* ranking_status_counts counts ranked/excluded records
+
+Tests:
+
+* tests/test_candidate_report.py
+* Full local test result after merge: 1614 passed
+
+v0.2.10 intentionally did not add:
+
+* provider ingestion
+* live odds
+* scraping
+* database/schema changes
+* file output
+* runtime wiring
+* recommendations
+* picks
+* locks
+* parlays
+* staking/Kelly/bankroll
+* frontend/API/UI
+* sport/market capability profiles
+* World Cup capability seed
+* provider batch normalization
+* provider coverage/staleness diagnostics
+* model probabilities or simulations
+* data/input changes
+* data/output changes
+* data/worldcup_ai.db changes
+
+Important scope clarification:
+The v0.2.10 omissions are version-scoped only. RSB's long-term product goal still includes
+provider ingestion, sportsbook APIs, player prop data, simulations, injury/lineup data,
+historical results, model calibration, and eventually disciplined parlay construction.
+v0.2.10 avoided those items only because it was limited to pure ranked candidate report
+primitives.
+
+═══════════════════════════════════════════════════════
+v0.2.9 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.2.9 added pure in-memory candidate ranking primitives.
@@ -1561,8 +1683,8 @@ STRICT CLAUDE RULES — ALWAYS ACTIVE
 * Do not add parlay logic unless explicitly approved.
 * Do not wire stage_market.py, review_taxonomy.py, review_notes.py, odds.py,
   edge.py, candidate_evaluation.py, backtest_review.py, ev.py, prop_candidate.py,
-  odds_snapshot.py, prop_result.py, candidate_ev.py, or candidate_ranking.py into
-  existing modules unless explicitly approved.
+  odds_snapshot.py, prop_result.py, candidate_ev.py, candidate_ranking.py, or
+  candidate_report.py into existing modules unless explicitly approved.
 * Show each proposed file edit and wait for approval before writing it.
 * Do not update Handoffs/ files unless explicitly instructed by the user with ChatGPT approval.
 
@@ -1648,11 +1770,12 @@ WHAT I NEED FROM YOU NOW
 ═══════════════════════════════════════════════════════
 
 Do not inspect files yet.
-Do not plan v0.2.10 or any specific next version yet.
+Do not plan v0.2.11 or any specific next version yet.
 Do not edit anything.
 Do not run commands yet.
 Do not commit.
 
-Acknowledge this updated RSB context and wait for ChatGPT to provide the next roadmap
-batch (2-4 versions planned ahead). Implementation still proceeds one version per branch
-and one PR at a time; do not create a v0.2.10 branch until that roadmap batch is approved.
+Acknowledge this updated RSB context. v0.2.10 is complete and merged, and the next
+roadmap batch (v0.2.11, v0.2.12, v0.3.0) is approved. Wait for ChatGPT to provide the
+v0.2.11 version-specific Claude prompt. Implementation still proceeds one version per
+branch and one PR at a time; do not create a v0.2.11 branch until that prompt is provided.
