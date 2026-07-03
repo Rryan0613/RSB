@@ -96,7 +96,8 @@ over many outcomes, not overreact to individual misses.
 
 The primitives already built — review_taxonomy.py, review_notes.py, odds.py, edge.py,
 candidate_evaluation.py, backtest_review.py, ev.py, prop_candidate.py, odds_snapshot.py,
-and prop_result.py — are early vocabulary for the future self-learning loop.
+prop_result.py, candidate_ev.py, candidate_ranking.py, candidate_report.py, and
+market_capability.py — are early vocabulary for the future self-learning loop.
 
 ═══════════════════════════════════════════════════════
 RSB NORTH STAR / PRODUCT MINDSET
@@ -142,37 +143,39 @@ Going forward, RSB should plan 2-4 versions ahead at a time instead of one versi
 * Implementation still remains one version per branch and one PR at a time.
 * Claude may propose a 2-4 version roadmap plan only when ChatGPT asks for it.
 * ChatGPT remains the roadmap/scope gatekeeper.
-* The approved next roadmap batch (v0.2.11, v0.2.12, v0.3.0) is recorded below.
-* Do not implement v0.2.11 or create a v0.2.11 branch until ChatGPT provides the
-  v0.2.11 version-specific implementation prompt.
+* The approved roadmap batch (v0.2.11, v0.2.12, v0.3.0) is recorded below. v0.2.11 is
+  now complete; v0.2.12 and v0.3.0 remain.
+* Do not implement v0.2.12 or create a v0.2.12 branch until ChatGPT provides the
+  v0.2.12 version-specific implementation prompt.
 
 ═══════════════════════════════════════════════════════
 CURRENT VERIFIED STATE
 ═══════════════════════════════════════════════════════
 
-Version:        0.2.10
+Version:        0.2.11
 Project verified state (main): clean and up to date with origin/main, based on Ryan's
-                post-merge verification of PR #36.
-Tests passing:  1614
+                post-merge verification of PR #38 (post-v0.2.11 state).
+Tests passing:  1771
 
-Current task branch: chore/update-handoffs-after-v0.2.10 — a docs/ops handoff-update
-                chore only. This branch does not change the verified project state
-                above, which reflects main after the v0.2.10 merge.
+Current task branch: chore/update-handoffs-after-v0.2.11 — a temporary docs/ops
+                handoff-update branch only, not the permanent verified project branch.
+                This branch does not change the verified project state above, which
+                reflects main after the v0.2.11 merge.
 
-Latest version PR:      PR #36 — v0.2.10 Ranked Candidate Report Primitives — merged
-                        https://github.com/Rryan0613/RSB/pull/36
-Merge commit:           b06db1e (full: b06db1e41f7ab49142d29dace1c8bcf433924d66)
-Head commit:            ca28a23 (full: ca28a2302051eb390d58d7b9c7f244f8aa5974d2)
-Merged at:              2026-07-03T17:46:06Z
-Feature branch:         feature/v0.2.10-ranked-candidate-report-primitives
+Latest version PR:      PR #38 — v0.2.11 Sport Market Capability Profile Primitives — merged
+                        https://github.com/Rryan0613/RSB/pull/38
+Merge commit:           c49a2ae (full: c49a2ae443803574fa33ce9ace50857db9026f5d)
+Head commit:            7f25c56 (full: 7f25c56f48a0bbae10fa5af0932a28f7e96c8946)
+Merged at:              2026-07-03T19:26:44Z
+Feature branch:         feature/v0.2.11-sport-market-capability-profiles
                         (deleted locally and remotely after merge)
 GitHub Actions/checks:  tests completed successfully before merge
-PR #36 post-merge verification: complete — main clean/up to date; 1614 tests passed
+PR #38 post-merge verification: complete — main clean/up to date; 1771 tests passed
 
-Latest completed version: v0.2.10 — Ranked Candidate Report Primitives
-Next target:    v0.2.11 — Sport / Market Capability Profile Primitives
+Latest completed version: v0.2.11 — Sport / Market Capability Profile Primitives
+Next target:    v0.2.12 — World Cup Capability Profile Seed
 Next status:    Not started. Awaiting the ChatGPT-authored version-specific Claude
-                prompt for v0.2.11. Do not create a v0.2.11 branch until that prompt
+                prompt for v0.2.12. Do not create a v0.2.12 branch until that prompt
                 is provided.
 
 If strict verification is needed, ask the user to run:
@@ -197,6 +200,7 @@ v0.2.7    Prop Result / Settlement Primitives                                ←
 v0.2.8    Candidate EV Enrichment                                            ← COMPLETE
 v0.2.9    Candidate Ranking Primitives                                       ← COMPLETE
 v0.2.10   Ranked Candidate Report Primitives                                 ← COMPLETE
+v0.2.11   Sport / Market Capability Profile Primitives                      ← COMPLETE
 
 ── Near-term v0.2.x ──────────────────────────────────────────
 
@@ -253,21 +257,41 @@ v0.2.10   Ranked Candidate Report Primitives                                    
           a valid all-zero report. Still pure/in-memory. No provider ingestion,
           recommendations, picks, locks, parlays, file output, or runtime wiring.
 
-v0.2.11   Sport / Market Capability Profile Primitives
-          Not started. Approved as part of the next roadmap batch. Awaiting the
-          ChatGPT-authored version-specific Claude prompt.
+v0.2.11   Sport / Market Capability Profile Primitives                               ← COMPLETE
+          src/market_capability.py — pure in-memory sport/market capability profile
+          primitives. MarketCapabilityValidationError. VALID_LINE_VALUE_TYPES =
+          frozenset({"integer", "float"}). normalize_sport, normalize_league,
+          normalize_market_type, and normalize_selection_type use open slug
+          normalization. build_market_capability(...) returns a single market
+          capability record (sport, league, market_type, selection_type, line
+          semantics, requires_player/team/opponent/starting_status,
+          start_required_supported, participation_required_supported,
+          void_condition_supported, settlement_rule_required,
+          supported_selection_values, required_fields, optional_fields, metadata).
+          build_sport_market_profile(...) aggregates a list of market capability
+          records into a per-sport/league profile with supported_markets,
+          market_count, and metadata. Validates line semantics (requires_line implies
+          allows_line; allows_line implies a valid line_value_type), rejects
+          duplicate/overlapping required_fields and optional_fields, and rejects
+          duplicate supported markets by (market_type, selection_type). Does not
+          define closed sport/league/market/selection vocabularies yet. Still
+          pure/in-memory. No provider ingestion, World Cup capability seed, other
+          sport seeds, recommendations, picks, locks, parlays, file output, or
+          runtime wiring.
 
 v0.2.12   World Cup Capability Profile Seed
-          Not started. Approved as part of the next roadmap batch. Awaiting v0.2.11
-          completion and its own version-specific Claude prompt.
+          Not started. Approved as part of the remaining roadmap batch. Awaiting the
+          ChatGPT-authored version-specific Claude prompt.
 
 v0.3.0    Provider Source Contract / Identity Normalization Primitives
-          Not started. Approved as part of the next roadmap batch. Awaiting v0.2.11
-          and v0.2.12 completion and its own version-specific Claude prompt.
+          Not started. Approved as part of the remaining roadmap batch. Awaiting
+          v0.2.12 completion and its own version-specific Claude prompt.
 
           Important roadmap note: provider batch normalization and provider
-          coverage/staleness diagnostics are delayed until after the sport/market
-          capability profile layer (v0.2.11-v0.2.12) exists.
+          coverage/staleness diagnostics remain delayed until after the sport/market
+          capability profile layer exists. v0.2.11 created the generic primitives;
+          v0.2.12 is still needed to seed the World Cup capability profile before
+          provider contracts.
 
 v0.2.x    Controlled staking / Kelly primitives (possible, later)
           Kelly treated as stake-sizing math only, not recommendation logic.
@@ -628,6 +652,10 @@ that claim with verified settled results.
 RECENT COMPLETED PRs
 ═══════════════════════════════════════════════════════
 
+PR #38:
+v0.2.11 Sport Market Capability Profile Primitives
+https://github.com/Rryan0613/RSB/pull/38
+
 PR #36:
 v0.2.10 Ranked Candidate Report Primitives
 https://github.com/Rryan0613/RSB/pull/36
@@ -737,7 +765,140 @@ v0.1.9.0 backtest report output, build_backtest_report
 https://github.com/Rryan0613/RSB/pull/9
 
 ═══════════════════════════════════════════════════════
-v0.2.10 SUMMARY — LATEST COMPLETED VERSION
+v0.2.11 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.11 added pure in-memory sport/market capability profile primitives.
+
+Files added:
+
+* src/market_capability.py
+* tests/test_market_capability.py
+
+Implemented in src/market_capability.py:
+
+* MarketCapabilityValidationError(ValueError)
+* VALID_LINE_VALUE_TYPES = frozenset({"integer", "float"})
+* normalize_sport(sport) -> str
+* normalize_league(league) -> str
+* normalize_market_type(market_type) -> str
+* normalize_selection_type(selection_type) -> str
+* build_market_capability(...) -> dict
+* build_sport_market_profile(...) -> dict
+
+Internal/private implementation detail:
+
+* _MARKET_CAPABILITY_KEYS defines the exact expected market capability record shape
+  for profile validation.
+
+build_market_capability() return shape:
+
+{
+    "sport":                              str,
+    "league":                             str,
+    "market_type":                        str,
+    "selection_type":                     str,
+    "requires_line":                      bool,
+    "allows_line":                        bool,
+    "line_value_type":                    str | None,
+    "requires_player":                    bool,
+    "requires_team":                      bool,
+    "requires_opponent":                  bool,
+    "requires_starting_status":           bool,
+    "start_required_supported":           bool,
+    "participation_required_supported":   bool,
+    "void_condition_supported":           bool,
+    "settlement_rule_required":           bool,
+    "supported_selection_values":         list[str] | None,
+    "required_fields":                    list[str],
+    "optional_fields":                    list[str],
+    "metadata":                           dict,
+}
+
+build_sport_market_profile() return shape:
+
+{
+    "sport":             str,
+    "league":            str,
+    "supported_markets": list[dict],
+    "market_count":      int,
+    "metadata":          dict,
+}
+
+Behavior summary:
+
+* Pure in-memory capability/profile primitives only.
+* Uses open slug normalization for sport, league, market_type, selection_type,
+  supported_selection_values, required_fields, and optional_fields.
+* Normalization strips whitespace, lowercases, replaces spaces with underscores, and
+  replaces hyphens with underscores.
+* Rejects non-string and empty/whitespace-only slug values.
+* Does not define closed sport, league, market, or selection vocabularies yet.
+* Validates strict bool fields for all capability flags.
+* Validates line semantics:
+  * requires_line=True requires allows_line=True
+  * allows_line=False requires line_value_type=None
+  * allows_line=True requires line_value_type to be provided
+  * provided line_value_type must normalize to "integer" or "float"
+* supported_selection_values may be None when values are not enumerated yet.
+* Provided supported_selection_values must be non-empty list/tuple of unique
+  normalized strings.
+* required_fields and optional_fields default to [].
+* required_fields and optional_fields must be list/tuple values when provided.
+* Duplicate normalized required/optional fields are rejected.
+* Overlap between required_fields and optional_fields is rejected.
+* metadata defaults to {}, must be dict if provided, and is shallow-copied.
+* build_sport_market_profile() accepts supported_markets=None and empty
+  supported_markets.
+* supported_markets must be list/tuple when provided.
+* Each supported market must be a dict with the exact approved market capability key
+  set.
+* Missing supported-market keys raise MarketCapabilityValidationError.
+* Extra supported-market keys raise MarketCapabilityValidationError.
+* Supported market sport/league must match the profile sport/league.
+* Duplicate supported markets by (market_type, selection_type) are rejected.
+* Supported market dicts are shallow-copied.
+* market_count equals len(supported_markets).
+* Output is deterministic for identical input.
+
+Tests:
+
+* tests/test_market_capability.py
+* Full local test result after merge: 1771 passed
+
+v0.2.11 intentionally did not add:
+
+* World Cup capability seed
+* MLB/NFL/NBA capability seeds
+* provider source contracts
+* provider batch normalization
+* provider coverage/staleness diagnostics
+* live odds
+* scraping
+* sportsbook API integration
+* database/schema changes
+* file output
+* runtime wiring
+* recommendations
+* picks
+* locks
+* parlays
+* staking/Kelly/bankroll
+* frontend/API/UI
+* model probabilities
+* simulations
+* handoff updates during the feature branch
+* README/CHANGELOG/config/pyproject/data changes
+
+Important scope clarification:
+The v0.2.11 omissions are version-scoped only. RSB's long-term product goal still
+includes provider ingestion, sportsbook APIs, player prop data, simulations,
+injury/lineup data, historical results, model calibration, and eventually disciplined
+parlay construction. v0.2.11 avoided those items only because it was limited to pure
+sport/market capability profile primitives.
+
+═══════════════════════════════════════════════════════
+v0.2.10 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.2.10 added pure in-memory ranked candidate report primitives.
@@ -1683,8 +1844,9 @@ STRICT CLAUDE RULES — ALWAYS ACTIVE
 * Do not add parlay logic unless explicitly approved.
 * Do not wire stage_market.py, review_taxonomy.py, review_notes.py, odds.py,
   edge.py, candidate_evaluation.py, backtest_review.py, ev.py, prop_candidate.py,
-  odds_snapshot.py, prop_result.py, candidate_ev.py, candidate_ranking.py, or
-  candidate_report.py into existing modules unless explicitly approved.
+  odds_snapshot.py, prop_result.py, candidate_ev.py, candidate_ranking.py,
+  candidate_report.py, or market_capability.py into existing modules unless
+  explicitly approved.
 * Show each proposed file edit and wait for approval before writing it.
 * Do not update Handoffs/ files unless explicitly instructed by the user with ChatGPT approval.
 
@@ -1770,12 +1932,12 @@ WHAT I NEED FROM YOU NOW
 ═══════════════════════════════════════════════════════
 
 Do not inspect files yet.
-Do not plan v0.2.11 or any specific next version yet.
+Do not plan v0.2.12 or any specific next version yet.
 Do not edit anything.
 Do not run commands yet.
 Do not commit.
 
-Acknowledge this updated RSB context. v0.2.10 is complete and merged, and the next
-roadmap batch (v0.2.11, v0.2.12, v0.3.0) is approved. Wait for ChatGPT to provide the
-v0.2.11 version-specific Claude prompt. Implementation still proceeds one version per
-branch and one PR at a time; do not create a v0.2.11 branch until that prompt is provided.
+Acknowledge this updated RSB context. v0.2.11 is complete and merged, and the
+remaining roadmap batch (v0.2.12, v0.3.0) is approved. Wait for ChatGPT to provide the
+v0.2.12 version-specific Claude prompt. Implementation still proceeds one version per
+branch and one PR at a time; do not create a v0.2.12 branch until that prompt is provided.
