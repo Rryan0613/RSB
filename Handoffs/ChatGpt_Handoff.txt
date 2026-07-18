@@ -392,52 +392,55 @@ Going forward, RSB should plan 2-4 versions ahead at a time instead of one versi
 * Implementation still remains one version per branch and one PR at a time.
 * Claude may propose a 2-4 version roadmap plan only when ChatGPT asks for it.
 * ChatGPT remains the roadmap/scope gatekeeper.
-* The approved roadmap batch (v0.2.11, v0.2.12, v0.3.0) is recorded below. v0.2.11 is
-  now complete; v0.2.12 and v0.3.0 remain.
-* Do not implement v0.2.12 or create a v0.2.12 branch until ChatGPT provides the
-  v0.2.12 version-specific implementation prompt.
+* The approved roadmap batch (v0.2.11, v0.2.12, v0.3.0) is recorded below. v0.2.11 and
+  v0.2.12 are now complete; v0.3.0 remains.
+* v0.3.0 is not yet approved for implementation. Do not invent or lock in a v0.3.0 scope
+  or create a v0.3.0 branch until ChatGPT provides the v0.3.0 version-specific
+  implementation prompt.
 
 ═══════════════════════════════════════════════════════
 CURRENT VERIFIED PROJECT STATE
 ═══════════════════════════════════════════════════════
 
 Latest completed version:
-v0.2.11 — Sport / Market Capability Profile Primitives
+v0.2.12 — MLB Capability Profile Seed
 
 Project verified state (main):
 main is clean and up to date with origin/main, based on Ryan's post-merge verification
-of PR #38 (post-v0.2.11 state).
+of PR #40 (post-v0.2.12 state).
 
 Current task branch:
-chore/update-handoffs-after-v0.2.11
+chore/update-handoffs-after-v0.2.12
 This is a temporary docs/ops handoff-update branch only, not the permanent verified
 project branch. The verified project state recorded above reflects main after the
-v0.2.11 merge, not this chore branch.
+v0.2.12 merge, not this chore branch.
 
 Current local test count:
-1771 passing
+1897 passing
 
 Latest version PR:
-PR #38 — v0.2.11 Sport Market Capability Profile Primitives
-https://github.com/Rryan0613/RSB/pull/38
+PR #40 — v0.2.12 MLB Capability Profile Seed
+https://github.com/Rryan0613/RSB/pull/40
 
-PR #38 status:
+PR #40 status:
 
 * State: MERGED
-* Merge commit: c49a2ae443803574fa33ce9ace50857db9026f5d
-* Short merge commit: c49a2ae
-* Head commit: 7f25c56f48a0bbae10fa5af0932a28f7e96c8946
-* Short head commit: 7f25c56
-* Merged at: 2026-07-03T19:26:44Z
-* Feature branch: feature/v0.2.11-sport-market-capability-profiles
+* Merge commit: 2aa963e01f9294ecaf4d04d8b67e9a9297c7a014
+* Short merge commit: 2aa963e
+* Feature commit: ebf2cfa
+* Feature branch: feature/v0.2.12-mlb-capability-profile-seed
 * Feature branch deleted locally and remotely after merge
-* GitHub Actions/checks: tests completed successfully before merge
-* Post-merge local verification: main clean / up to date with origin/main
-* Tests after merge: 1771 passed
+* Tests after merge: 1897 passed
+
+Next version: not yet approved. Do not invent or lock in a v0.2.13 scope.
 
 ═══════════════════════════════════════════════════════
 RECENT MERGED PRs
 ═══════════════════════════════════════════════════════
+
+PR #40:
+v0.2.12 MLB Capability Profile Seed
+https://github.com/Rryan0613/RSB/pull/40
 
 PR #38:
 v0.2.11 Sport Market Capability Profile Primitives
@@ -621,8 +624,97 @@ Ranked Candidate Report Primitives
 v0.2.11:
 Sport / Market Capability Profile Primitives
 
+v0.2.12:
+MLB Capability Profile Seed
+
 ═══════════════════════════════════════════════════════
-v0.2.11 SUMMARY — LATEST COMPLETED VERSION
+v0.2.12 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.2.12 added a pure in-memory MLB capability profile seed built on the v0.2.11
+sport/market capability profile primitives.
+
+Files added:
+
+* src/mlb_capability.py
+* tests/test_mlb_capability.py
+
+Implemented in src/mlb_capability.py:
+
+* MLB_SPORT = "baseball"
+* MLB_LEAGUE = "mlb"
+* build_mlb_capability_profile() -> dict
+
+Behavior summary:
+
+* Pure in-memory capability metadata only; no live provider integration, no odds
+  ingestion, no predictive MLB modeling, and no runtime wiring.
+* build_mlb_capability_profile() calls market_capability.build_sport_market_profile()
+  with sport="baseball", league="mlb", and 15 supported market capability records
+  built via market_capability.build_market_capability().
+* Declares 15 supported MLB markets:
+  * moneyline
+  * run_line
+  * total_runs
+  * team_total_runs
+  * player_hits
+  * player_total_bases
+  * player_home_runs
+  * player_rbis
+  * player_runs
+  * player_stolen_bases
+  * pitcher_strikeouts
+  * pitcher_outs_recorded
+  * pitcher_hits_allowed
+  * pitcher_walks_allowed
+  * pitcher_earned_runs_allowed
+* Game markets (moneyline/run_line/total_runs/team_total_runs) require team and
+  opponent, not player, and do not support starting-status/void/participation fields.
+* Batter markets (player_hits/player_total_bases/player_home_runs/player_rbis/
+  player_runs/player_stolen_bases) require player, team, and opponent; support
+  participation_required and void_condition; do not require starting status.
+* Pitcher markets (pitcher_strikeouts/pitcher_outs_recorded/pitcher_hits_allowed/
+  pitcher_walks_allowed/pitcher_earned_runs_allowed) require player, team, and
+  opponent; require starting status; support start_required, participation_required,
+  and void_condition.
+* All market records carry metadata={"profile_type": "mlb_capability_seed"} at the
+  profile level.
+* No closed sport/league/market vocabulary beyond what v0.2.11 already defines.
+
+Tests:
+
+* tests/test_mlb_capability.py
+* Full local test result after merge: 1897 passed
+
+v0.2.12 intentionally did not add:
+
+* live provider integration
+* odds ingestion
+* predictive MLB modeling
+* runtime wiring
+* other sport capability seeds (NFL/NBA/World Cup)
+* provider source contracts
+* provider batch normalization
+* provider coverage/staleness diagnostics
+* recommendations
+* picks
+* locks
+* parlays
+* staking/Kelly/bankroll
+* frontend/API/UI
+* database/schema changes
+* file output
+* README/CHANGELOG/config/pyproject/data changes
+
+Important scope clarification:
+The v0.2.12 omissions are version-scoped only. RSB's long-term product goal still
+includes provider ingestion, sportsbook APIs, player prop data, simulations,
+injury/lineup data, historical results, model calibration, and eventually disciplined
+parlay construction. v0.2.12 avoided those items only because it was limited to a pure
+MLB capability profile seed.
+
+═══════════════════════════════════════════════════════
+v0.2.11 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.2.11 added pure in-memory sport/market capability profile primitives.
@@ -1776,7 +1868,7 @@ CURRENT GUARDRAILS
 * Use tmp_path/monkeypatch where needed.
 * Do not weaken betting/data/model guardrails.
 * Do not wire pure primitive modules into runtime flows until explicitly approved.
-* Do not wire prop_result.py, odds_snapshot.py, prop_candidate.py, odds.py, ev.py, edge.py, candidate_evaluation.py, candidate_ev.py, candidate_ranking.py, candidate_report.py, market_capability.py, backtest_review.py, review_notes.py, review_taxonomy.py, or stage_market.py into runtime flows unless explicitly approved.
+* Do not wire prop_result.py, odds_snapshot.py, prop_candidate.py, odds.py, ev.py, edge.py, candidate_evaluation.py, candidate_ev.py, candidate_ranking.py, candidate_report.py, market_capability.py, mlb_capability.py, backtest_review.py, review_notes.py, review_taxonomy.py, or stage_market.py into runtime flows unless explicitly approved.
 * Do not add uncontrolled self-learning or automatic model mutation.
 * Any future learning loop must be audited, versioned, and based on verified settled-result data.
 
@@ -1785,16 +1877,15 @@ ROADMAP — CURRENT DIRECTION
 ═══════════════════════════════════════════════════════
 
 Current completed version:
-v0.2.11 — Sport / Market Capability Profile Primitives
+v0.2.12 — MLB Capability Profile Seed
 
 Immediate next action:
 
-* Complete this post-v0.2.11 handoff update chore.
-* After the chore is merged and main is verified clean, the next implementation
-  version is v0.2.12 — World Cup Capability Profile Seed.
-* v0.2.12 implementation is not started yet.
-* Wait for ChatGPT to provide the v0.2.12 version-specific Claude prompt.
-* Do not create a v0.2.12 branch until ChatGPT gives the next approved
+* Complete this post-v0.2.12 handoff update chore.
+* The next version (v0.3.0 or otherwise) is not yet approved. Do not invent or lock
+  in a v0.2.13 scope.
+* Wait for ChatGPT to provide the next version-specific Claude prompt.
+* Do not create a new version branch until ChatGPT gives the next approved
   version-specific step.
 
 Core roadmap principle:
@@ -1831,21 +1922,22 @@ v0.2.8: Candidate EV Enrichment. COMPLETE.
 v0.2.9: Candidate Ranking Primitives. COMPLETE.
 v0.2.10: Ranked Candidate Report Primitives. COMPLETE.
 v0.2.11: Sport / Market Capability Profile Primitives. COMPLETE.
+v0.2.12: MLB Capability Profile Seed. COMPLETE.
 
 Approved remaining roadmap batch:
 
-1. v0.2.12 — World Cup Capability Profile Seed
-2. v0.3.0 — Provider Source Contract / Identity Normalization Primitives
+1. v0.3.0 — Provider Source Contract / Identity Normalization Primitives
 
-Implementation status: Not started. Awaiting the ChatGPT-authored version-specific
-Claude prompt for v0.2.12. Do not implement or create a branch until that prompt is
-provided.
+Implementation status: Not started. v0.3.0 is not yet approved for implementation.
+Do not invent or lock in a v0.3.0 (or v0.2.13) scope. Awaiting the ChatGPT-authored
+version-specific Claude prompt for the next version. Do not implement or create a
+branch until that prompt is provided.
 
 Important roadmap note:
 Provider batch normalization and provider coverage/staleness diagnostics remain
 delayed until after the sport/market capability profile layer exists. v0.2.11 created
-the generic primitives; v0.2.12 is still needed to seed the World Cup capability
-profile before provider contracts.
+the generic primitives and v0.2.12 seeded the MLB capability profile. A World Cup
+capability profile seed and provider contracts remain future, unscoped work.
 
 v0.2.x — Controlled staking / Kelly primitives (possible, later):
 Kelly treated as stake-sizing math only, not recommendation logic.
@@ -2221,12 +2313,10 @@ that claim with verified settled results.
 IMMEDIATE NEXT ACTION
 ═══════════════════════════════════════════════════════
 
-* Complete this post-v0.2.11 handoff update chore.
-* After the chore is merged and main is verified clean, the next implementation
-  version is v0.2.12 — World Cup Capability Profile Seed.
-* v0.2.12 implementation is not started yet.
-* Wait for ChatGPT to provide the v0.2.12 version-specific Claude prompt.
-* Do not create a v0.2.12 branch until ChatGPT gives the next approved
+* Complete this post-v0.2.12 handoff update chore.
+* The next version is not yet approved. Do not invent or lock in a v0.2.13 scope.
+* Wait for ChatGPT to provide the next version-specific Claude prompt.
+* Do not create a new version branch until ChatGPT gives the next approved
   version-specific step.
 
 ═══════════════════════════════════════════════════════
