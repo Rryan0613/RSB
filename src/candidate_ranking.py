@@ -1,6 +1,9 @@
 import math
 
-from candidate_evaluation import normalize_candidate_status, validate_pass_reasons
+from candidate_evaluation import (
+    CandidateEvaluationValidationError,
+    validate_candidate_evaluation_record,
+)
 
 
 class CandidateRankingValidationError(ValueError):
@@ -57,37 +60,6 @@ def _validate_optional_unit_score(value, name: str) -> "float | None":
     return float(value)
 
 
-def _validate_embedded_edge(value) -> "float | None":
-    if value is None:
-        return None
-    if isinstance(value, bool):
-        raise CandidateRankingValidationError(
-            "candidate_evaluation edge must not be a bool"
-        )
-    if not isinstance(value, (int, float)):
-        raise CandidateRankingValidationError(
-            f"candidate_evaluation edge must be int or float, "
-            f"got {type(value).__name__!r}"
-        )
-    if math.isnan(value):
-        raise CandidateRankingValidationError(
-            "candidate_evaluation edge must not be NaN"
-        )
-    if math.isinf(value):
-        raise CandidateRankingValidationError(
-            "candidate_evaluation edge must not be infinite"
-        )
-    if value < -1.0:
-        raise CandidateRankingValidationError(
-            f"candidate_evaluation edge must be >= -1.0, got {value!r}"
-        )
-    if value > 1.0:
-        raise CandidateRankingValidationError(
-            f"candidate_evaluation edge must be <= 1.0, got {value!r}"
-        )
-    return float(value)
-
-
 def _validate_metadata(value) -> dict:
     if value is None:
         return {}
@@ -98,24 +70,14 @@ def _validate_metadata(value) -> dict:
     return dict(value)
 
 
-def _validate_candidate_evaluation(value) -> "tuple[str, list[str]]":
-    if not isinstance(value, dict):
-        raise CandidateRankingValidationError(
-            f"candidate_evaluation must be a dict, got {type(value).__name__!r}"
-        )
+def _validate_candidate_evaluation(value, idx: int) -> "tuple[str, list[str]]":
     try:
-        raw_status = value["status"]
-        raw_edge = value["edge"]
-        raw_pass_reasons = value["pass_reasons"]
-    except KeyError as exc:
+        validated = validate_candidate_evaluation_record(value)
+    except CandidateEvaluationValidationError as exc:
         raise CandidateRankingValidationError(
-            f"candidate_evaluation is missing required key: {exc}"
+            f"candidate_evs[{idx}] candidate_evaluation is invalid: {exc}"
         ) from exc
-
-    status = normalize_candidate_status(raw_status)
-    _validate_embedded_edge(raw_edge)
-    pass_reasons = validate_pass_reasons(raw_pass_reasons)
-    return status, pass_reasons
+    return validated["status"], validated["pass_reasons"]
 
 
 def _validate_score_list(scores, name: str, expected_len: int) -> list:
@@ -225,7 +187,7 @@ def rank_candidate_ev_enrichments(
         expected_value = _validate_required_numeric(
             expected_value_raw, f"candidate_evs[{idx}] expected_value"
         )
-        status, pass_reasons = _validate_candidate_evaluation(candidate_evaluation_raw)
+        status, pass_reasons = _validate_candidate_evaluation(candidate_evaluation_raw, idx)
 
         intermediate.append(
             {
