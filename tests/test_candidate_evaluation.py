@@ -8,6 +8,7 @@ from candidate_evaluation import (
     normalize_pass_reason,
     validate_pass_reasons,
     build_candidate_evaluation,
+    validate_candidate_evaluation_record,
 )
 
 
@@ -472,6 +473,231 @@ def test_build_candidate_evaluation_bad_edge_raises_before_reasons_check():
 def test_build_candidate_evaluation_whitespace_reason_fails_before_invariant():
     with pytest.raises(CandidateEvaluationValidationError):
         build_candidate_evaluation("candidate", pass_reasons=["   "])
+
+
+# ---------------------------------------------------------------------------
+# validate_candidate_evaluation_record — valid records
+# ---------------------------------------------------------------------------
+
+def test_validate_record_candidate_status():
+    result = validate_candidate_evaluation_record(
+        {"status": "candidate", "edge": 0.05, "pass_reasons": []}
+    )
+    assert result["status"] == "candidate"
+    assert result["edge"] == pytest.approx(0.05)
+    assert result["pass_reasons"] == []
+
+
+def test_validate_record_rejected_status():
+    result = validate_candidate_evaluation_record(
+        {"status": "rejected", "edge": 0.01, "pass_reasons": ["edge_below_minimum"]}
+    )
+    assert result["status"] == "rejected"
+    assert result["pass_reasons"] == ["edge_below_minimum"]
+
+
+def test_validate_record_not_evaluable_status():
+    result = validate_candidate_evaluation_record(
+        {
+            "status": "not_evaluable",
+            "edge": None,
+            "pass_reasons": ["missing_model_probability"],
+        }
+    )
+    assert result["status"] == "not_evaluable"
+    assert result["edge"] is None
+    assert result["pass_reasons"] == ["missing_model_probability"]
+
+
+def test_validate_record_returns_plain_dict():
+    result = validate_candidate_evaluation_record(
+        {"status": "candidate", "edge": None, "pass_reasons": []}
+    )
+    assert type(result) is dict
+
+
+def test_validate_record_key_order_is_canonical_regardless_of_input_order():
+    noncanonical_input = {
+        "pass_reasons": [],
+        "edge": None,
+        "status": "candidate",
+    }
+    assert list(noncanonical_input.keys()) == ["pass_reasons", "edge", "status"]
+    result = validate_candidate_evaluation_record(noncanonical_input)
+    assert list(result.keys()) == ["status", "edge", "pass_reasons"]
+
+
+def test_validate_record_normalizes_status():
+    result = validate_candidate_evaluation_record(
+        {"status": "  CANDIDATE  ", "edge": None, "pass_reasons": []}
+    )
+    assert result["status"] == "candidate"
+
+
+def test_validate_record_normalizes_pass_reasons():
+    result = validate_candidate_evaluation_record(
+        {"status": "rejected", "edge": 0.0, "pass_reasons": ["  UNKNOWN  "]}
+    )
+    assert result["pass_reasons"] == ["unknown"]
+
+
+def test_validate_record_edge_int_converted_to_float():
+    result = validate_candidate_evaluation_record(
+        {"status": "candidate", "edge": 0, "pass_reasons": []}
+    )
+    assert result["edge"] == pytest.approx(0.0)
+    assert type(result["edge"]) is float
+
+
+def test_validate_record_edge_none_allowed():
+    result = validate_candidate_evaluation_record(
+        {"status": "candidate", "edge": None, "pass_reasons": []}
+    )
+    assert result["edge"] is None
+
+
+# ---------------------------------------------------------------------------
+# validate_candidate_evaluation_record — invalid container / keys
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("value", [None, "string", 42, [], ("status", "edge")])
+def test_validate_record_rejects_non_dict(value):
+    with pytest.raises(CandidateEvaluationValidationError):
+        validate_candidate_evaluation_record(value)
+
+
+@pytest.mark.parametrize("missing_key", ["status", "edge", "pass_reasons"])
+def test_validate_record_rejects_missing_key(missing_key):
+    record = {"status": "candidate", "edge": None, "pass_reasons": []}
+    del record[missing_key]
+    with pytest.raises(CandidateEvaluationValidationError):
+        validate_candidate_evaluation_record(record)
+
+
+def test_validate_record_rejects_unexpected_key():
+    record = {
+        "status": "candidate",
+        "edge": None,
+        "pass_reasons": [],
+        "extra_key": "unexpected",
+    }
+    with pytest.raises(CandidateEvaluationValidationError):
+        validate_candidate_evaluation_record(record)
+
+
+def test_validate_record_rejects_multiple_unexpected_keys():
+    record = {
+        "status": "candidate",
+        "edge": None,
+        "pass_reasons": [],
+        "extra_one": 1,
+        "extra_two": 2,
+    }
+    with pytest.raises(CandidateEvaluationValidationError):
+        validate_candidate_evaluation_record(record)
+
+
+# ---------------------------------------------------------------------------
+# validate_candidate_evaluation_record — invalid field values
+# ---------------------------------------------------------------------------
+
+def test_validate_record_rejects_invalid_status():
+    with pytest.raises(CandidateEvaluationValidationError):
+        validate_candidate_evaluation_record(
+            {"status": "approved", "edge": None, "pass_reasons": []}
+        )
+
+
+def test_validate_record_rejects_invalid_pass_reason():
+    with pytest.raises(CandidateEvaluationValidationError):
+        validate_candidate_evaluation_record(
+            {"status": "rejected", "edge": 0.0, "pass_reasons": ["bad_reason"]}
+        )
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        True,
+        False,
+        "0.05",
+        [0.05],
+        float("nan"),
+        float("inf"),
+        float("-inf"),
+        -1.01,
+        1.01,
+    ],
+)
+def test_validate_record_rejects_invalid_edge(value):
+    with pytest.raises(CandidateEvaluationValidationError):
+        validate_candidate_evaluation_record(
+            {"status": "candidate", "edge": value, "pass_reasons": []}
+        )
+
+
+@pytest.mark.parametrize("value", [-1.0, 1.0])
+def test_validate_record_accepts_edge_boundary_values(value):
+    result = validate_candidate_evaluation_record(
+        {"status": "candidate", "edge": value, "pass_reasons": []}
+    )
+    assert result["edge"] == pytest.approx(value)
+    assert type(result["edge"]) is float
+
+
+# ---------------------------------------------------------------------------
+# validate_candidate_evaluation_record — structural invariants
+# ---------------------------------------------------------------------------
+
+def test_validate_record_candidate_with_reasons_raises():
+    with pytest.raises(CandidateEvaluationValidationError):
+        validate_candidate_evaluation_record(
+            {"status": "candidate", "edge": None, "pass_reasons": ["unknown"]}
+        )
+
+
+def test_validate_record_rejected_without_reasons_raises():
+    with pytest.raises(CandidateEvaluationValidationError):
+        validate_candidate_evaluation_record(
+            {"status": "rejected", "edge": None, "pass_reasons": []}
+        )
+
+
+def test_validate_record_not_evaluable_without_reasons_raises():
+    with pytest.raises(CandidateEvaluationValidationError):
+        validate_candidate_evaluation_record(
+            {"status": "not_evaluable", "edge": None, "pass_reasons": []}
+        )
+
+
+# ---------------------------------------------------------------------------
+# validate_candidate_evaluation_record — mutation isolation / determinism
+# ---------------------------------------------------------------------------
+
+def test_validate_record_input_mutation_does_not_affect_output():
+    record = {"status": "rejected", "edge": 0.0, "pass_reasons": ["unknown"]}
+    result = validate_candidate_evaluation_record(record)
+    record["pass_reasons"].append("data_quality_concern")
+    assert result["pass_reasons"] == ["unknown"]
+
+
+def test_validate_record_output_pass_reasons_is_new_list():
+    record = {"status": "rejected", "edge": 0.0, "pass_reasons": ["unknown"]}
+    result = validate_candidate_evaluation_record(record)
+    assert result["pass_reasons"] is not record["pass_reasons"]
+
+
+def test_validate_record_output_mutation_does_not_affect_second_call():
+    record = {"status": "rejected", "edge": 0.0, "pass_reasons": ["unknown"]}
+    result_1 = validate_candidate_evaluation_record(record)
+    result_1["pass_reasons"].append("mutated")
+    result_2 = validate_candidate_evaluation_record(record)
+    assert result_2["pass_reasons"] == ["unknown"]
+
+
+def test_validate_record_repeated_calls_produce_identical_output():
+    record = {"status": "candidate", "edge": 0.1, "pass_reasons": []}
+    assert validate_candidate_evaluation_record(record) == validate_candidate_evaluation_record(record)
 
 
 # ---------------------------------------------------------------------------

@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.3.0
+
+- Added `candidate_evaluation.validate_candidate_evaluation_record(value) -> dict`, the canonical public validator for a complete Candidate Evaluation Contract record. This is the first version to expose a whole-record validator for the `{status, edge, pass_reasons}` shape; previously only per-field normalizers (`normalize_candidate_status`, `normalize_pass_reason`, `validate_pass_reasons`) and the constructor `build_candidate_evaluation()` existed.
+  - Requires a `dict` with exactly the keys `status`, `edge`, `pass_reasons`. Rejects non-dict input, missing keys, and unexpected/extra keys, each with `CandidateEvaluationValidationError`.
+  - Delegates all normalization and domain-invariant enforcement to the existing `build_candidate_evaluation()` — no independent reimplementation of status/edge/pass-reason/invariant logic. Returns a fresh normalized plain dict with deterministic key order (`status`, `edge`, `pass_reasons`) and a newly constructed `pass_reasons` list, isolated from caller mutation.
+  - No new imports added to `candidate_evaluation.py`.
+- `candidate_ranking.py` now delegates embedded `candidate_evaluation` record validation to `validate_candidate_evaluation_record()` instead of maintaining a private, duplicated edge-range validator (`_validate_embedded_edge`, removed) and ad hoc dict/key checks.
+  - Exception boundary: `candidate_ranking.py` catches `CandidateEvaluationValidationError` raised by the canonical validator and re-raises `CandidateRankingValidationError` (via `raise ... from exc`, preserving `__cause__`), identifying the offending `candidate_evs[index]` record. This makes the ranking module's public exception boundary fully self-contained and consistent — previously, invalid embedded `status`/`pass_reasons` propagated `CandidateEvaluationValidationError` unwrapped while invalid embedded `edge`/missing-key/non-dict cases raised `CandidateRankingValidationError`, an inconsistency now resolved in favor of the ranking-owned boundary.
+  - All successful ranking output, sorting, and key order are unchanged.
+- `candidate_report.py` is unchanged — it validates a flattened ranked-record representation (`candidate_status`, `pass_reasons` as separate top-level keys), not a complete embedded `candidate_evaluation` record, so it is out of scope for this delegation.
+- Added `docs/CANDIDATE_EVALUATION_CONTRACT.md`, documenting the Candidate Evaluation Contract as an architectural concept (currently implemented by `candidate_evaluation.py`), its canonical record shape, status/pass-reason ownership, domain-ownership boundaries (identity, odds-snapshot, probability/edge/EV, ranking/reporting, data-quality, settlement, review, persistence), legacy World Cup isolation, and explicit non-goals for this version.
+- No changes to `build_candidate_evaluation`, `normalize_candidate_status`, `normalize_pass_reason`, `validate_pass_reasons`, `build_candidate_ev_enrichment`, or any existing output shape/key order. No legacy runtime wiring, no persistence/database changes, no new aggregate/protocol/dataclass/TypedDict.
+
 ## v0.2.9
 
 - Added `src/candidate_ranking.py`, a pure standalone module for ranking candidate EV enrichment records produced by `build_candidate_ev_enrichment()` (v0.2.8). This is the first version that ranks candidates rather than just building/enriching them.
