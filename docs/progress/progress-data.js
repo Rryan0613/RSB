@@ -1,0 +1,352 @@
+window.RSB_PROGRESS = {
+  schemaVersion: "2.0.0",
+  lastVerifiedAt: "2026-07-18",
+
+  sourceOfTruth: [
+    "Handoffs/ChatGpt_Handoff.txt",
+    "Handoffs/Claude_handoff.txt",
+    "docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md (merged, PR #42)",
+    "docs/CANDIDATE_EVALUATION_CONTRACT.md (committed on feature branch 151010b, not merged into main)"
+  ],
+
+  project: {
+    name: "RSB",
+    subtitle: "Disciplined sportsbook analytics and +EV simulation research project",
+    repository: "https://github.com/Rryan0613/RSB",
+    productFocus: "Long-term target: MLB and NBA singles, PASS always a valid result. Today: pure decision-contract primitives only — no sport runtime is wired to them yet. See Readiness."
+  },
+
+  statusLegend: [
+    { key: "Verified complete", description: "Merged to main and supported by the repository's recorded review, validation, or test evidence as applicable." },
+    { key: "Implemented, awaiting review", description: "Implementation exists outside the verified main baseline and is awaiting gatekeeper review or merge. It may be local or committed to a feature branch, as described by the active workspace." },
+    { key: "Active planning", description: "Scope is being defined. No implementation exists yet." },
+    { key: "Approved next", description: "Scope has gatekeeper approval to begin but implementation has not started." },
+    { key: "Directional future", description: "Long-term intent recorded in project docs. Not a scoped or approved version." },
+    { key: "Not built", description: "The target reusable or multi-sport operational capability does not exist. Isolated primitives, schemas, or frozen legacy components may exist, as described in the accompanying note." },
+    { key: "Frozen legacy", description: "Fully functional and actively maintained, but closed to new feature development by an explicit architectural decision." }
+  ],
+
+  repositoryBaseline: {
+    label: "Repository baseline (merged, verified)",
+    latestMergedVersion: "v0.2.12",
+    latestMergedVersionTitle: "MLB Capability Profile Seed",
+    latestMergedVersionStatus: "Verified complete",
+    latestMergedArchitectureChore: {
+      title: "Legacy Pipeline Architecture Audit",
+      identifier: "PR #42",
+      note: "Read-only architecture audit reconciling the legacy World Cup runtime against the pure-primitives candidate contract. No source, config, schema, test, or CI changes were made by this chore — it is documentation only, not a version bump."
+    },
+    releaseEvidence: {
+      prNumber: 40,
+      mergeCommit: "2aa963e",
+      testCount: 1897
+    },
+    note: "This is the state of main as verified by Ryan after the v0.2.12 merge. It does not include any work described under Active workspace below."
+  },
+
+  activeWorkspace: {
+    label: "Active feature-branch snapshot (committed, not merged)",
+    branch: "feature/v0.3.0-candidate-evaluation-contract",
+    commit: "151010b — Add candidate evaluation contract",
+    scopeVersion: "v0.3.0",
+    scopeTitle: "Candidate Evaluation Contract",
+    state: "Implemented, awaiting review",
+    mergeStatus: "Committed and pushed to the feature branch; not merged into main",
+    localTestCount: 1933,
+    summary: "Adds candidate_evaluation.validate_candidate_evaluation_record(), a whole-record validator for the {status, edge, pass_reasons} shape, and refactors candidate_ranking.py to delegate embedded-record validation to it instead of a private duplicated checker. Adds docs/CANDIDATE_EVALUATION_CONTRACT.md, the architecture document for the contract. All existing function signatures, output shapes, and successful-path behavior are documented as unchanged.",
+    filesTouched: [
+      "src/candidate_evaluation.py",
+      "src/candidate_ranking.py",
+      "tests/test_candidate_evaluation.py",
+      "tests/test_candidate_ranking.py",
+      "docs/CANDIDATE_EVALUATION_CONTRACT.md (new)",
+      "CHANGELOG.md",
+      "pyproject.toml"
+    ],
+    scopeNote: "The handoff documents (as of the v0.2.12 post-merge update) predicted v0.3.0 as a “Provider Source Contract / Identity Normalization Primitives” scope. The work actually present on this feature branch implements a different scope, the Candidate Evaluation Contract. This divergence has not been reconciled by the ChatGPT gatekeeper workflow yet — it is flagged here for review, not resolved by this dashboard.",
+    important: "This snapshot describes work committed as 151010b and pushed to origin/feature/v0.3.0-candidate-evaluation-contract. It is not merged into main. PR status has not been verified by the available evidence — this dashboard does not claim either that a PR exists or that no PR exists. It must never be treated as released, merged, or verified until it goes through Ryan's validation, ChatGPT's gatekeeper review, and merge approval."
+  },
+
+  currentGate: {
+    version: "v0.3.0",
+    title: "Candidate Evaluation Contract — committed and pushed, awaiting gatekeeper review",
+    status: "Implemented, awaiting review",
+    owner: "Ryan (validation) + ChatGPT (gatekeeper review)",
+    summary: "The Candidate Evaluation Contract implementation described under Active workspace is committed as 151010b and pushed to origin/feature/v0.3.0-candidate-evaluation-contract. It is not merged into main. PR status has not been verified by the available evidence.",
+    nextActions: [
+      "Ryan provides final validation and relevant evidence to ChatGPT.",
+      "ChatGPT completes gatekeeper review of v0.3.0.",
+      "Ryan opens or updates the PR after approval, depending on actual PR state.",
+      "GitHub Actions must pass before merge.",
+      "Merge and post-merge verification happen only after approval."
+    ]
+  },
+
+  principles: [
+    "ChatGPT is the architecture reviewer, roadmap owner, and gatekeeper.",
+    "Claude Code is the implementation agent and starts in plan mode.",
+    "Ryan creates and verifies the feature branch before launching Claude.",
+    "Ryan runs git validation commands and controls commit, push, PR, and merge actions.",
+    "Sport-specific models share infrastructure, not one generic modeling layer.",
+    "No automatic betting; weak evidence should produce PASS.",
+    "The legacy World Cup runtime and the pure-primitives candidate pipeline are currently two disconnected systems — see Architecture."
+  ],
+
+  readiness: [
+    {
+      area: "Foundation contracts",
+      status: "Verified complete",
+      note: "The pure candidate identity/evaluation/enrichment/ranking/reporting/settlement chain (prop_candidate.py, candidate_evaluation.py, candidate_ev.py, candidate_ranking.py, candidate_report.py, prop_result.py) is merged but not wired into any operational runtime. The narrow verified exceptions are ev.py and odds.py, the shared leaf math the World Cup legacy runtime also uses — ev.py directly, odds.py only transitively through ev.py (see the architecture bridge for the exact import relationship). One further addition to this layer, the Candidate Evaluation Contract's whole-record validator, is committed on the feature branch and awaiting review — see Active workspace."
+    },
+    {
+      area: "Sport capability profiles",
+      status: "Verified complete",
+      note: "A generic sport/market capability schema (market_capability.py) and an MLB capability seed (mlb_capability.py) are merged. No World Cup, NBA, or NFL capability profile exists. A capability profile only declares supported market shapes — it is not a data pipeline or a runtime."
+    },
+    {
+      area: "Provider and data ingestion",
+      status: "Not built",
+      note: "No provider source contract, canonical ID normalization, or coverage/staleness diagnostics exist for the pure-primitives pipeline. The legacy World Cup runtime has its own working odds_collector.py and odds_providers/ package, but it is scoped to World Cup only and frozen for new development."
+    },
+    {
+      area: "MLB operational runtime",
+      status: "Not built",
+      note: "MLB has a capability profile seed only — declared market shapes, nothing else. There is no MLB data ingestion, no MLB features, no MLB probability model, and no MLB orchestration. The capability profile must not be read as an operational runtime."
+    },
+    {
+      area: "NBA operational runtime",
+      status: "Not built",
+      note: "No NBA-specific code exists at any layer — no capability profile, no data, no model, no orchestration."
+    },
+    {
+      area: "Probability generation",
+      status: "Frozen legacy",
+      note: "The World Cup legacy runtime has a working sklearn model (model.py) and a Monte Carlo simulator (simulator.py), both frozen for new feature development. The pure-primitives pipeline has no probability generator by design — candidate_ev.py takes model_probability as caller-supplied input only. No MLB or NBA probability engine exists."
+    },
+    {
+      area: "Calibration and backtesting",
+      status: "Not built",
+      note: "No MLB or NBA calibration/backtesting pipeline exists. Reusable statistical primitives are merged (backtest.py, backtest_report.py, backtest_review.py) and World Cup results ingestion works (update_results.py writes into the results table, and historical_replay.py can read predictions/results back out) — but no code in src/ currently chains historical_replay.py's output into backtest_report.py/backtest_review.py; each is callable but must be invoked by hand today. This is a partially-wired, World Cup-only capability, not an MLB/NBA operational pipeline."
+    },
+    {
+      area: "Operational reporting",
+      status: "Not built",
+      note: "No MLB or NBA operational reporting exists. candidate_report.py is merged but unwired to any runtime. Separately, run_slate.py has its own working World Cup-only report/data-quality summary. The two exist independently of each other, and neither produces a cross-sport operational report."
+    },
+    {
+      area: "Settlement and learning loop",
+      status: "Not built",
+      note: "prop_result.py defines a six-state settlement schema (pure, unwired). The legacy results table only stores boolean match outcomes with no void/push states and no lifecycle. No post-event review engine, miss-reason taxonomy, or controlled retraining loop exists at any layer."
+    }
+  ],
+
+  architecture: [
+    {
+      id: "legacy",
+      title: "World Cup legacy runtime",
+      status: "Frozen legacy",
+      description: "The only existing end-to-end runtime in the repository. Fully wired: config → slate → features → simulation/model → odds → data-quality guardrails → persistence → report. Frozen for new World Cup feature development per the architecture audit — bug fixes only. It is not planned to evolve into a general multi-sport orchestrator, ever.",
+      nodes: [
+        { title: "run_slate.py", detail: "World Cup-specific orchestration. The pipeline shape is reusable in the abstract, but current wiring and every stage call are hardcoded to soccer modules and constants." },
+        { title: "features.py / simulator.py / tactical_matchup.py", detail: "Soccer-specific feature building and Monte Carlo goal simulation. Not reusable for other sports without new sport-specific modules." },
+        { title: "model.py / availability.py / data_quality.py / market_selector.py", detail: "Artifact versioning, lineup context, guardrails, and price qualification. The mechanics are reusable patterns; the current fields and rules are World Cup-shaped." },
+        { title: "database.py + odds_collector.py", detail: "SQLite persistence and provider odds collection. Runs today; the results table's outcome columns are soccer-specific." }
+      ]
+    },
+    {
+      id: "primitives",
+      title: "Reusable pure-primitives foundation",
+      status: "Verified complete",
+      description: "Sport-agnostic records and calculations, independently built and tested. This foundation has no operational runtime or orchestrator of its own — the candidate identity/evaluation/enrichment/ranking/reporting/settlement chain is not invoked by any daily or sport-specific runtime. Some primitives import one another internally (for example candidate_ev.py calling candidate_evaluation.py, edge.py, and ev.py). ev.py and odds.py are the narrow legacy-connected leaf exceptions — see the architecture bridge below for the exact relationship. At the candidate-record, evaluation, ranking, reporting, persistence, and orchestration levels, this foundation is not integrated with the World Cup runtime above.",
+      nodes: [
+        { title: "Identity + capability", detail: "prop_candidate.py, market_capability.py, mlb_capability.py — candidate identity and declared market shapes." },
+        { title: "Odds + evaluation", detail: "odds_snapshot.py, candidate_evaluation.py — price observation and eligibility/rejection semantics." },
+        { title: "Enrichment + ranking", detail: "candidate_ev.py, candidate_ranking.py — edge/EV attachment and ordering. Does not force a bet." },
+        { title: "Reporting + settlement", detail: "candidate_report.py, prop_result.py — reviewable summaries and post-event settlement lifecycle." }
+      ]
+    },
+    {
+      id: "future-runtimes",
+      title: "Future sport-specific runtimes",
+      status: "Not built",
+      description: "No MLB or NBA runtime exists today — shown here as intended direction only, never as a built system. When a future runtime is built, it must own its own sport-specific data, features, probability model, simulation assumptions, calibration, and market support, while reusing the shared infrastructure named below. It will be new, independent orchestration — not an extension of run_slate.py.",
+      nodes: [
+        { title: "MLB runtime (not built)", detail: "Would need its own data ingestion, features, and probability model built on top of the existing MLB capability profile seed." },
+        { title: "NBA runtime (not built)", detail: "Would need a capability profile, data ingestion, features, and probability model — none exist yet." },
+        { title: "Shared infrastructure it would reuse", detail: "Identity, odds-snapshot, EV/edge math, candidate evaluation, ranking, and reporting primitives from the foundation lane above." }
+      ]
+    }
+  ],
+
+  architectureBridge: {
+    title: "The only current bridge between the two systems",
+    description: "The legacy World Cup runtime and the pure-primitives foundation share no orchestration, no eligibility vocabulary, and no persistence. The verified exception is the low-level math leaf. src/ev.py is imported directly by both sides: by run_slate.py, slate_odds.py, market_selector.py, and odds_providers/base.py on the legacy side, and by candidate_ev.py on the pure side. src/odds.py is imported directly only on the pure side (by edge.py, by candidate_ev.py, and by ev.py itself) — no legacy file imports odds.py directly; the legacy runtime reaches its logic only transitively, through ev.py's internal use of it. No other file, record shape, or status vocabulary is shared. This is not drawn as a connector between the two lanes above because no higher-level integration exists — only this narrow leaf dependency does."
+  },
+
+  modules: [
+    { name: "run_slate.py", area: "Legacy orchestration", status: "Frozen legacy", purpose: "Orchestrates the full World Cup prediction pipeline: config → slate → train/predict → simulate → odds → data-quality → persist. The sequence shape is a reusable pattern in the abstract, but every stage call is hardcoded to World Cup modules and constants, and this file is not planned to become a shared multi-sport orchestrator." },
+    { name: "simulator.py", area: "Legacy probability", status: "Frozen legacy", purpose: "Vectorized Monte Carlo Poisson goal-rate simulation. Soccer-specific (goals, both-teams-to-score, over/under 2.5); not reusable for other sports without a new simulation model." },
+    { name: "features.py", area: "Legacy features", status: "Frozen legacy", purpose: "Builds the World Cup model feature dict (FIFA rank diff, Elo diff, xG diffs). Soccer-specific inputs." },
+    { name: "tactical_matchup.py", area: "Legacy features", status: "Frozen legacy", purpose: "Pressing, build-up, and set-piece matchup ratings and mismatch flags. Fully soccer-tactical vocabulary with no cross-sport analog yet." },
+    { name: "availability.py", area: "Legacy features", status: "Frozen legacy", purpose: "Lineup, injury, and rotation-risk context and derived features. The trusted-source and confidence/risk accessor pattern is reusable; the specific fields assume an 11-starter sport (soccer)." },
+    { name: "model.py", area: "Legacy probability", status: "Frozen legacy", purpose: "Trains/loads/predicts a per-market sklearn model and manages versioned artifacts with feature-schema safety checks. The artifact-versioning mechanics are a reusable pattern; the trained feature set and default target market are World Cup-specific." },
+    { name: "data_quality.py", area: "Legacy guardrails", status: "Frozen legacy", purpose: "Master guardrail engine: warnings, severity, data-quality tri-state, and the recommendation gate separating technical EV signal from an actionable recommendation. The pattern is reusable; some specific warning codes are soccer-specific." },
+    { name: "market_selector.py", area: "Legacy guardrails", status: "Frozen legacy", purpose: "Price qualification against allowed markets, odds bands, and book-count rules, producing qualified/rejected plus dynamic reason strings. The mechanics are reusable; the active config is hardcoded to World Cup markets." },
+    { name: "database.py", area: "Legacy persistence", status: "Frozen legacy", purpose: "SQLite persistence across 8 tables (matches, feature_snapshots, predictions, simulation_outputs, odds_snapshots, results, model_runs, review_notes) plus the training-data leakage guard. Most of the framework is reusable; the results table's outcome columns (home_win/draw/away_win/btts/over_25) are soccer-specific." },
+    { name: "slate_odds.py", area: "Legacy odds", status: "Frozen legacy", purpose: "Resolves qualified provider odds lines onto slate matches by match ID or team/date. The resolution strategy is reusable; the hardcoded prediction market assumes a 3-outcome soccer market." },
+    { name: "odds_collector.py", area: "Legacy odds", status: "Frozen legacy", purpose: "CLI that collects, qualifies, and persists provider odds. Provider-agnostic orchestration; not itself World Cup-coupled beyond reading the current sports config." },
+    { name: "odds_providers/ (base, mock, the_odds_api)", area: "Legacy odds", status: "Frozen legacy", purpose: "Provider adapter interface and implementations. base.py and the_odds_api.py are sport-agnostic; mock_provider.py's fixture data is World Cup-specific." },
+    { name: "validation.py", area: "Legacy validation", status: "Frozen legacy", purpose: "Slate and result JSON schema validation. The validation pattern generalizes; the required-field list assumes a soccer match shape (home_team/away_team)." },
+    { name: "update_results.py", area: "Legacy persistence", status: "Frozen legacy", purpose: "CLI that ingests results.json into the database. Thin and generic." },
+    { name: "historical_replay.py", area: "Legacy backtesting", status: "Frozen legacy", purpose: "Read-only SQLite replay loader for backtesting. The query pattern is generic; the derived outcome labels (home_win/draw/away_win) are soccer-shaped." },
+    { name: "check_odds_provider.py", area: "Legacy diagnostics", status: "Frozen legacy", purpose: "Diagnostics CLI gating live odds before they reach model decisions. Sport-agnostic." },
+    { name: "import_claude_review.py", area: "Legacy utility", status: "Frozen legacy", purpose: "CLI that imports a review JSON into the review_notes table. Small and generic." },
+
+    { name: "odds.py", area: "Shared leaf dependency", status: "Verified complete", purpose: "Odds format conversion and implied-probability primitives. Imported directly by the pure-primitives side (edge.py, candidate_ev.py) and by ev.py itself. No legacy file imports odds.py directly — the legacy runtime reaches it only transitively, through ev.py." },
+    { name: "edge.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "calculate_edge(model_probability, implied_probability). Its only current importer is candidate_ev.py — not imported by any legacy module, so this is a pure-primitives-only primitive, not a shared leaf." },
+    { name: "ev.py", area: "Shared leaf dependency", status: "Verified complete", purpose: "Expected-value math plus validated backward-compatible wrappers. Imported directly by both systems: by run_slate.py, slate_odds.py, market_selector.py, and odds_providers/base.py on the legacy side, and by candidate_ev.py on the pure side." },
+    { name: "backtest.py", area: "Reusable backtesting primitive", status: "Verified complete", purpose: "Pure statistical primitives: Brier score, log loss, accuracy. Fully sport-agnostic. Its only current importer is backtest_report.py; it is not called by any runtime, legacy or pure." },
+    { name: "backtest_report.py", area: "Reusable backtesting primitive", status: "Verified complete", purpose: "Aggregates replay rows into a backtest report. Duck-typed, no sport coupling. Its own docstring documents that rows must already be loaded by the caller (e.g. via historical_replay.load_replay_rows()); no file in src/ currently calls it — fully unwired, not part of any automated World Cup pipeline." },
+    { name: "backtest_review.py", area: "Reusable backtesting primitive", status: "Verified complete", purpose: "Classifies a backtest report into strong/mixed/weak/insufficient_data. Pure thresholds, sport-agnostic. No file in src/ currently calls it — fully unwired." },
+    { name: "config_validation.py", area: "Legacy-connected reusable primitive", status: "Verified complete", purpose: "Dependency-free JSON config loading and schema validation. Imported directly by 3 legacy runtime modules (run_slate.py, odds_collector.py, market_selector.py). No pure-primitives module imports it — legacy-connected, not shared between both architectural systems." },
+    { name: "paths.py", area: "Legacy-connected reusable primitive", status: "Verified complete", purpose: "Central absolute path resolution and environment-variable overrides. Imported directly by 9 legacy runtime modules (run_slate.py, database.py, model.py, market_selector.py, odds_collector.py, check_odds_provider.py, update_results.py, historical_replay.py, import_claude_review.py). No pure-primitives module imports it — broadly used across the legacy runtime, but not shared between both architectural systems." },
+
+    { name: "prop_candidate.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "Prop/pick candidate identity schema (sport, league, event, market, selection, player/team context)." },
+    { name: "odds_snapshot.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "Sportsbook price observation schema, including odds_found_at for future closing-line-value comparison." },
+    { name: "candidate_evaluation.py", area: "Candidate pipeline (pure, unwired)", status: "Implemented, awaiting review", purpose: "Candidate eligibility (candidate/rejected/not_evaluable) and closed pass-reason vocabulary. build_candidate_evaluation() and the field-level normalizers are previously merged and unchanged. validate_candidate_evaluation_record(), the new whole-record validator, is committed on the feature branch (151010b), not merged into main — see Active workspace." },
+    { name: "candidate_ev.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "Merges a candidate and an odds snapshot with a caller-supplied model_probability into edge, expected value, and an embedded candidate_evaluation record." },
+    { name: "candidate_ranking.py", area: "Candidate pipeline (pure, unwired)", status: "Implemented, awaiting review", purpose: "Ranks candidate EV records by expected value, edge, and optional quality scores. Output shape, sort order, and successful-path behavior are documented as unchanged; the internal validation delegation to candidate_evaluation.validate_candidate_evaluation_record() is new, committed on the feature branch (151010b), not merged into main — see Active workspace." },
+    { name: "candidate_report.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "Aggregates ranked candidate records into a reviewable report (ranked/excluded counts, pass-reason counts)." },
+    { name: "prop_result.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "Six-state settlement lifecycle schema (pending/won/lost/push/void/unknown), independent of the legacy boolean results table." },
+    { name: "review_taxonomy.py", area: "Review vocabulary (pure, unwired)", status: "Verified complete", purpose: "Review category, severity, and data-quality vocabulary. Independently defines a strong/okay/weak/unknown tri-state that is not reconciled with data_quality.py's tri-state yet." },
+    { name: "review_notes.py", area: "Review vocabulary (pure, unwired)", status: "Verified complete", purpose: "Builds a single structured review note using review_taxonomy.py. Same domain concept as the legacy review_notes table but no code linkage." },
+    { name: "stage_market.py", area: "Review vocabulary (pure, unwired)", status: "Verified complete", purpose: "Tournament stage and market-type vocabulary. Built with soccer tournament structure in mind; currently unwired and imported by no other module." },
+
+    { name: "market_capability.py", area: "Capability profile", status: "Verified complete", purpose: "Generic sport/market capability schema builder — declares what a market requires (player/team/line/settlement fields), not a data pipeline." },
+    { name: "mlb_capability.py", area: "Capability profile", status: "Verified complete", purpose: "MLB capability profile seed built on market_capability.py — declares 15 supported MLB market shapes. This is metadata only: no live provider integration, no odds ingestion, no predictive MLB modeling, and no runtime wiring." }
+  ],
+
+  milestones: [
+    { version: "v0.1.8.6", title: "Backtest metric primitives", status: "Verified complete", group: "Backtesting" },
+    { version: "v0.1.8.7", title: "Results ingestion safety", status: "Verified complete", group: "Backtesting" },
+    { version: "v0.1.8.8", title: "Historical replay loader", status: "Verified complete", group: "Backtesting" },
+    { version: "v0.1.8.9", title: "Training leakage guard", status: "Verified complete", group: "Validation" },
+    { version: "v0.1.9.0", title: "Backtest report output", status: "Verified complete", group: "Reporting" },
+    { version: "v0.1.9.1", title: "Feature variable upgrade", status: "Verified complete", group: "Features" },
+    { version: "v0.1.9.2", title: "Stage and market semantics", status: "Verified complete", group: "Contracts" },
+    { version: "v0.1.9.3", title: "Prediction review taxonomy", status: "Verified complete", group: "Review" },
+    { version: "v0.1.9.4", title: "Prediction review notes", status: "Verified complete", group: "Review" },
+    { version: "v0.2.0", title: "Odds and implied probability", status: "Verified complete", group: "Math" },
+    { version: "v0.2.1", title: "Edge calculation primitives", status: "Verified complete", group: "Math" },
+    { version: "v0.2.2", title: "Candidate evaluation record", status: "Verified complete", group: "Candidate" },
+    { version: "v0.2.3", title: "Backtest review overlay", status: "Verified complete", group: "Review" },
+    { version: "v0.2.4", title: "Odds expansion / EV math", status: "Verified complete", group: "Math" },
+    { version: "v0.2.5", title: "Prop candidate schema", status: "Verified complete", group: "Candidate" },
+    { version: "v0.2.6", title: "Odds snapshot / provider records", status: "Verified complete", group: "Candidate" },
+    { version: "v0.2.7", title: "Prop result and settlement", status: "Verified complete", group: "Settlement" },
+    { version: "v0.2.8", title: "Candidate EV enrichment", status: "Verified complete", group: "Candidate" },
+    { version: "v0.2.9", title: "Candidate ranking primitives", status: "Verified complete", group: "Candidate" },
+    { version: "v0.2.10", title: "Ranked candidate report primitives", status: "Verified complete", group: "Reporting" },
+    { version: "v0.2.11", title: "Sport/market capability profile primitives", status: "Verified complete", group: "Capability" },
+    { version: "v0.2.12", title: "MLB capability profile seed", status: "Verified complete", group: "Capability" },
+    { version: "PR #42", title: "Legacy Pipeline Architecture Audit (merged, docs-only chore, no version bump)", status: "Verified complete", group: "Architecture" },
+    { version: "v0.3.0", title: "Candidate Evaluation Contract (committed on feature branch, not merged into main)", status: "Implemented, awaiting review", group: "Architecture" }
+  ],
+
+  roadmap: [
+    {
+      phase: 1,
+      title: "Capability and market understanding",
+      status: "Implemented, awaiting review",
+      description: "Define the supported betting markets, the data shape each market requires, and one canonical eligibility contract. Capability profiles are merged; the Candidate Evaluation Contract's whole-record validator is committed on the feature branch and awaiting gatekeeper review — see Active workspace.",
+      deliverables: ["Sport capability profiles", "Market field requirements", "Candidate Evaluation Contract"]
+    },
+    {
+      phase: 2,
+      title: "Provider and identity contracts",
+      status: "Directional future",
+      description: "Normalize providers, sportsbooks, leagues, teams, players, events, timestamps, and freshness. Predicted as the v0.3.0 scope in prior handoffs; the branch currently in progress implements a different scope instead — see the Active workspace scope note.",
+      deliverables: ["Provider source contract", "Canonical IDs", "Freshness and provenance metadata"]
+    },
+    {
+      phase: 3,
+      title: "Coverage and staleness diagnostics",
+      status: "Not built",
+      description: "Prevent incomplete, conflicting, or stale information from silently reaching the model.",
+      deliverables: ["Coverage reports", "Staleness checks", "Missing-data policy"]
+    },
+    {
+      phase: 4,
+      title: "Automated historical and current ingestion",
+      status: "Not built",
+      description: "Build the trustworthy data layer required by MLB and NBA models. This does not extend run_slate.py — it is new orchestration built on the pure-primitives foundation.",
+      deliverables: ["Games and results", "Player and team data", "Odds history", "Injuries and lineups"]
+    },
+    {
+      phase: 5,
+      title: "Feature engineering and validation",
+      status: "Not built",
+      description: "Keep variables that improve out-of-sample performance; reject fake-smart noise.",
+      deliverables: ["Sport-specific features", "Feature ablation", "Leakage-safe validation"]
+    },
+    {
+      phase: 6,
+      title: "Probability generation engines",
+      status: "Not built",
+      description: "Generate RSB probabilities for supported MLB and NBA markets. No such engine exists for either sport today.",
+      deliverables: ["Baseline models", "Simulation or ensemble models", "Probability calibration"]
+    },
+    {
+      phase: 7,
+      title: "Backtesting, calibration, and CLV",
+      status: "Not built",
+      description: "Measure whether stated probabilities are accurate and whether prices beat the closing market, for MLB/NBA. Reusable backtesting/statistical primitives already exist (Verified complete). The World Cup system separately has working results ingestion and historical replay capability. Those pieces are not currently chained into one automated calibration/backtesting pipeline for World Cup, and no operational MLB or NBA calibration/backtesting system exists at all.",
+      deliverables: ["Brier score", "Log loss", "Calibration buckets", "Closing-line value"]
+    },
+    {
+      phase: 8,
+      title: "Decision policy and daily report",
+      status: "Not built",
+      description: "Return credible singles, acceptable price thresholds, and explicit PASS decisions.",
+      deliverables: ["Eligibility policy", "Uncertainty controls", "Operational slate report"]
+    },
+    {
+      phase: 9,
+      title: "Settlement and controlled learning loop",
+      status: "Not built",
+      description: "Use aggregate evidence from settled predictions to recalibrate and improve future versions.",
+      deliverables: ["Prediction log", "Settlement log", "Model-version tracking", "Review and retraining policy"]
+    },
+    {
+      phase: 10,
+      title: "Multi-sport expansion and product interface",
+      status: "Directional future",
+      description: "Add further sports only after the shared architecture and one or two sport runtimes are proven.",
+      deliverables: ["NFL or other sport profiles", "CLI/API/dashboard", "Scheduled operation"]
+    }
+  ],
+
+  workflow: [
+    { step: 1, actor: "Ryan", title: "Create feature branch", detail: "Switch to the approved feature branch and verify it before launching Claude." },
+    { step: 2, actor: "Claude", title: "Inspect and plan", detail: "Plan mode only; no implementation before ChatGPT review." },
+    { step: 3, actor: "ChatGPT", title: "Review the plan", detail: "Check scope, dependencies, ownership boundaries, and test strategy." },
+    { step: 4, actor: "Claude", title: "Implement approved scope", detail: "Edit only the approved files and preserve established contracts." },
+    { step: 5, actor: "Ryan", title: "Run git and test validation", detail: "Ryan runs branch, status, diff, and test verification commands himself." },
+    { step: 6, actor: "ChatGPT", title: "Gatekeep completion", detail: "Review diffs and evidence before authorizing commit and PR." },
+    { step: 7, actor: "Ryan", title: "Commit, push, and open PR", detail: "GitHub Actions must pass before merge." },
+    { step: 8, actor: "Ryan + ChatGPT", title: "Post-merge verification", detail: "Confirm clean main, update handoffs, and advance the dashboard data." }
+  ],
+
+  updateChecklist: [
+    "Verify the merge and resulting version.",
+    "Update repositoryBaseline.",
+    "Clear or replace the prior activeWorkspace.",
+    "Add verified release evidence.",
+    "Update changed module states.",
+    "Update readiness and roadmap states.",
+    "Set the next gate and exact next action.",
+    "Update lastVerifiedAt.",
+    "Review every page for stale or contradictory claims.",
+    "Update the dashboard alongside the handoff documents."
+  ]
+};
