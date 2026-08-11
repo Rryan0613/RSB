@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RSB development progress dashboard">
+  <meta name="color-scheme" content="dark light">
+  <title>RSB Progress Dashboard</title>
+  <script>
+    (() => {
+      "use strict";
+      // Runs before first paint to avoid a theme flash. No network access, no storage of project data.
+      try {
+        var stored = localStorage.getItem("rsb-dashboard-theme");
+        if (stored === "light" || stored === "dark") {
+          document.documentElement.dataset.theme = stored;
+          return;
+        }
+      } catch (e) { /* localStorage unavailable — fall through to system preference */ }
+      try {
+        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+          document.documentElement.dataset.theme = "light";
+        }
+      } catch (e) { /* matchMedia unavailable — default dark stays */ }
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07101f;
+      --panel: #0d192c;
+      --panel-2: #101f36;
+      --text: #f4f7fb;
+      --muted: #9eacc0;
+      --border: #263650;
+      --accent: #54c6ff;
+      --accent-2: #8d7dff;
+      --complete: #49d39c;
+      --review: #c9a4ff;
+      --planning: #ffc861;
+      --future: #8996a9;
+      --frozen: #4fb8c4;
+      --danger: #ff7185;
+      --shadow: 0 18px 55px rgba(0,0,0,.28);
+    }
+
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #eef3f9;
+      --panel: #ffffff;
+      --panel-2: #f7f9fc;
+      --text: #142033;
+      --muted: #56637a;
+      --border: #d6deea;
+      --accent: #0077b6;
+      --accent-2: #5b4bd8;
+      --complete: #087f5b;
+      --review: #7444c9;
+      --planning: #a85d00;
+      --future: #5a6577;
+      --frozen: #0d7986;
+      --danger: #c92a45;
+      --shadow: 0 18px 45px rgba(28,50,79,.12);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        color-scheme: light;
+        --bg: #eef3f9;
+        --panel: #ffffff;
+        --panel-2: #f7f9fc;
+        --text: #142033;
+        --muted: #56637a;
+        --border: #d6deea;
+        --accent: #0077b6;
+        --accent-2: #5b4bd8;
+        --complete: #087f5b;
+        --review: #7444c9;
+        --planning: #a85d00;
+        --future: #5a6577;
+        --frozen: #0d7986;
+        --danger: #c92a45;
+        --shadow: 0 18px 45px rgba(28,50,79,.12);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(circle at 10% -10%, rgba(84,198,255,.15), transparent 32rem),
+        radial-gradient(circle at 100% 0%, rgba(141,125,255,.14), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .app-shell { min-height: 100vh; display: grid; grid-template-columns: 260px minmax(0,1fr); }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 26px 18px;
+      border-right: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      backdrop-filter: blur(18px);
+      overflow-y: auto;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+    .brand-mark {
+      width: 42px; height: 42px; border-radius: 13px;
+      display: grid; place-items: center;
+      color: #06101c;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      font-weight: 900;
+      letter-spacing: -.04em;
+    }
+    .brand h1 { margin: 0; font-size: 1.05rem; }
+    .brand p { margin: 3px 0 0; color: var(--muted); font-size: .78rem; }
+
+    .nav-list { display: grid; gap: 6px; }
+    .nav-btn {
+      width: 100%; border: 1px solid transparent; color: var(--muted); background: transparent;
+      text-align: left; border-radius: 12px; padding: 11px 12px;
+    }
+    .nav-btn:hover { color: var(--text); background: var(--panel-2); }
+    .nav-btn.active, .nav-btn[aria-current="page"] { color: var(--text); background: var(--panel-2); border-color: var(--border); font-weight: 700; }
+
+    .sidebar-foot { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--border); display: grid; gap: 10px; }
+    .small-btn {
+      border: 1px solid var(--border); border-radius: 11px; background: var(--panel-2); color: var(--text);
+      padding: 9px 11px; display: block; text-align: center; text-decoration: none;
+    }
+
+    main { min-width: 0; padding: 28px clamp(18px, 4vw, 54px) 60px; }
+    .page { display: none; max-width: 1380px; margin: 0 auto; }
+    .page.active { display: block; }
+
+    .topbar { display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .14em; font-size: .72rem; font-weight: 800; }
+    .page-title { margin: 7px 0 7px; font-size: clamp(1.8rem, 4vw, 3.2rem); line-height: 1; letter-spacing: -.045em; }
+    .page-subtitle { margin: 0; color: var(--muted); max-width: 780px; line-height: 1.6; }
+    .updated { color: var(--muted); font-size: .83rem; white-space: nowrap; padding-top: 6px; }
+
+    .grid { display: grid; gap: 16px; }
+    .metrics { grid-template-columns: repeat(3, minmax(0,1fr)); margin-bottom: 18px; }
+    .metric, .panel {
+      border: 1px solid var(--border); background: color-mix(in srgb, var(--panel) 95%, transparent);
+      border-radius: 18px; box-shadow: var(--shadow);
+    }
+    .metric { padding: 18px; }
+    .metric-label { color: var(--muted); font-size: .77rem; text-transform: uppercase; letter-spacing: .08em; }
+    .metric-value { font-size: clamp(1.15rem, 2vw, 1.7rem); font-weight: 800; margin-top: 8px; letter-spacing: -.03em; }
+    .metric-note { color: var(--muted); font-size: .8rem; margin-top: 5px; line-height: 1.4; }
+
+    .panel { padding: 20px; }
+    .panel h2, .panel h3 { margin-top: 0; }
+    .panel-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 16px; }
+    .panel-head h2 { margin: 0; font-size: 1.05rem; }
+    .panel-head p { margin: 5px 0 0; color: var(--muted); font-size: .84rem; line-height: 1.5; }
+
+    .baseline-workspace-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+
+    .state-card { border-radius: 16px; padding: 18px; border: 1px solid var(--border); background: var(--panel-2); }
+    .state-card.baseline { border-left: 4px solid var(--complete); }
+    .state-card.workspace { border-left: 4px solid var(--review); border-style: dashed; border-top-style: solid; border-right-style: solid; border-bottom-style: solid; }
+    .state-card.empty { border-left: 4px solid var(--future); }
+    .state-card h3 { margin: 0 0 4px; font-size: 1rem; }
+    .state-card .kicker { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; }
+    .state-card dl { margin: 12px 0 0; display: grid; gap: 8px; }
+    .state-card dt { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    .state-card dd { margin: 2px 0 0; line-height: 1.5; }
+    .not-merged-tag { display: inline-block; margin-top: 10px; border: 1px solid var(--review); color: var(--review); border-radius: 999px; padding: 4px 10px; font-size: .72rem; font-weight: 800; letter-spacing: .04em; }
+    .scope-note { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--planning) 14%, transparent); border: 1px solid var(--planning); font-size: .82rem; line-height: 1.5; color: var(--text); }
+
+    .status-badge { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--border); border-radius: 999px; padding: 6px 10px; font-size: .75rem; font-weight: 700; white-space: nowrap; }
+    .status-badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+    .status-verified-complete { color: var(--complete); }
+    .status-implemented-awaiting-review { color: var(--review); }
+    .status-active-planning { color: var(--planning); }
+    .status-approved-next { color: var(--accent); }
+    .status-directional-future { color: var(--future); }
+    .status-not-built { color: var(--future); }
+    .status-frozen-legacy { color: var(--frozen); }
+
+    .gate-box { border-left: 4px solid var(--review); padding: 18px; background: var(--panel-2); border-radius: 14px; }
+    .gate-version { color: var(--review); font-weight: 800; letter-spacing: .03em; }
+    .gate-box h2 { margin: 5px 0 8px; }
+    .gate-box p { color: var(--muted); line-height: 1.55; }
+    .criteria { margin: 14px 0 0; padding-left: 20px; color: var(--text); line-height: 1.7; }
+
+    .legend-list { display: grid; gap: 8px; margin-top: 10px; }
+    .legend-item { display: flex; gap: 10px; align-items: flex-start; font-size: .82rem; color: var(--muted); line-height: 1.5; }
+
+    .principles { display: grid; gap: 10px; }
+    .principle { display: flex; gap: 10px; align-items: flex-start; padding: 11px 12px; background: var(--panel-2); border-radius: 12px; color: var(--muted); line-height: 1.45; }
+    .principle strong { color: var(--accent); }
+
+    .readiness-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .readiness-card { border: 1px solid var(--border); background: var(--panel-2); border-radius: 14px; padding: 14px; }
+    .readiness-card h3 { margin: 0 0 8px; font-size: .92rem; }
+    .readiness-card p { margin: 8px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+
+    .architecture-lanes { display: grid; gap: 20px; }
+    .lane { border: 1px solid var(--border); background: var(--panel); border-radius: 18px; padding: 18px; }
+    .lane.frozen-legacy { border-left: 5px solid var(--frozen); }
+    .lane.verified-complete { border-left: 5px solid var(--complete); }
+    .lane.not-built { border-left: 5px solid var(--future); }
+    .lane-desc { color: var(--muted); line-height: 1.5; margin: 6px 0 16px; }
+    .node-flow { display: flex; gap: 10px; align-items: stretch; overflow-x: auto; padding-bottom: 4px; }
+    .arch-node { min-width: 190px; flex: 1; border: 1px solid var(--border); background: var(--panel-2); border-radius: 14px; padding: 14px; }
+    .arch-node strong { display: block; margin-bottom: 7px; }
+    .arch-node span { color: var(--muted); font-size: .82rem; line-height: 1.45; }
+    .flow-arrow { display: grid; place-items: center; color: var(--accent); min-width: 18px; font-size: 1.25rem; }
+    .bridge-callout { border: 1px dashed var(--border); background: var(--panel-2); border-radius: 16px; padding: 16px 18px; }
+    .bridge-callout h2 { margin: 0 0 8px; font-size: 1rem; }
+    .bridge-callout p { margin: 0; color: var(--muted); line-height: 1.55; }
+
+    .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .filter-input, .filter-select {
+      border: 1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .filter-input { min-width: min(100%, 300px); flex: 1; }
+
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 16px; }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    th, td { padding: 13px 14px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    th { background: var(--panel-2); color: var(--muted); font-size: .74rem; text-transform: uppercase; letter-spacing: .07em; }
+    td { font-size: .88rem; }
+    td:last-child { color: var(--muted); }
+    tr:last-child td { border-bottom: 0; }
+
+    .timeline { position: relative; display: grid; gap: 12px; }
+    .timeline::before { content: ""; position: absolute; left: 20px; top: 20px; bottom: 20px; width: 2px; background: var(--border); }
+    .milestone { position: relative; display: grid; grid-template-columns: 42px minmax(0,1fr) auto; gap: 14px; align-items: center; border: 1px solid var(--border); background: var(--panel); border-radius: 15px; padding: 13px 14px; }
+    .milestone-dot { z-index: 1; width: 16px; height: 16px; border-radius: 50%; margin-left: 7px; border: 4px solid var(--bg); background: var(--complete); box-shadow: 0 0 0 2px var(--complete); }
+    .milestone.implemented-awaiting-review .milestone-dot { background: var(--review); box-shadow: 0 0 0 2px var(--review); }
+    .milestone.active-planning .milestone-dot { background: var(--planning); box-shadow: 0 0 0 2px var(--planning); }
+    .milestone-version { font-weight: 800; }
+    .milestone-title { color: var(--muted); margin-top: 3px; }
+    .group-chip { border: 1px solid var(--border); border-radius: 999px; padding: 5px 8px; color: var(--muted); font-size: .72rem; }
+
+    .roadmap-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .phase { position: relative; overflow: hidden; }
+    .phase::after { content: attr(data-phase); position: absolute; right: 12px; top: 4px; font-size: 5.4rem; line-height: 1; font-weight: 900; color: color-mix(in srgb, var(--text) 5%, transparent); }
+    .phase h2 { position: relative; z-index: 1; margin-bottom: 7px; padding-right: 60px; }
+    .phase p { position: relative; z-index: 1; color: var(--muted); line-height: 1.55; }
+    .deliverables { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+    .chip { border: 1px solid var(--border); background: var(--panel-2); border-radius: 999px; padding: 6px 9px; font-size: .75rem; color: var(--muted); }
+
+    .workflow { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+    .workflow-card { position: relative; border: 1px solid var(--border); background: var(--panel); border-radius: 15px; padding: 15px; min-height: 165px; }
+    .workflow-step { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--accent); color: #07101f; font-weight: 900; }
+    .workflow-card h3 { margin: 12px 0 5px; font-size: .95rem; }
+    .workflow-actor { color: var(--accent); font-size: .75rem; font-weight: 800; }
+    .workflow-card p { color: var(--muted); font-size: .82rem; line-height: 1.5; }
+
+    .help-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    pre { overflow-x: auto; background: #040912; color: #d9e4f3; border: 1px solid var(--border); border-radius: 14px; padding: 15px; line-height: 1.55; font-size: .82rem; }
+    .callout { border: 1px solid var(--border); background: var(--panel-2); border-radius: 14px; padding: 14px; color: var(--muted); line-height: 1.55; }
+    .callout strong { color: var(--text); }
+    .checklist { margin: 0; padding-left: 20px; color: var(--text); line-height: 1.8; }
+
+    .error-page { max-width: 760px; margin: 60px auto; padding: 0 20px; font-family: inherit; }
+    .error-panel { border: 1px solid var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); border-radius: 16px; padding: 20px; }
+    .error-panel h1 { margin-top: 0; color: var(--danger); font-size: 1.3rem; }
+    .error-panel ul { line-height: 1.7; }
+    .error-panel code { background: var(--panel-2); padding: 2px 6px; border-radius: 6px; }
+    .warning-banner { border: 1px solid var(--planning); background: color-mix(in srgb, var(--planning) 12%, transparent); border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; font-size: .85rem; line-height: 1.5; }
+
+    .mobile-header { display: none; }
+
+    @media (max-width: 1050px) {
+      .metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .baseline-workspace-grid, .roadmap-grid, .readiness-grid { grid-template-columns: 1fr; }
+      .workflow { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar { position: fixed; z-index: 20; width: min(84vw, 310px); transform: translateX(-105%); transition: transform .2s ease; box-shadow: var(--shadow); }
+      .sidebar.open { transform: translateX(0); }
+      .mobile-header { display: flex; position: sticky; top: 0; z-index: 15; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--panel) 94%, transparent); backdrop-filter: blur(15px); }
+      .mobile-header button { border: 1px solid var(--border); background: var(--panel-2); color: var(--text); border-radius: 10px; padding: 8px 10px; }
+      main { padding-top: 20px; }
+      .topbar { flex-direction: column; }
+      .updated { padding: 0; }
+      .node-flow { flex-direction: column; overflow: visible; }
+      .flow-arrow { transform: rotate(90deg); }
+      .workflow, .help-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .metrics { grid-template-columns: 1fr; }
+      .milestone { grid-template-columns: 36px minmax(0,1fr); }
+      .group-chip { grid-column: 2; justify-self: start; }
+      .page-title { font-size: 2rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+    }
+
+    @media print {
+      .sidebar, .mobile-header, .filters, #themeButton, #repoLink { display: none !important; }
+      .app-shell { display: block; }
+      main { padding: 0; }
+      .page { display: block !important; max-width: none; page-break-after: always; }
+      body { background: #fff; color: #000; }
+      .panel, .metric, .lane, .milestone, .workflow-card, .readiness-card, .state-card { box-shadow: none; border: 1px solid #999; }
+    }
+  </style>
+</head>
+<body>
+  <div class="mobile-header">
+    <strong>RSB Dashboard</strong>
+    <button type="button" id="menuButton" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">Menu</button>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">RSB</div>
+        <div><h1>Progress Dashboard</h1><p>Architecture · versions · roadmap</p></div>
+      </div>
+      <nav class="nav-list" aria-label="Dashboard pages">
+        <button class="nav-btn active" aria-current="page" data-page="overview">Overview</button>
+        <button class="nav-btn" data-page="architecture">Architecture</button>
+        <button class="nav-btn" data-page="modules">Module status</button>
+        <button class="nav-btn" data-page="versions">Version timeline</button>
+        <button class="nav-btn" data-page="roadmap">Roadmap</button>
+        <button class="nav-btn" data-page="workflow">Development workflow</button>
+        <button class="nav-btn" data-page="update">How to update</button>
+      </nav>
+      <div class="sidebar-foot">
+        <button type="button" class="small-btn" id="themeButton">Switch theme</button>
+        <a class="small-btn" id="repoLink" target="_blank" rel="noreferrer">Open GitHub repository</a>
+      </div>
+    </aside>
+
+    <main id="mainContent">
+      <section class="page active" id="page-overview">
+        <div class="topbar"><div><div class="eyebrow">Project control centre</div><h1 class="page-title" id="projectName"></h1><p class="page-subtitle" id="projectSubtitle"></p></div><div class="updated" id="updatedAt"></div></div>
+        <div class="grid metrics" id="metrics"></div>
+
+        <div class="grid baseline-workspace-grid">
+          <div class="state-card baseline" id="baselineCard"></div>
+          <div id="workspaceCardWrap"></div>
+        </div>
+
+        <div class="panel" style="margin-top:16px" id="gatePanel"></div>
+
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-head"><div><h2>Readiness by capability area</h2><p>Categorical status only. No area below is scored as a percentage, and completing earlier foundation work does not imply RSB is close to being an operational betting product.</p></div></div>
+          <div class="grid readiness-grid" id="readinessGrid"></div>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-head"><div><h2>Status legend</h2><p>Used consistently across every page.</p></div></div>
+          <div class="legend-list" id="statusLegend"></div>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-head"><div><h2>Operating principles</h2><p>The permanent rules that keep the project controlled and auditable.</p></div></div>
+          <div class="principles" id="principles"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-architecture">
+        <div class="topbar"><div><div class="eyebrow">System map</div><h1 class="page-title">Architecture now</h1><p class="page-subtitle">What exists, what is frozen, and what has not been built. The World Cup legacy runtime and the pure-primitives foundation are shown as separate lanes because they are currently disconnected systems — see the bridge note below.</p></div></div>
+        <div class="architecture-lanes" id="architectureLanes"></div>
+        <div class="bridge-callout" style="margin-top:20px" id="architectureBridge"></div>
+      </section>
+
+      <section class="page" id="page-modules">
+        <div class="topbar"><div><div class="eyebrow">Implementation inventory</div><h1 class="page-title">Module status</h1><p class="page-subtitle">Search the current codebase by module, system area, or implementation status. Only files that actually exist in the repository are listed here.</p></div></div>
+        <div class="filters"><input class="filter-input" id="moduleSearch" type="search" placeholder="Search modules or purposes…"><select class="filter-select" id="moduleStatus" aria-label="Filter by status"><option value="all">All statuses</option></select></div>
+        <div class="table-wrap"><table><thead><tr><th>Module / capability</th><th>Area</th><th>Status</th><th>Purpose</th></tr></thead><tbody id="moduleRows"></tbody></table></div>
+      </section>
+
+      <section class="page" id="page-versions">
+        <div class="topbar"><div><div class="eyebrow">Delivered work</div><h1 class="page-title">Version timeline</h1><p class="page-subtitle">A compact record of the major primitives and architectural milestones that moved RSB forward. Entries marked "Implemented, awaiting review" are local work, not merged history.</p></div></div>
+        <div class="timeline" id="timeline"></div>
+      </section>
+
+      <section class="page" id="page-roadmap">
+        <div class="topbar"><div><div class="eyebrow">Dependency-ordered direction</div><h1 class="page-title">Roadmap phases</h1><p class="page-subtitle">Near-term phases should be tightly scoped. Later phases remain directional until earlier contracts are proven.</p></div></div>
+        <div class="grid roadmap-grid" id="roadmapGrid"></div>
+      </section>
+
+      <section class="page" id="page-workflow">
+        <div class="topbar"><div><div class="eyebrow">Human + agent controls</div><h1 class="page-title">Development workflow</h1><p class="page-subtitle">The controlled process used by Ryan, ChatGPT, Claude Code, Git, and GitHub Actions.</p></div></div>
+        <div class="workflow" id="workflowGrid"></div>
+      </section>
+
+      <section class="page" id="page-update">
+        <div class="topbar"><div><div class="eyebrow">Maintenance</div><h1 class="page-title">How to keep it current</h1><p class="page-subtitle">The dashboard is intentionally plain HTML, CSS, and JavaScript. No framework, build step, database, or package installation is required.</p></div></div>
+        <div class="grid help-grid">
+          <div class="panel"><h2>Repository location</h2><pre>RSB/
+└── docs/
+    └── progress/
+        ├── index.html
+        ├── progress-data.js
+        └── README.md</pre><div class="callout"><strong>Direct use:</strong> double-click <code>index.html</code>. Because the data is a JavaScript file rather than fetched JSON, it also works from a local <code>file://</code> URL.</div></div>
+          <div class="panel"><h2>Post-merge update routine</h2><ol class="checklist" id="updateChecklist"></ol></div>
+          <div class="panel"><h2>Verification sources</h2><p class="page-subtitle">Documents this dashboard's claims were checked against as of <span id="lastVerifiedInline"></span>.</p><ul class="checklist" id="sourceOfTruthList"></ul><div class="callout" id="sourceOfTruthNote"></div></div>
+          <div class="panel"><h2>Open through a local server</h2><pre>cd docs/progress
+python3 -m http.server 8000
+
+# Open in browser:
+http://localhost:8000</pre><p class="page-subtitle">A local server is optional, but convenient if more files or live data are added later.</p></div>
+          <div class="panel"><h2>Future automation</h2><p class="page-subtitle">Later, RSB can generate <code>progress-data.js</code> from version metadata, tests, Git tags, and a machine-readable roadmap. That should wait until the current architecture and release metadata stabilize.</p><div class="callout"><strong>Do not overbuild this now:</strong> the dashboard is project documentation, not the sportsbook product interface.</div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="progress-data.js"></script>
+  <script>
+    (() => {
+      "use strict";
+
+      const SUPPORTED_SCHEMA_VERSION = "2.0.0";
+      const esc = value => String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+      const slug = value => esc(value).toLowerCase().replace(/&#39;|&quot;|&amp;|&lt;|&gt;/g, '-').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const badge = value => `<span class="status-badge status-${slug(value)}">${esc(value)}</span>`;
+
+      function renderFatalError(errors) {
+        document.body.innerHTML = '';
+        const wrap = document.createElement('div');
+        wrap.className = 'error-page';
+        wrap.innerHTML = `<div class="error-panel">
+            <h1>Dashboard data is missing or invalid</h1>
+            <p>The page could not render because <code>progress-data.js</code> did not provide valid data. Fix the field(s) below and reload.</p>
+            <ul>${errors.map(e => `<li><code>${esc(e)}</code></li>`).join('')}</ul>
+          </div>`;
+        document.body.appendChild(wrap);
+      }
+
+      // ---- Validation ------------------------------------------------------
+      function validate(data) {
+        const errors = [];
+        const warnings = [];
+        if (!data || typeof data !== 'object') {
+          return { errors: ['window.RSB_PROGRESS is missing. Keep progress-data.js in the same folder as index.html.'], warnings };
+        }
+        if (data.schemaVersion !== SUPPORTED_SCHEMA_VERSION) {
+          warnings.push(`schemaVersion is "${data.schemaVersion}", expected "${SUPPORTED_SCHEMA_VERSION}". Rendering will continue, but some fields may be missing or shaped differently than this page expects.`);
+        }
+        const requireObject = (path, value) => { if (!value || typeof value !== 'object' || Array.isArray(value)) errors.push(`${path} must be an object.`); };
+        const requireArray = (path, value) => { if (!Array.isArray(value)) errors.push(`${path} must be an array.`); };
+
+        requireObject('project', data.project);
+        requireObject('repositoryBaseline', data.repositoryBaseline);
+        requireObject('currentGate', data.currentGate);
+        requireArray('statusLegend', data.statusLegend);
+        requireArray('readiness', data.readiness);
+        requireArray('architecture', data.architecture);
+        requireArray('modules', data.modules);
+        requireArray('milestones', data.milestones);
+        requireArray('roadmap', data.roadmap);
+        requireArray('workflow', data.workflow);
+        requireArray('updateChecklist', data.updateChecklist);
+        requireArray('principles', data.principles);
+
+        if (data.activeWorkspace !== undefined && data.activeWorkspace !== null && typeof data.activeWorkspace !== 'object') {
+          errors.push('activeWorkspace must be an object or absent/null.');
+        }
+        if (data.project && typeof data.project === 'object') {
+          ['name', 'subtitle', 'repository'].forEach(key => {
+            if (typeof data.project[key] !== 'string' || !data.project[key]) errors.push(`project.${key} must be a non-empty string.`);
+          });
+        }
+
+        // Status vocabulary validation — every status value must match a statusLegend key.
+        const legendKeys = Array.isArray(data.statusLegend) ? new Set(data.statusLegend.map(l => l && l.key)) : null;
+        if (legendKeys) {
+          const checkStatus = (path, status) => {
+            if (typeof status !== 'string' || !status.trim()) {
+              warnings.push(`${path} is missing or not a non-empty string.`);
+            } else if (!legendKeys.has(status)) {
+              warnings.push(`${path} has unrecognized status "${status}" — not present in statusLegend.`);
+            }
+          };
+          if (data.repositoryBaseline && typeof data.repositoryBaseline === 'object') {
+            checkStatus('repositoryBaseline.latestMergedVersionStatus', data.repositoryBaseline.latestMergedVersionStatus);
+          }
+          if (data.activeWorkspace && typeof data.activeWorkspace === 'object') {
+            checkStatus('activeWorkspace.state', data.activeWorkspace.state);
+          }
+          if (data.currentGate && typeof data.currentGate === 'object') {
+            checkStatus('currentGate.status', data.currentGate.status);
+          }
+          const checkArrayStatuses = (path, arr) => {
+            if (!Array.isArray(arr)) return;
+            arr.forEach((item, i) => checkStatus(`${path}[${i}].status`, item && item.status));
+          };
+          checkArrayStatuses('readiness', data.readiness);
+          checkArrayStatuses('architecture', data.architecture);
+          checkArrayStatuses('modules', data.modules);
+          checkArrayStatuses('milestones', data.milestones);
+          checkArrayStatuses('roadmap', data.roadmap);
+        } else {
+          warnings.push('statusLegend is missing or invalid — status values could not be validated against it.');
+        }
+
+        if (warnings.length > 12) {
+          const shown = warnings.slice(0, 12);
+          shown.push(`…and ${warnings.length - 12} more validation warning(s). Check progress-data.js status values against statusLegend.`);
+          warnings.length = 0;
+          warnings.push(...shown);
+        }
+
+        return { errors, warnings };
+      }
+
+      const data = window.RSB_PROGRESS;
+      const { errors, warnings } = validate(data);
+      if (errors.length) {
+        renderFatalError(errors);
+        return;
+      }
+
+      if (warnings.length) {
+        const banner = document.createElement('div');
+        banner.className = 'warning-banner';
+        banner.setAttribute('role', 'status');
+        banner.innerHTML = warnings.map(w => esc(w)).join('<br>');
+        document.body.insertBefore(banner, document.body.firstChild);
+      }
+
+      // ---- Small helpers -----------------------------------------------------
+      const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+      const html = (id, markup) => { const el = document.getElementById(id); if (el) el.innerHTML = markup; };
+
+      // ---- Overview: project header ------------------------------------------
+      set('projectName', data.project.name);
+      set('projectSubtitle', data.project.subtitle);
+      set('updatedAt', data.lastVerifiedAt ? `Verified ${data.lastVerifiedAt}` : '');
+      const repoLink = document.getElementById('repoLink');
+      if (repoLink) repoLink.href = data.project.repository;
+
+      // ---- Overview: metrics ---------------------------------------------------
+      const baseline = data.repositoryBaseline || {};
+      const metrics = [
+        ['Latest merged version', baseline.latestMergedVersion || '—', baseline.latestMergedVersionTitle || ''],
+        ['Active workspace', data.activeWorkspace ? data.activeWorkspace.scopeVersion : 'None', data.activeWorkspace ? data.activeWorkspace.state : 'Main is the verified baseline'],
+        ['Product focus', 'Singles + PASS', data.project.productFocus || '']
+      ];
+      html('metrics', metrics.map(([label,value,note]) => `<article class="metric"><div class="metric-label">${esc(label)}</div><div class="metric-value">${esc(value)}</div><div class="metric-note">${esc(note)}</div></article>`).join(''));
+
+      // ---- Overview: repository baseline / active workspace --------------------
+      const evidenceRows = (evidence) => {
+        if (!evidence || typeof evidence !== 'object') return '';
+        const rows = [];
+        if (evidence.prNumber !== undefined) rows.push(`<div><dt>PR</dt><dd>#${esc(evidence.prNumber)}</dd></div>`);
+        if (evidence.mergeCommit) rows.push(`<div><dt>Merge commit</dt><dd>${esc(evidence.mergeCommit)}</dd></div>`);
+        if (evidence.testCount !== undefined) rows.push(`<div><dt>Test count</dt><dd>${esc(evidence.testCount)} passed</dd></div>`);
+        return rows.join('');
+      };
+
+      const baselineCard = document.getElementById('baselineCard');
+      if (baselineCard) {
+        const chore = baseline.latestMergedArchitectureChore;
+        baselineCard.innerHTML = `
+          <div class="kicker">${esc(baseline.label || 'Repository baseline')}</div>
+          <h3>${esc(baseline.latestMergedVersion || '—')} — ${esc(baseline.latestMergedVersionTitle || '')}</h3>
+          ${badge(baseline.latestMergedVersionStatus || 'Verified complete')}
+          <dl>
+            ${chore ? `<div><dt>Latest merged architecture chore</dt><dd>${esc(chore.title || '')} (${esc(chore.identifier || '')})</dd></div>` : ''}
+            ${evidenceRows(baseline.releaseEvidence)}
+            ${baseline.note ? `<div><dt>Note</dt><dd>${esc(baseline.note)}</dd></div>` : ''}
+          </dl>`;
+      }
+
+      const workspaceWrap = document.getElementById('workspaceCardWrap');
+      if (workspaceWrap) {
+        if (data.activeWorkspace && typeof data.activeWorkspace === 'object') {
+          const w = data.activeWorkspace;
+          workspaceWrap.innerHTML = `<div class="state-card workspace">
+            <div class="kicker">${esc(w.label || 'Active workspace snapshot')}</div>
+            <h3>${esc(w.scopeVersion || '')} — ${esc(w.scopeTitle || '')}</h3>
+            ${badge(w.state || 'Implemented, awaiting review')}
+            <span class="not-merged-tag">LOCAL — NOT MERGED</span>
+            <dl>
+              <div><dt>Branch</dt><dd>${esc(w.branch || '')}</dd></div>
+              <div><dt>Merge status</dt><dd>${esc(w.mergeStatus || '')}</dd></div>
+              ${w.localTestCount !== undefined ? `<div><dt>Local test count</dt><dd>${esc(w.localTestCount)} passed (unverified by gatekeeper)</dd></div>` : ''}
+              ${w.summary ? `<div><dt>Summary</dt><dd>${esc(w.summary)}</dd></div>` : ''}
+              ${Array.isArray(w.filesTouched) && w.filesTouched.length ? `<div><dt>Files touched</dt><dd>${w.filesTouched.map(esc).join(', ')}</dd></div>` : ''}
+            </dl>
+            ${w.scopeNote ? `<div class="scope-note"><strong>Scope note:</strong> ${esc(w.scopeNote)}</div>` : ''}
+            ${w.important ? `<div class="scope-note">${esc(w.important)}</div>` : ''}
+          </div>`;
+        } else {
+          workspaceWrap.innerHTML = `<div class="state-card empty">
+            <div class="kicker">Active workspace snapshot</div>
+            <h3>No active workspace</h3>
+            <p class="metric-note">No version is currently in local, unreviewed progress. The repository baseline above is the full verified state.</p>
+          </div>`;
+        }
+      }
+
+      // ---- Overview: current gate ------------------------------------------
+      const gate = data.currentGate || {};
+      html('gatePanel', `<div class="gate-box">
+          <div class="gate-version">${esc(gate.version || '')} · ${badge(gate.status || 'Active planning')}</div>
+          <h2>${esc(gate.title || '')}</h2>
+          <p>${esc(gate.summary || '')}</p>
+          <div class="metric-note">Owner: ${esc(gate.owner || '')}</div>
+          ${Array.isArray(gate.nextActions) ? `<ul class="criteria">${gate.nextActions.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+        </div>`);
+
+      // ---- Overview: readiness -----------------------------------------------
+      html('readinessGrid', data.readiness.map(r => `<article class="readiness-card">
+          <h3>${esc(r.area)}</h3>
+          ${badge(r.status)}
+          <p>${esc(r.note || '')}</p>
+        </article>`).join(''));
+
+      // ---- Overview: status legend ---------------------------------------------
+      html('statusLegend', data.statusLegend.map(l => `<div class="legend-item">${badge(l.key)}<span>${esc(l.description || '')}</span></div>`).join(''));
+
+      // ---- Overview: principles -------------------------------------------------
+      html('principles', data.principles.map((x,i) => `<div class="principle"><strong>${i+1}.</strong><span>${esc(x)}</span></div>`).join(''));
+
+      // ---- Architecture ----------------------------------------------------------
+      html('architectureLanes', data.architecture.map(lane => `<article class="lane ${slug(lane.status)}">
+          <div class="panel-head"><div><h2>${esc(lane.title)}</h2><p>${esc(lane.description)}</p></div>${badge(lane.status)}</div>
+          <div class="node-flow">${(lane.nodes || []).map(node => `<div class="arch-node"><strong>${esc(node.title)}</strong><span>${esc(node.detail)}</span></div>`).join('')}</div>
+        </article>`).join(''));
+      if (data.architectureBridge) {
+        html('architectureBridge', `<h2>${esc(data.architectureBridge.title || '')}</h2><p>${esc(data.architectureBridge.description || '')}</p>`);
+      }
+
+      // ---- Modules ------------------------------------------------------------
+      const statusSelect = document.getElementById('moduleStatus');
+      if (statusSelect) {
+        [...new Set(data.modules.map(x => x.status))].sort().forEach(status => statusSelect.insertAdjacentHTML('beforeend', `<option value="${esc(status)}">${esc(status)}</option>`));
+      }
+      const renderModules = () => {
+        const searchEl = document.getElementById('moduleSearch');
+        const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+        const status = statusSelect ? statusSelect.value : 'all';
+        const rows = data.modules.filter(x => (status === 'all' || x.status === status) && (!q || `${x.name} ${x.area} ${x.status} ${x.purpose}`.toLowerCase().includes(q)));
+        html('moduleRows', rows.length ? rows.map(x => `<tr><td><strong>${esc(x.name)}</strong></td><td>${esc(x.area)}</td><td>${badge(x.status)}</td><td>${esc(x.purpose)}</td></tr>`).join('') : '<tr><td colspan="4">No matching modules.</td></tr>');
+      };
+      const moduleSearch = document.getElementById('moduleSearch');
+      if (moduleSearch) moduleSearch.addEventListener('input', renderModules);
+      if (statusSelect) statusSelect.addEventListener('change', renderModules);
+      renderModules();
+
+      // ---- Version timeline -----------------------------------------------------
+      html('timeline', data.milestones.map(x => `<article class="milestone ${slug(x.status)}"><div class="milestone-dot"></div><div><div class="milestone-version">${esc(x.version)}</div><div class="milestone-title">${esc(x.title)}</div></div><span class="group-chip">${esc(x.group)}</span></article>`).join(''));
+
+      // ---- Roadmap ----------------------------------------------------------------
+      html('roadmapGrid', data.roadmap.map(x => `<article class="panel phase" data-phase="${esc(x.phase)}"><div class="panel-head"><div><h2>${esc(x.title)}</h2></div>${badge(x.status)}</div><p>${esc(x.description)}</p><div class="deliverables">${(x.deliverables || []).map(item => `<span class="chip">${esc(item)}</span>`).join('')}</div></article>`).join(''));
+
+      // ---- Workflow ----------------------------------------------------------------
+      html('workflowGrid', data.workflow.map(x => `<article class="workflow-card"><div class="workflow-step">${esc(x.step)}</div><h3>${esc(x.title)}</h3><div class="workflow-actor">${esc(x.actor)}</div><p>${esc(x.detail)}</p></article>`).join(''));
+
+      // ---- How to update -----------------------------------------------------------
+      html('updateChecklist', data.updateChecklist.map(item => `<li>${esc(item)}</li>`).join(''));
+
+      set('lastVerifiedInline', data.lastVerifiedAt || 'an unspecified date');
+      const sourceOfTruth = Array.isArray(data.sourceOfTruth) ? data.sourceOfTruth : [];
+      if (sourceOfTruth.length) {
+        html('sourceOfTruthList', sourceOfTruth.map(s => `<li>${esc(s)}</li>`).join(''));
+        html('sourceOfTruthNote', '<strong>How to read this:</strong> documents that were merged to main support the Repository baseline above. Documents that exist only in the local working tree (not yet committed) support only the Active workspace snapshot, and are not themselves verified or merged. These are plain references, not clickable links.');
+      } else {
+        html('sourceOfTruthList', '<li>No verification sources recorded.</li>');
+        html('sourceOfTruthNote', '');
+      }
+
+      // ---- Navigation ----------------------------------------------------------------
+      const sidebar = document.getElementById('sidebar');
+      const menuButton = document.getElementById('menuButton');
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(x => {
+          const isActive = x === btn;
+          x.classList.toggle('active', isActive);
+          if (isActive) x.setAttribute('aria-current', 'page'); else x.removeAttribute('aria-current');
+        });
+        document.querySelectorAll('.page').forEach(x => x.classList.toggle('active', x.id === `page-${btn.dataset.page}`));
+        if (sidebar) sidebar.classList.remove('open');
+        if (menuButton) menuButton.setAttribute('aria-expanded', 'false');
+        const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+      }));
+      if (menuButton && sidebar) {
+        menuButton.addEventListener('click', () => {
+          const open = sidebar.classList.toggle('open');
+          menuButton.setAttribute('aria-expanded', String(open));
+        });
+      }
+
+      // ---- Theme ----------------------------------------------------------------------
+      const THEME_KEY = 'rsb-dashboard-theme';
+      const safeSetTheme = (value) => { try { localStorage.setItem(THEME_KEY, value); } catch (e) { /* storage unavailable — theme still applies for this session */ } };
+      const themeButton = document.getElementById('themeButton');
+      if (themeButton) {
+        themeButton.addEventListener('click', () => {
+          const root = document.documentElement;
+          const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+          root.dataset.theme = next;
+          safeSetTheme(next);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

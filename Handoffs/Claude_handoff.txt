@@ -143,36 +143,45 @@ Going forward, RSB should plan 2-4 versions ahead at a time instead of one versi
 * Implementation still remains one version per branch and one PR at a time.
 * Claude may propose a 2-4 version roadmap plan only when ChatGPT asks for it.
 * ChatGPT remains the roadmap/scope gatekeeper.
-* The approved roadmap batch (v0.2.11, v0.2.12, v0.3.0) is recorded below. v0.2.11 and
-  v0.2.12 are now complete; v0.3.0 remains.
-* v0.3.0 is not yet approved for implementation. Do not invent or lock in a v0.3.0 scope
-  or create a v0.3.0 branch until ChatGPT provides the v0.3.0 version-specific
-  implementation prompt.
+* The approved roadmap batch (v0.2.11, v0.2.12, v0.3.0) is recorded below. All three are
+  now complete. v0.3.0 shipped as the Candidate Evaluation Contract (PR #43, merge commit
+  20f34ab), not the "Provider Source Contract / Identity Normalization Primitives" scope
+  earlier handoffs predicted.
+* A directional next-version sequence has been proposed (v0.3.1 Legacy Candidate
+  Translation, v0.3.2 Canonical Odds Snapshot Reconciliation, v0.3.3 Candidate Persistence
+  Framework, v0.3.4 First MLB Runtime Skeleton) but is not approved for implementation.
+  Next required action: reassess and approve the next scoped version before implementation.
+  Do not invent or lock in a next-version scope or create a new version branch until
+  ChatGPT provides the next version-specific implementation prompt.
 
 ═══════════════════════════════════════════════════════
 CURRENT VERIFIED STATE
 ═══════════════════════════════════════════════════════
 
-Version:        0.2.12
-Project verified state (main): clean and up to date with origin/main, based on Ryan's
-                post-merge verification of PR #40 (post-v0.2.12 state).
-Tests passing:  1897
+Version:        0.3.0
+Project verified state (main): main is at merge commit 20f34ab (PR #43), based on
+                Ryan's post-merge verification.
+Tests passing:  1938
 
-Current task branch: chore/update-handoffs-after-v0.2.12 — a temporary docs/ops
+Current task branch: chore/update-handoffs-after-v0.3.0 — a temporary docs/ops
                 handoff-update branch only, not the permanent verified project branch.
                 This branch does not change the verified project state above, which
-                reflects main after the v0.2.12 merge.
+                reflects main after the v0.3.0 merge.
 
-Latest version PR:      PR #40 — v0.2.12 MLB Capability Profile Seed — merged
-                        https://github.com/Rryan0613/RSB/pull/40
-Merge commit:           2aa963e (full: 2aa963e01f9294ecaf4d04d8b67e9a9297c7a014)
-Feature commit:         ebf2cfa
-Feature branch:         feature/v0.2.12-mlb-capability-profile-seed
-                        (deleted locally and remotely after merge)
-PR #40 post-merge verification: complete — main clean/up to date; 1897 tests passed
+Preceding architecture chore: PR #42 — Legacy Pipeline Architecture Audit (merged,
+                docs-only, no version bump) — merged immediately before v0.3.0.
 
-Latest completed version: v0.2.12 — MLB Capability Profile Seed
-Next target:    Not yet approved. Do not invent or lock in a v0.2.13 scope.
+Latest version PR:      PR #43 — v0.3.0 Candidate Evaluation Contract — merged
+                        https://github.com/Rryan0613/RSB/pull/43
+Merge commit:           20f34ab
+Implementation commit:  151010b
+Feature branch:         feature/v0.3.0-candidate-evaluation-contract
+PR #43 post-merge verification: complete — 1938 tests passed
+
+Latest completed version: v0.3.0 — Candidate Evaluation Contract
+Next target:    Not yet approved. Next required action is to reassess and approve the
+                next scoped version before implementation. Do not invent or lock in a
+                next-version scope.
 Next status:    Not started. Awaiting the ChatGPT-authored version-specific Claude
                 prompt for the next version. Do not create a new version branch
                 until that prompt is provided.
@@ -201,6 +210,7 @@ v0.2.9    Candidate Ranking Primitives                                       ←
 v0.2.10   Ranked Candidate Report Primitives                                 ← COMPLETE
 v0.2.11   Sport / Market Capability Profile Primitives                      ← COMPLETE
 v0.2.12   MLB Capability Profile Seed                                        ← COMPLETE
+v0.3.0    Candidate Evaluation Contract                                      ← COMPLETE
 
 ── Near-term v0.2.x ──────────────────────────────────────────
 
@@ -292,16 +302,28 @@ v0.2.12   MLB Capability Profile Seed                                           
           integration, no odds ingestion, no predictive MLB modeling, and no runtime
           wiring.
 
-v0.3.0    Provider Source Contract / Identity Normalization Primitives
-          Not started. Not yet approved for implementation. Do not invent or lock in
-          a v0.3.0 (or v0.2.13) scope. Awaiting the ChatGPT-authored version-specific
-          Claude prompt for the next version.
+v0.3.0    Candidate Evaluation Contract                                      ← COMPLETE
+          src/candidate_evaluation.py — added validate_candidate_evaluation_record(),
+          the canonical whole-record validator for the {status, edge, pass_reasons}
+          shape. candidate_ranking.py refactored to delegate embedded-record validation
+          to it. docs/CANDIDATE_EVALUATION_CONTRACT.md added as the architecture
+          document. Merged as PR #43, merge commit 20f34ab, implementation commit
+          151010b, 1938 tests passed. This is a different scope than the "Provider
+          Source Contract / Identity Normalization Primitives" scope earlier handoffs
+          predicted for v0.3.0 — see the v0.3.0 SUMMARY section below for full detail.
 
           Important roadmap note: provider batch normalization and provider
           coverage/staleness diagnostics remain delayed until after the sport/market
           capability profile layer exists. v0.2.11 created the generic primitives and
           v0.2.12 seeded the MLB capability profile. A World Cup capability profile
           seed and provider contracts remain future, unscoped work.
+
+next      Unscoped / active planning. Not approved for implementation. A directional
+          next-version sequence has been proposed (v0.3.1 Legacy Candidate Translation,
+          v0.3.2 Canonical Odds Snapshot Reconciliation, v0.3.3 Candidate Persistence
+          Framework, v0.3.4 First MLB Runtime Skeleton) but none of it is approved.
+          Next required action: reassess and approve the next scoped version before
+          implementation. Awaiting the ChatGPT-authored version-specific Claude prompt.
 
 v0.2.x    Controlled staking / Kelly primitives (possible, later)
           Kelly treated as stake-sizing math only, not recommendation logic.
@@ -662,6 +684,14 @@ that claim with verified settled results.
 RECENT COMPLETED PRs
 ═══════════════════════════════════════════════════════
 
+PR #43:
+v0.3.0 Candidate Evaluation Contract
+https://github.com/Rryan0613/RSB/pull/43
+
+PR #42:
+Legacy Pipeline Architecture Audit — architecture/docs chore, not a version
+https://github.com/Rryan0613/RSB/pull/42
+
 PR #40:
 v0.2.12 MLB Capability Profile Seed
 https://github.com/Rryan0613/RSB/pull/40
@@ -779,7 +809,72 @@ v0.1.9.0 backtest report output, build_backtest_report
 https://github.com/Rryan0613/RSB/pull/9
 
 ═══════════════════════════════════════════════════════
-v0.2.12 SUMMARY — LATEST COMPLETED VERSION
+v0.3.0 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.3.0 added the canonical whole-record validator for the Candidate Evaluation Contract
+and refactored candidate_ranking.py to delegate to it.
+
+Files added:
+
+* docs/CANDIDATE_EVALUATION_CONTRACT.md
+
+Files modified:
+
+* src/candidate_evaluation.py
+* src/candidate_ranking.py
+* tests/test_candidate_evaluation.py
+* tests/test_candidate_ranking.py
+* CHANGELOG.md
+* pyproject.toml
+
+Implemented in src/candidate_evaluation.py:
+
+* validate_candidate_evaluation_record(value) -> dict — the canonical public whole-record
+  validator for the {status, edge, pass_reasons} shape. Requires a dict with exactly these
+  three keys; rejects non-dict input, missing keys, and unexpected/extra keys. Delegates
+  all normalization and invariant enforcement to build_candidate_evaluation() — no
+  independent reimplementation. Returns a freshly constructed, normalized dict, isolated
+  from caller mutation.
+
+Implemented in src/candidate_ranking.py:
+
+* Delegates embedded candidate_evaluation record validation to
+  validate_candidate_evaluation_record() instead of a private, duplicated edge-range
+  validator. Catches CandidateEvaluationValidationError from the canonical validator and
+  re-raises CandidateRankingValidationError (via raise ... from exc, preserving
+  __cause__), identifying the offending candidate_evs[index] record. All existing output
+  shape, sort order, and successful-path behavior are unchanged.
+
+Behavior summary:
+
+* No changes to build_candidate_evaluation, normalize_candidate_status,
+  normalize_pass_reason, validate_pass_reasons, build_candidate_ev_enrichment, or any
+  existing output shape/key order.
+* No legacy runtime wiring, no persistence/database changes, no new
+  aggregate/protocol/dataclass/TypedDict.
+* candidate_report.py is unchanged — it validates flattened report fields, not a complete
+  embedded candidate_evaluation record, so it is out of scope for this delegation.
+
+Tests:
+
+* tests/test_candidate_evaluation.py, tests/test_candidate_ranking.py
+* Full local test result after merge: 1938 passed
+
+Implementation commit: 151010b
+Merge commit: 20f34ab (PR #43)
+
+v0.3.0 intentionally did not add: a CanonicalCandidate aggregate, a new EV-enrichment
+aggregate, protocols/abstract interfaces, dataclasses, TypedDict migrations, new
+dependencies, legacy World Cup translation or vocabulary mapping, new legacy-specific
+pass reasons, imports from legacy modules into the pure pipeline, MLB runtime
+orchestration, provider ingestion, database/schema changes, persistence repositories,
+candidate or database IDs, a model-version registry, settlement-rule execution,
+result-ingestion wiring, post-event review wiring, CLV calculation, recommendations,
+picks, locks, or parlays, staking/Kelly calculations, or any API/UI behavior.
+
+═══════════════════════════════════════════════════════
+v0.2.12 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.2.12 added a pure in-memory MLB capability profile seed built on the v0.2.11
