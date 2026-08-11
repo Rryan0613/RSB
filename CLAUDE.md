@@ -3,14 +3,29 @@
 RSB is a sportsbook analytics / +EV simulation project.
 
 Current project status:
-- Version: v0.2.9
+- Version: v0.3.0
 - Python: 3.13 virtual environment
-- Tests: pytest, currently 1564 passing tests
-- Current focus: World Cup simulation engine
-- Next modeling target: TBD (post-candidate-ranking)
+- Tests: pytest, verified baseline 1938 passing tests
+- Roadmap-sync base: 280527f — post-v0.3.0 docs/dashboard synchronization (PR #44)
+- Latest numbered release: v0.3.0 — Candidate Evaluation Contract (PR #43, merge commit 20f34ab, implementation commit 151010b)
+- Current roadmap: v0.3.1 — MLB Statcast Data Foundation is APPROVED NEXT at the roadmap/objective level (2026-08-11). Its detailed implementation architecture is not yet approved — a separate v0.3.1 inspection/planning stage requires ChatGPT approval before coding begins.
 - Future goal: automation-first sportsbook analytics website/app
 
-Completed foundation (v0.1.8.x – v0.2.9):
+Architecture:
+- The World Cup runtime (`run_slate.py` and everything it orchestrates) is the only operational, end-to-end pipeline today. It is frozen for new feature development — maintenance/bug fixes only. It will not become a generic multi-sport orchestrator. See docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md.
+- A separate, reusable pure-primitives foundation (candidate identity, odds snapshot, evaluation, EV enrichment, ranking, reporting, settlement, sport/market capability profiles, backtest math) exists independently and is not wired into any runtime yet. See docs/CANDIDATE_EVALUATION_CONTRACT.md.
+- New sports get their own data/features/model/runtime built on the pure-primitives foundation — never by extending run_slate.py.
+
+Final sport scope:
+- MLB is the next active modeling domain (first new sport engine).
+- NBA is planned as the second and final new sport engine, after MLB.
+- No NFL, NHL, or further sport expansion is currently planned.
+- See docs/MLB_NBA_ROADMAP.md for the full roadmap, including the directional v0.3.2-v0.3.4 MLB batch.
+
+Long-term:
+- After MLB and NBA reach a defined finished RSB state, a separate, non-sports probabilistic forecasting/quantitative project may follow — not a fork or rebrand of RSB. Do not add finance-specific abstractions to RSB.
+
+Completed foundation (v0.1.8.x – v0.3.0):
 - v0.1.8.2: centralized absolute path resolution via src/paths.py
 - v0.1.8.3: runtime path overrides (RSB_DB_PATH, RSB_SLATE_PATH, RSB_MODEL_OUTPUT_PATH) for safe test isolation
 - v0.1.8.4: dependency-free config validation (ConfigValidationError, load_json_config, validate_*_config)
@@ -34,6 +49,10 @@ Completed foundation (v0.1.8.x – v0.2.9):
 - v0.2.7: pure prop result / settlement record normalization primitives — PropResultValidationError, VALID_SETTLEMENT_STATUSES, FINAL_SETTLEMENT_STATUSES, normalize_market_type, normalize_selection, normalize_settlement_status, build_prop_result (src/prop_result.py)
 - v0.2.8: pure candidate EV enrichment primitives — CandidateEVValidationError, build_candidate_ev_enrichment (src/candidate_ev.py)
 - v0.2.9: pure candidate ranking primitives — CandidateRankingValidationError, rank_candidate_ev_enrichments (src/candidate_ranking.py)
+- v0.2.10: pure ranked candidate report primitives — CandidateReportValidationError, build_candidate_report (src/candidate_report.py)
+- v0.2.11: pure sport/market capability profile primitives — MarketCapabilityValidationError, normalize_sport/league/market_type/selection_type, build_market_capability, build_sport_market_profile (src/market_capability.py)
+- v0.2.12: pure MLB capability profile seed — 15 declared MLB markets built on v0.2.11 (src/mlb_capability.py)
+- v0.3.0: Candidate Evaluation Contract — validate_candidate_evaluation_record(), the canonical whole-record validator; candidate_ranking.py delegates to it (src/candidate_evaluation.py; docs/CANDIDATE_EVALUATION_CONTRACT.md)
 
 Long-term product goal:
 The final workflow should not require manual match/team/player/odds input. The user should specify sport, date range/week, markets, sportsbooks, and number of legs. The system should automatically collect fixtures, odds, props, stats, injuries, lineups, build features, run simulations/models, compare EV, rank singles/parlays, and recommend the best sportsbook for each card.

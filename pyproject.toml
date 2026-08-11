@@ -1,7 +1,7 @@
 [project]
 name = "rsb-worldcup-ai"
 version = "0.3.0"
-description = "World Cup-focused sports analytics research framework."
+description = "Probabilistic sports forecasting, simulation, and +EV research framework."
 requires-python = ">=3.10,<3.15"
 dependencies = [
   "numpy>=1.26,<3.0",

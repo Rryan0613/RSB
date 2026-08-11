@@ -20,7 +20,7 @@ window.RSB_PROGRESS = {
     { key: "Verified complete", description: "Merged to main and supported by the repository's recorded review, validation, or test evidence as applicable." },
     { key: "Implemented, awaiting review", description: "Implementation exists outside the verified main baseline and is awaiting gatekeeper review or merge. It may be local or committed to a feature branch, as described by the active workspace." },
     { key: "Active planning", description: "Scope is being defined. No implementation exists yet." },
-    { key: "Approved next", description: "Scope has gatekeeper approval to begin but implementation has not started." },
+    { key: "Approved next", description: "Roadmap/objective scope is approved as next. Implementation may still require a version-specific plan review before coding begins." },
     { key: "Directional future", description: "Long-term intent recorded in project docs. Not a scoped or approved version." },
     { key: "Not built", description: "The target reusable or multi-sport operational capability does not exist. Isolated primitives, schemas, or frozen legacy components may exist, as described in the accompanying note." },
     { key: "Frozen legacy", description: "Fully functional and actively maintained, but closed to new feature development by an explicit architectural decision." }
@@ -41,19 +41,19 @@ window.RSB_PROGRESS = {
       mergeCommit: "20f34ab",
       testCount: 1938
     },
-    note: "This is the state of main (20f34ab) as verified by Ryan after the v0.3.0 merge (PR #43, implementation commit 151010b). It does not include any work described under Active workspace below."
+    note: "The v0.3.0 release merge commit is 20f34ab (PR #43, implementation commit 151010b). The roadmap-sync work was based on main at 280527f after PR #44, the post-v0.3.0 docs/dashboard synchronization. This baseline card describes the verified v0.3.0 release; it does not include any work described under Active workspace below."
   },
 
   activeWorkspace: null,
 
   currentGate: {
-    version: "post-v0.3.0",
-    title: "Post-v0.3.0 roadmap reassessment / next-scope planning",
-    status: "Active planning",
+    version: "v0.3.1",
+    title: "MLB Statcast Data Foundation",
+    status: "Approved next",
     owner: "ChatGPT (roadmap/gatekeeper) + Ryan (approval)",
-    summary: "v0.3.0 (Candidate Evaluation Contract) is merged to main (PR #43, merge commit 20f34ab, implementation commit 151010b, 1938 tests passed). A directional next-version sequence (v0.3.1 Legacy Candidate Translation, v0.3.2 Canonical Odds Snapshot Reconciliation, v0.3.3 Candidate Persistence Framework, v0.3.4 First MLB Runtime Skeleton) has been proposed but is not approved for implementation.",
+    summary: "v0.3.1 — MLB Statcast Data Foundation is approved as the next roadmap objective at the objective level (2026-08-11 roadmap reassessment), superseding the earlier Legacy Candidate Translation / Canonical Odds Snapshot Reconciliation / Candidate Persistence Framework / First MLB Runtime Skeleton sequence. Implementation has not started. Its detailed implementation architecture is not yet approved — a separate v0.3.1 inspection/planning stage must be reviewed and approved before coding begins. v0.3.2 MLB Plate-Appearance Dataset & Rate Foundation, v0.3.3 MLB Plate-Appearance Probability Baseline, and v0.3.4 MLB Walk-Forward Evaluation & Calibration remain a directional planning batch, not independently approved implementation scopes. See docs/MLB_NBA_ROADMAP.md.",
     nextActions: [
-      "Reassess and approve the next scoped version before implementation."
+      "Inspect and approve the v0.3.1 MLB Statcast Data Foundation implementation plan before coding."
     ]
   },
 
@@ -240,7 +240,7 @@ window.RSB_PROGRESS = {
       phase: 2,
       title: "Provider and identity contracts",
       status: "Directional future",
-      description: "Normalize providers, sportsbooks, leagues, teams, players, events, timestamps, and freshness. Earlier handoffs predicted this as the v0.3.0 scope; v0.3.0 instead delivered the Candidate Evaluation Contract (phase 1). This phase remains unscoped and unstarted.",
+      description: "Normalize providers, sportsbooks, leagues, teams, players, events, timestamps, and freshness. Earlier handoffs predicted this as the v0.3.0 scope; v0.3.0 instead delivered the Candidate Evaluation Contract (phase 1). As of the 2026-08-11 roadmap reassessment, v0.3.1 may establish MLB-specific source/provenance patterns that inform later generic provider and identity contracts. Generic provider/identity work remains separately unscoped.",
       deliverables: ["Provider source contract", "Canonical IDs", "Freshness and provenance metadata"]
     },
     {
@@ -253,29 +253,29 @@ window.RSB_PROGRESS = {
     {
       phase: 4,
       title: "Automated historical and current ingestion",
-      status: "Not built",
-      description: "Build the trustworthy data layer required by MLB and NBA models. This does not extend run_slate.py — it is new orchestration built on the pure-primitives foundation.",
-      deliverables: ["Games and results", "Player and team data", "Odds history", "Injuries and lineups"]
+      status: "Directional future",
+      description: "Build the trustworthy data layer required by MLB and NBA models. This does not extend run_slate.py — it is new orchestration built on the pure-primitives foundation. v0.3.1 — MLB Statcast Data Foundation is the APPROVED NEXT first concrete subset of this broader directional ingestion phase (normalized historical MLB/Statcast data only); the rest of this phase — later games/results, player/team data, odds history, injuries/lineups, and eventual NBA ingestion — is not approved as a complete phase.",
+      deliverables: ["MLB Statcast historical data foundation (v0.3.1, approved next)", "Games and results", "Player and team data", "Odds history", "Injuries and lineups"]
     },
     {
       phase: 5,
       title: "Feature engineering and validation",
-      status: "Not built",
-      description: "Keep variables that improve out-of-sample performance; reject fake-smart noise.",
+      status: "Directional future",
+      description: "Keep variables that improve out-of-sample performance; reject fake-smart noise. Directional next step for MLB: v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation, a directional planning batch entry, not yet an independently approved implementation scope.",
       deliverables: ["Sport-specific features", "Feature ablation", "Leakage-safe validation"]
     },
     {
       phase: 6,
       title: "Probability generation engines",
-      status: "Not built",
-      description: "Generate RSB probabilities for supported MLB and NBA markets. No such engine exists for either sport today.",
+      status: "Directional future",
+      description: "Generate RSB probabilities for supported MLB and NBA markets. No such engine exists for either sport today. Directional next step for MLB: v0.3.3 — MLB Plate-Appearance Probability Baseline, a directional planning batch entry, not yet an independently approved implementation scope.",
       deliverables: ["Baseline models", "Simulation or ensemble models", "Probability calibration"]
     },
     {
       phase: 7,
       title: "Backtesting, calibration, and CLV",
-      status: "Not built",
-      description: "Measure whether stated probabilities are accurate and whether prices beat the closing market, for MLB/NBA. Reusable backtesting/statistical primitives already exist (Verified complete). The World Cup system separately has working results ingestion and historical replay capability. Those pieces are not currently chained into one automated calibration/backtesting pipeline for World Cup, and no operational MLB or NBA calibration/backtesting system exists at all.",
+      status: "Directional future",
+      description: "Measure whether stated probabilities are accurate and whether prices beat the closing market, for MLB/NBA. Reusable backtesting/statistical primitives already exist (Verified complete). The World Cup system separately has working results ingestion and historical replay capability. Those pieces are not currently chained into one automated calibration/backtesting pipeline for World Cup, and no operational MLB or NBA calibration/backtesting system exists at all. Directional next step for MLB: v0.3.4 — MLB Walk-Forward Evaluation & Calibration, a directional planning batch entry, not yet an independently approved implementation scope. v0.3.4 also carries an open design question on whether to generalize historical_replay.py's read-only pattern or build a separate MLB-specific replay component — see docs/MLB_NBA_ROADMAP.md §10.",
       deliverables: ["Brier score", "Log loss", "Calibration buckets", "Closing-line value"]
     },
     {
@@ -294,10 +294,10 @@ window.RSB_PROGRESS = {
     },
     {
       phase: 10,
-      title: "Multi-sport expansion and product interface",
+      title: "NBA second-sport expansion and product interface",
       status: "Directional future",
-      description: "Add further sports only after the shared architecture and one or two sport runtimes are proven.",
-      deliverables: ["NFL or other sport profiles", "CLI/API/dashboard", "Scheduled operation"]
+      description: "After the MLB architecture is proven, build NBA as RSB's second and final new sport engine, then mature the product/interface layer. No NFL, NHL, or additional sport expansion is currently planned.",
+      deliverables: ["NBA capability/runtime", "CLI/API/dashboard", "Scheduled operation"]
     }
   ],
 

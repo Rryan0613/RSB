@@ -1,8 +1,20 @@
-# WorldCup AI v0.2.9
+# RSB v0.3.0
 
-A focused World Cup +EV prediction framework. This is a disciplined sports analytics research project, not a lock generator.
+RSB is a probabilistic sports forecasting, simulation, and +EV research framework. The existing World Cup runtime is RSB's first operational sport implementation and is frozen for new feature development. MLB is the next active modeling domain, with NBA planned as the second and final new sport engine.
 
-**This project is not live-betting-ready.** The model is currently in bootstrap/simulation-only mode with no completed training data. Historical replay, backtesting, and calibration must be completed before any recommendation should be treated as actionable.
+**This project is not live-betting-ready.** The World Cup model is currently in bootstrap/simulation-only mode with no completed training data. Historical replay, backtesting, and calibration must be completed before any recommendation should be treated as actionable.
+
+## Project Scope
+
+RSB's current architecture:
+
+- The World Cup runtime (`run_slate.py` and everything it orchestrates) is the only currently operational, end-to-end pipeline. It is frozen for new feature development — maintenance and bug fixes only.
+- A separate, reusable pure-primitives foundation (candidate identity, odds snapshot, evaluation, EV enrichment, ranking, reporting, settlement, sport/market capability profiles, and backtest math) exists independently of the World Cup runtime and is not yet wired into any operational sport pipeline.
+- MLB has a declared market capability profile only (`src/mlb_capability.py`) — no MLB data ingestion, features, probability model, or runtime exist yet.
+- **v0.3.1 — MLB Statcast Data Foundation is the approved next roadmap objective.** Its detailed implementation plan still requires review and approval before coding begins.
+- NBA is planned as the second and final new sport engine, after MLB. No NBA code exists yet.
+
+For the full roadmap and sport-scope decisions, see [docs/MLB_NBA_ROADMAP.md](docs/MLB_NBA_ROADMAP.md). For the architecture audit behind the World Cup freeze decision, see [docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md](docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md).
 
 ## Current Foundation
 
@@ -41,6 +53,10 @@ The project currently supports:
 - pure prop result / settlement record normalization primitives (`src/prop_result.py`)
 - pure candidate EV enrichment primitives (`src/candidate_ev.py`)
 - pure candidate ranking primitives (`src/candidate_ranking.py`)
+- pure ranked candidate report primitives (`src/candidate_report.py`)
+- pure sport/market capability profile primitives (`src/market_capability.py`)
+- pure MLB capability profile seed — 15 declared MLB markets (`src/mlb_capability.py`)
+- the Candidate Evaluation Contract's canonical whole-record validator (`src/candidate_evaluation.py`; see [docs/CANDIDATE_EVALUATION_CONTRACT.md](docs/CANDIDATE_EVALUATION_CONTRACT.md))
 
 ## Runtime Target
 
@@ -58,7 +74,11 @@ Python >=3.10,<3.15
 
 Use a modern Python version before installing fresh dependencies.
 
-## Quick Start
+---
+
+Unless otherwise noted, the runtime-specific sections below describe the existing frozen World Cup implementation. No MLB or NBA runtime exists yet.
+
+## Current World Cup Runtime — Quick Start
 
 ```bash
 python -m venv .venv
@@ -331,28 +351,8 @@ Workflow file:
 
 ## Roadmap
 
-Near-term (v0.1.8.x – v0.1.9.x):
+Completed versions through v0.3.0 are listed under Current Foundation above.
 
-```text
-v0.1.8.6 - pure backtest metric primitives (Brier score, log loss, calibration) — no DB dependency
-v0.1.8.7 - results ingestion safety (update_results env override + tests)
-v0.1.8.8 - historical replay read-only loader
-v0.1.8.9 - training data leakage guard (database.load_training_rows SQL filter)
-v0.1.9.0 - backtest report output
-v0.1.9.1 - World Cup feature variable upgrade (4 derived ratio features)
-v0.1.9.2 - Tournament Stage and Market Semantics Validation
-v0.1.9.3 - Prediction Review Taxonomy Primitives
-```
+**v0.3.1 — MLB Statcast Data Foundation** is the approved next roadmap objective. Its detailed implementation plan is not yet approved.
 
-Later (v0.2.x+):
-
-```text
-v0.2.0 - pure odds and implied probability conversion primitives
-v0.2.1 - pure edge calculation primitives (src/edge.py)
-v0.2.2 - candidate evaluation / pass reason primitives
-v0.2.3 - backtest review overlay
-v0.2.9 - candidate ranking primitives (src/candidate_ranking.py)
-v0.3.x - parlays only after confirmed calibration on sufficient historical matches
-v0.4.x - API backend
-v0.5.x - dashboard/frontend
-```
+For the full roadmap, including the MLB-first / NBA-second sport-scope decision and the directional v0.3.2–v0.3.4 MLB batch, see [docs/MLB_NBA_ROADMAP.md](docs/MLB_NBA_ROADMAP.md).

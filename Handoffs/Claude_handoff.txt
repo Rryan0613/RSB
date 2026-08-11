@@ -147,12 +147,16 @@ Going forward, RSB should plan 2-4 versions ahead at a time instead of one versi
   now complete. v0.3.0 shipped as the Candidate Evaluation Contract (PR #43, merge commit
   20f34ab), not the "Provider Source Contract / Identity Normalization Primitives" scope
   earlier handoffs predicted.
-* A directional next-version sequence has been proposed (v0.3.1 Legacy Candidate
+* UPDATE 2026-08-11: the previous directional sequence (v0.3.1 Legacy Candidate
   Translation, v0.3.2 Canonical Odds Snapshot Reconciliation, v0.3.3 Candidate Persistence
-  Framework, v0.3.4 First MLB Runtime Skeleton) but is not approved for implementation.
-  Next required action: reassess and approve the next scoped version before implementation.
-  Do not invent or lock in a next-version scope or create a new version branch until
-  ChatGPT provides the next version-specific implementation prompt.
+  Framework, v0.3.4 First MLB Runtime Skeleton) is superseded. v0.3.1 is now MLB Statcast
+  Data Foundation, APPROVED NEXT at the roadmap/objective level. v0.3.2-v0.3.4 (MLB
+  Plate-Appearance Dataset & Rate Foundation, MLB Plate-Appearance Probability Baseline,
+  MLB Walk-Forward Evaluation & Calibration) remain a directional planning batch, not
+  independently approved. See docs/MLB_NBA_ROADMAP.md and the 2026-08-11 ROADMAP
+  REASSESSMENT section below. Next required action: perform the v0.3.1
+  inspection/planning stage; ChatGPT must approve the detailed implementation plan
+  before coding begins.
 
 ═══════════════════════════════════════════════════════
 CURRENT VERIFIED STATE
@@ -179,12 +183,13 @@ Feature branch:         feature/v0.3.0-candidate-evaluation-contract
 PR #43 post-merge verification: complete — 1938 tests passed
 
 Latest completed version: v0.3.0 — Candidate Evaluation Contract
-Next target:    Not yet approved. Next required action is to reassess and approve the
-                next scoped version before implementation. Do not invent or lock in a
-                next-version scope.
-Next status:    Not started. Awaiting the ChatGPT-authored version-specific Claude
-                prompt for the next version. Do not create a new version branch
-                until that prompt is provided.
+Next target:    v0.3.1 — MLB Statcast Data Foundation, APPROVED NEXT at the roadmap/
+                objective level (2026-08-11). See the 2026-08-11 ROADMAP REASSESSMENT
+                section below and docs/MLB_NBA_ROADMAP.md.
+Next status:    Not started. Implementation architecture not yet approved — a separate
+                v0.3.1 inspection/planning stage requires ChatGPT review and approval
+                before coding begins. Do not create a new version branch until that
+                plan is approved.
 
 If strict verification is needed, ask the user to run:
 
@@ -318,12 +323,20 @@ v0.3.0    Candidate Evaluation Contract                                      ←
           v0.2.12 seeded the MLB capability profile. A World Cup capability profile
           seed and provider contracts remain future, unscoped work.
 
-next      Unscoped / active planning. Not approved for implementation. A directional
-          next-version sequence has been proposed (v0.3.1 Legacy Candidate Translation,
-          v0.3.2 Canonical Odds Snapshot Reconciliation, v0.3.3 Candidate Persistence
-          Framework, v0.3.4 First MLB Runtime Skeleton) but none of it is approved.
-          Next required action: reassess and approve the next scoped version before
-          implementation. Awaiting the ChatGPT-authored version-specific Claude prompt.
+v0.3.1    MLB Statcast Data Foundation                                   ← APPROVED NEXT
+          Approved at the roadmap/objective level, 2026-08-11, superseding the earlier
+          Legacy Candidate Translation / Canonical Odds Snapshot Reconciliation /
+          Candidate Persistence Framework / First MLB Runtime Skeleton sequence.
+          Implementation architecture not yet approved — requires a separate v0.3.1
+          inspection/planning stage and ChatGPT review before coding. See
+          docs/MLB_NBA_ROADMAP.md.
+
+v0.3.2    MLB Plate-Appearance Dataset & Rate Foundation                 ← DIRECTIONAL
+v0.3.3    MLB Plate-Appearance Probability Baseline                      ← DIRECTIONAL
+v0.3.4    MLB Walk-Forward Evaluation & Calibration                      ← DIRECTIONAL
+          Directional planning batch, not independently approved implementation scopes.
+          Version numbers/titles may be reassessed after preceding versions teach us
+          more. See docs/MLB_NBA_ROADMAP.md.
 
 v0.2.x    Controlled staking / Kelly primitives (possible, later)
           Kelly treated as stake-sizing math only, not recommendation logic.
@@ -2138,3 +2151,70 @@ implementation — do not invent or lock in a v0.3.0 (or v0.2.13) scope. Wait fo
 ChatGPT to provide the next version-specific Claude prompt. Implementation still
 proceeds one version per branch and one PR at a time; do not create a new version
 branch until that prompt is provided.
+
+═══════════════════════════════════════════════════════
+2026-08-11 ROADMAP REASSESSMENT
+═══════════════════════════════════════════════════════
+
+This section records a roadmap decision made on 2026-08-11, on branch
+chore/update-roadmap-before-v0.3.1, before any v0.3.1 code was written. It does not
+retroactively rewrite any earlier historical section above — those remain accurate to
+what was known/decided at the time they were written. (The immediately preceding
+section, for example, reflects the v0.2.11/v0.2.12 moment in time, not current state.)
+
+Why the old sequence was superseded:
+By v0.3.0, RSB had accumulated substantial reusable downstream decision infrastructure
+(candidate identity, odds/EV math, the Candidate Evaluation Contract, ranking, reporting,
+settlement primitives, backtest metrics, sport/market capability primitives including an
+MLB capability seed) while the actual MLB probability-generation engine still did not
+exist. The previous tentative sequence (v0.3.1 Legacy Candidate Translation, v0.3.2
+Canonical Odds Snapshot Reconciliation, v0.3.3 Candidate Persistence Framework, v0.3.4
+First MLB Runtime Skeleton) over-prioritized infrastructure around the frozen legacy
+World Cup system while that missing modeling middle remained unaddressed. Reviewing an
+external MLB modeling reference highlighted that RSB's reusable decision infrastructure
+had advanced further than its sport-specific probability-generation layer. That
+comparison is the origin of this reassessment, not a template RSB is copying — the
+architectural conclusions stand on RSB's own needs.
+
+Roadmap decision:
+* v0.3.1 — MLB Statcast Data Foundation is now APPROVED NEXT at the roadmap/objective
+  level. Implementation has not started. Its detailed implementation architecture is not
+  yet approved — a separate v0.3.1 inspection/planning stage requires ChatGPT review and
+  approval before coding begins.
+* v0.3.2 (MLB Plate-Appearance Dataset & Rate Foundation), v0.3.3 (MLB Plate-Appearance
+  Probability Baseline), and v0.3.4 (MLB Walk-Forward Evaluation & Calibration) remain a
+  directional planning batch — not independently approved implementation scopes. Version
+  numbers/titles may be reassessed after preceding versions teach us more.
+* Legacy Candidate Translation is removed from the MLB critical path, not necessarily
+  deleted forever — it may return if a concrete future consumer requires it.
+* Canonical odds-snapshot reconciliation and candidate persistence remain real future
+  needs; their eventual design is deferred until the real MLB pipeline gives them
+  concrete requirements, rather than being designed around guesses now.
+
+Final sport scope:
+* MLB is the first new sport engine — the active next modeling domain.
+* NBA is the second and final new sport engine, after MLB.
+* No NFL, NHL, or further sport expansion is currently planned.
+* World Cup remains the existing, frozen legacy/reference implementation — unchanged by
+  this decision.
+
+Future non-sports project:
+* After MLB and NBA reach a defined finished RSB state, RSB does not default to adding
+  further sports. A separate, non-sports probabilistic forecasting/quantitative project
+  (domain undecided) may follow later, built on lessons RSB proves out — not a fork or
+  rebrand of RSB. No finance-specific abstractions (tickers, assets, trading signals,
+  portfolios) belong in RSB's current architecture.
+
+New durable document:
+* docs/MLB_NBA_ROADMAP.md was added as the durable roadmap/project-direction document
+  for this decision, the v0.3.1 approval, and the v0.3.2-v0.3.4 directional batch. It
+  does not name the external reference project or any identifying detail about it.
+
+Immediate next step after this docs chore merges:
+* Perform the v0.3.1 inspection/planning stage for MLB Statcast Data Foundation. No MLB
+  code is written until ChatGPT approves that implementation plan.
+
+Handoff hygiene note (not part of this chore):
+* Both handoff files have grown past 2,000 lines with substantial duplication between
+  them. That is a real future documentation-hygiene item but is explicitly out of scope
+  for this roadmap-synchronization chore and was not touched here.
