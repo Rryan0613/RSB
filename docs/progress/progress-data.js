@@ -1,12 +1,12 @@
 window.RSB_PROGRESS = {
   schemaVersion: "2.0.0",
-  lastVerifiedAt: "2026-07-18",
+  lastVerifiedAt: "2026-08-11",
 
   sourceOfTruth: [
     "Handoffs/ChatGpt_Handoff.txt",
     "Handoffs/Claude_handoff.txt",
     "docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md (merged, PR #42)",
-    "docs/CANDIDATE_EVALUATION_CONTRACT.md (committed on feature branch 151010b, not merged into main)"
+    "docs/CANDIDATE_EVALUATION_CONTRACT.md (merged, PR #43)"
   ],
 
   project: {
@@ -28,57 +28,32 @@ window.RSB_PROGRESS = {
 
   repositoryBaseline: {
     label: "Repository baseline (merged, verified)",
-    latestMergedVersion: "v0.2.12",
-    latestMergedVersionTitle: "MLB Capability Profile Seed",
+    latestMergedVersion: "v0.3.0",
+    latestMergedVersionTitle: "Candidate Evaluation Contract",
     latestMergedVersionStatus: "Verified complete",
     latestMergedArchitectureChore: {
       title: "Legacy Pipeline Architecture Audit",
       identifier: "PR #42",
-      note: "Read-only architecture audit reconciling the legacy World Cup runtime against the pure-primitives candidate contract. No source, config, schema, test, or CI changes were made by this chore — it is documentation only, not a version bump."
+      note: "Read-only architecture audit reconciling the legacy World Cup runtime against the pure-primitives candidate contract. No source, config, schema, test, or CI changes were made by this chore — it is documentation only, not a version bump. Merged immediately before v0.3.0."
     },
     releaseEvidence: {
-      prNumber: 40,
-      mergeCommit: "2aa963e",
-      testCount: 1897
+      prNumber: 43,
+      mergeCommit: "20f34ab",
+      testCount: 1938
     },
-    note: "This is the state of main as verified by Ryan after the v0.2.12 merge. It does not include any work described under Active workspace below."
+    note: "This is the state of main (20f34ab) as verified by Ryan after the v0.3.0 merge (PR #43, implementation commit 151010b). It does not include any work described under Active workspace below."
   },
 
-  activeWorkspace: {
-    label: "Active feature-branch snapshot (committed, not merged)",
-    branch: "feature/v0.3.0-candidate-evaluation-contract",
-    commit: "151010b — Add candidate evaluation contract",
-    scopeVersion: "v0.3.0",
-    scopeTitle: "Candidate Evaluation Contract",
-    state: "Implemented, awaiting review",
-    mergeStatus: "Committed and pushed to the feature branch; not merged into main",
-    localTestCount: 1933,
-    summary: "Adds candidate_evaluation.validate_candidate_evaluation_record(), a whole-record validator for the {status, edge, pass_reasons} shape, and refactors candidate_ranking.py to delegate embedded-record validation to it instead of a private duplicated checker. Adds docs/CANDIDATE_EVALUATION_CONTRACT.md, the architecture document for the contract. All existing function signatures, output shapes, and successful-path behavior are documented as unchanged.",
-    filesTouched: [
-      "src/candidate_evaluation.py",
-      "src/candidate_ranking.py",
-      "tests/test_candidate_evaluation.py",
-      "tests/test_candidate_ranking.py",
-      "docs/CANDIDATE_EVALUATION_CONTRACT.md (new)",
-      "CHANGELOG.md",
-      "pyproject.toml"
-    ],
-    scopeNote: "The handoff documents (as of the v0.2.12 post-merge update) predicted v0.3.0 as a “Provider Source Contract / Identity Normalization Primitives” scope. The work actually present on this feature branch implements a different scope, the Candidate Evaluation Contract. This divergence has not been reconciled by the ChatGPT gatekeeper workflow yet — it is flagged here for review, not resolved by this dashboard.",
-    important: "This snapshot describes work committed as 151010b and pushed to origin/feature/v0.3.0-candidate-evaluation-contract. It is not merged into main. PR status has not been verified by the available evidence — this dashboard does not claim either that a PR exists or that no PR exists. It must never be treated as released, merged, or verified until it goes through Ryan's validation, ChatGPT's gatekeeper review, and merge approval."
-  },
+  activeWorkspace: null,
 
   currentGate: {
-    version: "v0.3.0",
-    title: "Candidate Evaluation Contract — committed and pushed, awaiting gatekeeper review",
-    status: "Implemented, awaiting review",
-    owner: "Ryan (validation) + ChatGPT (gatekeeper review)",
-    summary: "The Candidate Evaluation Contract implementation described under Active workspace is committed as 151010b and pushed to origin/feature/v0.3.0-candidate-evaluation-contract. It is not merged into main. PR status has not been verified by the available evidence.",
+    version: "post-v0.3.0",
+    title: "Post-v0.3.0 roadmap reassessment / next-scope planning",
+    status: "Active planning",
+    owner: "ChatGPT (roadmap/gatekeeper) + Ryan (approval)",
+    summary: "v0.3.0 (Candidate Evaluation Contract) is merged to main (PR #43, merge commit 20f34ab, implementation commit 151010b, 1938 tests passed). A directional next-version sequence (v0.3.1 Legacy Candidate Translation, v0.3.2 Canonical Odds Snapshot Reconciliation, v0.3.3 Candidate Persistence Framework, v0.3.4 First MLB Runtime Skeleton) has been proposed but is not approved for implementation.",
     nextActions: [
-      "Ryan provides final validation and relevant evidence to ChatGPT.",
-      "ChatGPT completes gatekeeper review of v0.3.0.",
-      "Ryan opens or updates the PR after approval, depending on actual PR state.",
-      "GitHub Actions must pass before merge.",
-      "Merge and post-merge verification happen only after approval."
+      "Reassess and approve the next scoped version before implementation."
     ]
   },
 
@@ -96,7 +71,7 @@ window.RSB_PROGRESS = {
     {
       area: "Foundation contracts",
       status: "Verified complete",
-      note: "The pure candidate identity/evaluation/enrichment/ranking/reporting/settlement chain (prop_candidate.py, candidate_evaluation.py, candidate_ev.py, candidate_ranking.py, candidate_report.py, prop_result.py) is merged but not wired into any operational runtime. The narrow verified exceptions are ev.py and odds.py, the shared leaf math the World Cup legacy runtime also uses — ev.py directly, odds.py only transitively through ev.py (see the architecture bridge for the exact import relationship). One further addition to this layer, the Candidate Evaluation Contract's whole-record validator, is committed on the feature branch and awaiting review — see Active workspace."
+      note: "The pure candidate identity/evaluation/enrichment/ranking/reporting/settlement chain (prop_candidate.py, candidate_evaluation.py, candidate_ev.py, candidate_ranking.py, candidate_report.py, prop_result.py) is merged but not wired into any operational runtime. The narrow verified exceptions are ev.py and odds.py, the shared leaf math the World Cup legacy runtime also uses — ev.py directly, odds.py only transitively through ev.py (see the architecture bridge for the exact import relationship). The Candidate Evaluation Contract's whole-record validator, candidate_evaluation.validate_candidate_evaluation_record(), merged to main in v0.3.0 (PR #43, commit 151010b) and is now part of this verified baseline."
     },
     {
       area: "Sport capability profiles",
@@ -213,9 +188,9 @@ window.RSB_PROGRESS = {
 
     { name: "prop_candidate.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "Prop/pick candidate identity schema (sport, league, event, market, selection, player/team context)." },
     { name: "odds_snapshot.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "Sportsbook price observation schema, including odds_found_at for future closing-line-value comparison." },
-    { name: "candidate_evaluation.py", area: "Candidate pipeline (pure, unwired)", status: "Implemented, awaiting review", purpose: "Candidate eligibility (candidate/rejected/not_evaluable) and closed pass-reason vocabulary. build_candidate_evaluation() and the field-level normalizers are previously merged and unchanged. validate_candidate_evaluation_record(), the new whole-record validator, is committed on the feature branch (151010b), not merged into main — see Active workspace." },
+    { name: "candidate_evaluation.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "Candidate eligibility (candidate/rejected/not_evaluable) and closed pass-reason vocabulary. build_candidate_evaluation() and the field-level normalizers are unchanged since their original merge. validate_candidate_evaluation_record(), the whole-record validator, merged to main in v0.3.0 (PR #43, commit 151010b)." },
     { name: "candidate_ev.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "Merges a candidate and an odds snapshot with a caller-supplied model_probability into edge, expected value, and an embedded candidate_evaluation record." },
-    { name: "candidate_ranking.py", area: "Candidate pipeline (pure, unwired)", status: "Implemented, awaiting review", purpose: "Ranks candidate EV records by expected value, edge, and optional quality scores. Output shape, sort order, and successful-path behavior are documented as unchanged; the internal validation delegation to candidate_evaluation.validate_candidate_evaluation_record() is new, committed on the feature branch (151010b), not merged into main — see Active workspace." },
+    { name: "candidate_ranking.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "Ranks candidate EV records by expected value, edge, and optional quality scores. Output shape, sort order, and successful-path behavior are documented as unchanged; the internal validation delegation to candidate_evaluation.validate_candidate_evaluation_record() merged to main in v0.3.0 (PR #43, commit 151010b)." },
     { name: "candidate_report.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "Aggregates ranked candidate records into a reviewable report (ranked/excluded counts, pass-reason counts)." },
     { name: "prop_result.py", area: "Candidate pipeline (pure, unwired)", status: "Verified complete", purpose: "Six-state settlement lifecycle schema (pending/won/lost/push/void/unknown), independent of the legacy boolean results table." },
     { name: "review_taxonomy.py", area: "Review vocabulary (pure, unwired)", status: "Verified complete", purpose: "Review category, severity, and data-quality vocabulary. Independently defines a strong/okay/weak/unknown tri-state that is not reconciled with data_quality.py's tri-state yet." },
@@ -250,22 +225,22 @@ window.RSB_PROGRESS = {
     { version: "v0.2.11", title: "Sport/market capability profile primitives", status: "Verified complete", group: "Capability" },
     { version: "v0.2.12", title: "MLB capability profile seed", status: "Verified complete", group: "Capability" },
     { version: "PR #42", title: "Legacy Pipeline Architecture Audit (merged, docs-only chore, no version bump)", status: "Verified complete", group: "Architecture" },
-    { version: "v0.3.0", title: "Candidate Evaluation Contract (committed on feature branch, not merged into main)", status: "Implemented, awaiting review", group: "Architecture" }
+    { version: "v0.3.0", title: "Candidate Evaluation Contract", status: "Verified complete", group: "Architecture" }
   ],
 
   roadmap: [
     {
       phase: 1,
       title: "Capability and market understanding",
-      status: "Implemented, awaiting review",
-      description: "Define the supported betting markets, the data shape each market requires, and one canonical eligibility contract. Capability profiles are merged; the Candidate Evaluation Contract's whole-record validator is committed on the feature branch and awaiting gatekeeper review — see Active workspace.",
+      status: "Verified complete",
+      description: "Define the supported betting markets, the data shape each market requires, and one canonical eligibility contract. Sport/market capability profiles and the Candidate Evaluation Contract's whole-record validator are merged to main (v0.3.0, PR #43).",
       deliverables: ["Sport capability profiles", "Market field requirements", "Candidate Evaluation Contract"]
     },
     {
       phase: 2,
       title: "Provider and identity contracts",
       status: "Directional future",
-      description: "Normalize providers, sportsbooks, leagues, teams, players, events, timestamps, and freshness. Predicted as the v0.3.0 scope in prior handoffs; the branch currently in progress implements a different scope instead — see the Active workspace scope note.",
+      description: "Normalize providers, sportsbooks, leagues, teams, players, events, timestamps, and freshness. Earlier handoffs predicted this as the v0.3.0 scope; v0.3.0 instead delivered the Candidate Evaluation Contract (phase 1). This phase remains unscoped and unstarted.",
       deliverables: ["Provider source contract", "Canonical IDs", "Freshness and provenance metadata"]
     },
     {
