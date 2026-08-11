@@ -122,3 +122,31 @@ def build_candidate_evaluation(
         "edge": validated_edge,
         "pass_reasons": validated_reasons,
     }
+
+
+_CANDIDATE_EVALUATION_RECORD_KEYS = frozenset({"status", "edge", "pass_reasons"})
+
+
+def validate_candidate_evaluation_record(value) -> dict:
+    if not isinstance(value, dict):
+        raise CandidateEvaluationValidationError(
+            f"candidate_evaluation record must be a dict, got {type(value).__name__!r}"
+        )
+
+    actual_keys = set(value)
+    missing = _CANDIDATE_EVALUATION_RECORD_KEYS - actual_keys
+    extra = actual_keys - _CANDIDATE_EVALUATION_RECORD_KEYS
+    if missing:
+        raise CandidateEvaluationValidationError(
+            f"candidate_evaluation record is missing required keys: {sorted(missing)}"
+        )
+    if extra:
+        raise CandidateEvaluationValidationError(
+            f"candidate_evaluation record has unexpected keys: {sorted(extra)}"
+        )
+
+    return build_candidate_evaluation(
+        value["status"],
+        edge=value["edge"],
+        pass_reasons=value["pass_reasons"],
+    )

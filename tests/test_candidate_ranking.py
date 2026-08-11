@@ -215,15 +215,31 @@ def test_candidate_evaluation_missing_key_raises(key):
 def test_candidate_evaluation_invalid_status_raises():
     item = _make_ev()
     item["candidate_evaluation"]["status"] = "not_a_real_status"
-    with pytest.raises(CandidateEvaluationValidationError):
+    with pytest.raises(CandidateRankingValidationError):
         _rank([item])
 
 
 def test_candidate_evaluation_invalid_pass_reasons_raises():
     item = _make_ev()
     item["candidate_evaluation"]["pass_reasons"] = ["not_a_real_reason"]
-    with pytest.raises(CandidateEvaluationValidationError):
+    with pytest.raises(CandidateRankingValidationError):
         _rank([item])
+
+
+def test_candidate_evaluation_invalid_status_cause_is_candidate_evaluation_error():
+    item = _make_ev()
+    item["candidate_evaluation"]["status"] = "not_a_real_status"
+    with pytest.raises(CandidateRankingValidationError) as exc_info:
+        _rank([item])
+    assert isinstance(exc_info.value.__cause__, CandidateEvaluationValidationError)
+
+
+def test_candidate_evaluation_unexpected_key_raises():
+    item = _make_ev()
+    item["candidate_evaluation"]["extra_key"] = "unexpected"
+    with pytest.raises(CandidateRankingValidationError) as exc_info:
+        _rank([item])
+    assert isinstance(exc_info.value.__cause__, CandidateEvaluationValidationError)
 
 
 def test_candidate_evaluation_embedded_edge_none_allowed():
