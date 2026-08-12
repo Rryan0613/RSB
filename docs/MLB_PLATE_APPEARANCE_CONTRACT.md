@@ -36,9 +36,10 @@ Terminal detection depends only on pitch-number chronology, not on maintaining a
 1. The pitch with the maximum `pitch_number` in the group is the **only** terminal candidate.
 2. Every other (non-last) pitch in the group must have `pa_event_raw is None`. Baseball Savant's own CSV export documentation defines `events` as "the event of the resulting plate appearance" — a non-null value on any earlier pitch is therefore an **unexpected source condition**, not a recognized mid-PA event, and fails the whole derivation closed rather than being silently absorbed, ignored, or treated as a second terminal outcome.
 3. The terminal pitch's `pa_event_raw` is then classified:
-   - `None` → `pa_status = "incomplete"`. This version makes no claim about *why* the terminal pitch is missing (a snapshot date-range boundary is one possible cause among others) — it is recorded as an observed fact, not attributed to a specific cause.
+   - `None` → `pa_status = "incomplete"`, `pa_outcome_detailed`/`pa_outcome_category` are `None`. This version makes no claim about *why* the terminal pitch is missing (a snapshot date-range boundary is one possible cause among others) — it is recorded as an observed fact, not attributed to a specific cause.
+   - a value present in `INCOMPLETE_TERMINAL_EVENTS` (currently just `truncated_pa`) → `pa_status = "incomplete"`, `pa_outcome_detailed`/`pa_outcome_category` are `None`, but `terminal_pa_event_raw` **preserves the raw value exactly** for provenance/audit. A manual review of a real Baseball Savant export surfaced `truncated_pa` as a provider marker on an interrupted/incomplete plate appearance. That review established the observed status behavior but did not establish why Baseball Savant emits the marker, so this contract does not attribute a specific cause. It is a status marker, not a completed outcome, and is deliberately excluded from `TERMINAL_EVENT_TAXONOMY`, `DETAILED_TO_CATEGORY`, and `RATE_CATEGORIES` (§6) so it can never classify as a completed outcome or contribute to any historical rate denominator (§8).
    - a value present in `TERMINAL_EVENT_TAXONOMY` (§6) → `pa_status = "completed"`, classified into a detailed outcome and a category.
-   - any other non-null value → fails the whole derivation closed. An unrecognized terminal event is surfaced explicitly for review; it is never guessed.
+   - any other non-null value → fails the whole derivation closed. An unrecognized terminal event is surfaced explicitly for review; it is never guessed. This applies to any future non-null terminal code not already covered by `TERMINAL_EVENT_TAXONOMY` or `INCOMPLETE_TERMINAL_EVENTS` — the set of recognized incomplete-status markers is closed and deliberately small, not a catch-all.
 
 There is deliberately no separate "known non-terminal event code" whitelist in this version — the whole detection algorithm depends on chronology, not on a hand-maintained list staying complete.
 
@@ -67,7 +68,7 @@ Two closed vocabularies, both fail-closed on unmapped input, with no catch-all `
 
 `intent_walk` maps to its own `intentional_walk` category, **kept distinct from `walk`** at every layer of this contract. Whether a future model combines, excludes, or separately models them is v0.3.3 scope — this dataset never erases the distinction.
 
-This taxonomy is built from general Statcast domain knowledge and has not yet been checked against a comprehensive real export or the official Baseball Savant glossary. Because detection (§5) never depends on this table's completeness — only classification of an already-identified terminal pitch does — an incomplete taxonomy fails loudly on real data rather than silently misclassifying it.
+This taxonomy was built from general Statcast domain knowledge and has since been checked against a representative manual Baseball Savant export sample (the review that surfaced `truncated_pa`, §5). That review was a sample, not an exhaustive audit — it is not a claim that every historical or future event code is already known. Because detection (§5) never depends on this table's completeness — only classification of an already-identified terminal pitch does — an incomplete taxonomy fails loudly on real data rather than silently misclassifying it.
 
 ## 7. Mid-PA pitcher substitution
 
@@ -151,8 +152,11 @@ Re-running the derivation against an artifact that already exists at the same id
 | pitcher sequence reverts to an earlier pitcher | fail closed, whole batch |
 | non-null `pa_event_raw` on a non-terminal pitch | fail closed, whole batch |
 | terminal pitch's `pa_event_raw` is null | `pa_status = "incomplete"`, not fatal |
+| terminal pitch's `pa_event_raw` is a member of `INCOMPLETE_TERMINAL_EVENTS` (e.g. `truncated_pa`) | `pa_status = "incomplete"`, not fatal; raw value preserved in `terminal_pa_event_raw`, never counted in any rate denominator |
 | terminal pitch's `pa_event_raw` is a known terminal code | `pa_status = "completed"` |
-| terminal pitch's `pa_event_raw` is non-null and unrecognized | fail closed, whole batch |
+| terminal pitch's `pa_event_raw` is non-null and unrecognized (not in `TERMINAL_EVENT_TAXONOMY` or `INCOMPLETE_TERMINAL_EVENTS`) | fail closed, whole batch |
+| a `pa_status == "incomplete"` PA record has a `terminal_pa_event_raw` that is neither `None` nor a member of `INCOMPLETE_TERMINAL_EVENTS` | fail closed (rate-attachment input validation) |
+| a `pa_status == "completed"` PA record has `terminal_pa_event_raw == "truncated_pa"` (or any other `INCOMPLETE_TERMINAL_EVENTS` member) | fail closed (rate-attachment input validation) — never valid as a completed outcome |
 | malformed pitch/PA record shape | fail closed, whole batch |
 | empty input | returns `[]`, no error |
 | source manifest / normalized records mismatch (row count, content hash, per-record provenance fields) | fail closed |

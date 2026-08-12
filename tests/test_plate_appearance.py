@@ -4,6 +4,7 @@ import pytest
 
 from mlb.plate_appearance import (
     DETAILED_TO_CATEGORY,
+    INCOMPLETE_TERMINAL_EVENTS,
     PLATE_APPEARANCE_FIELD_ORDER,
     PLATE_APPEARANCE_SCHEMA_VERSION,
     RATE_CATEGORIES,
@@ -197,6 +198,38 @@ def test_incomplete_pa_still_carries_identity_and_context():
     assert pa["pa_status"] == "incomplete"
     assert pa["batter_id"] == "600001"
     assert pa["pitch_count"] == 3
+
+
+# ---------------------------------------------------------------------------
+# incomplete-terminal-event markers (real Savant validation: truncated_pa)
+# ---------------------------------------------------------------------------
+
+
+def test_truncated_pa_terminal_event_is_incomplete():
+    records = group_pitches_into_plate_appearances(
+        _pa_pitches(n=2, terminal_event="truncated_pa")
+    )
+    pa = records[0]
+    assert pa["pa_status"] == "incomplete"
+    assert pa["pa_outcome_detailed"] is None
+    assert pa["pa_outcome_category"] is None
+    assert pa["terminal_pa_event_raw"] == "truncated_pa"
+
+
+def test_truncated_pa_not_in_terminal_event_taxonomy():
+    assert "truncated_pa" not in TERMINAL_EVENT_TAXONOMY
+
+
+def test_truncated_pa_not_in_rate_categories():
+    assert "truncated_pa" not in RATE_CATEGORIES
+    assert "truncated_pa" in INCOMPLETE_TERMINAL_EVENTS
+
+
+def test_non_terminal_truncated_pa_fails_closed():
+    pitches = _pa_pitches(n=3, terminal_event="single")
+    pitches[0]["pa_event_raw"] = "truncated_pa"
+    with pytest.raises(PlateAppearanceValidationError):
+        group_pitches_into_plate_appearances(pitches)
 
 
 # ---------------------------------------------------------------------------

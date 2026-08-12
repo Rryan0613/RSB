@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from mlb.plate_appearance import (
+    INCOMPLETE_TERMINAL_EVENTS,
     PLATE_APPEARANCE_FIELD_ORDER,
     PLATE_APPEARANCE_SCHEMA_VERSION,
     RATE_CATEGORIES,
@@ -243,6 +244,71 @@ def test_incomplete_pa_gets_prior_state_but_does_not_update_counters():
     second = _find(records, "700001", 2)
     assert first["prior_batter_pa_count"] == 0
     assert second["prior_batter_pa_count"] == 0  # incomplete PA never updated the counter
+
+
+# ---------------------------------------------------------------------------
+# incomplete-terminal-event markers (real Savant validation: truncated_pa)
+# ---------------------------------------------------------------------------
+
+
+def test_incomplete_pa_with_truncated_pa_terminal_event_is_accepted():
+    assert "truncated_pa" in INCOMPLETE_TERMINAL_EVENTS
+    pa = _pa(pa_status="incomplete", pa_outcome_category=None)
+    pa["terminal_pa_event_raw"] = "truncated_pa"
+    records = attach_prior_outcome_rates([pa])
+    assert records[0]["terminal_pa_event_raw"] == "truncated_pa"
+
+
+def test_truncated_pa_receives_prior_state_normally():
+    pas = [
+        _pa(at_bat_number=1, batter_id="B1", pitcher_id="P1", pa_outcome_category="walk"),
+        _pa(at_bat_number=2, batter_id="B1", pitcher_id="P1", pa_status="incomplete", pa_outcome_category=None),
+    ]
+    pas[1]["terminal_pa_event_raw"] = "truncated_pa"
+    records = attach_prior_outcome_rates(pas)
+    second = _find(records, "700001", 2)
+    assert second["prior_batter_pa_count"] == 1
+    assert second["prior_batter_outcome_counts"]["walk"] == 1
+
+
+def test_truncated_pa_does_not_update_batter_pitcher_or_league_history():
+    pas = [
+        _pa(
+            source_game_id="700001", game_date="2024-04-01", at_bat_number=1,
+            batter_id="Bx", pitcher_id="P1", pa_status="incomplete", pa_outcome_category=None,
+        ),
+        _pa(
+            source_game_id="700002", game_date="2024-04-02", at_bat_number=1,
+            batter_id="Bx", pitcher_id="P1", pa_outcome_category="single",
+        ),
+    ]
+    pas[0]["terminal_pa_event_raw"] = "truncated_pa"
+    records = attach_prior_outcome_rates(pas)
+    followup = _find(records, "700002", 1)
+    assert followup["prior_batter_pa_count"] == 0
+    assert followup["prior_pitcher_pa_count"] == 0
+    assert followup["prior_league_pa_count"] == 0
+
+
+def test_incomplete_pa_with_arbitrary_unknown_non_null_terminal_event_still_fails():
+    pa = _pa(pa_status="incomplete", pa_outcome_category=None)
+    pa["terminal_pa_event_raw"] = "some_other_unrecognized_incomplete_marker"
+    with pytest.raises(PlateAppearanceRateError):
+        attach_prior_outcome_rates([pa])
+
+
+def test_completed_pa_with_truncated_pa_terminal_event_fails():
+    pa = _pa(pa_outcome_category="single")
+    pa["terminal_pa_event_raw"] = "truncated_pa"
+    with pytest.raises(PlateAppearanceRateError):
+        attach_prior_outcome_rates([pa])
+
+
+def test_incomplete_pa_with_none_terminal_event_raw_still_works():
+    pa = _pa(pa_status="incomplete", pa_outcome_category=None)
+    assert pa["terminal_pa_event_raw"] is None
+    records = attach_prior_outcome_rates([pa])
+    assert records[0]["terminal_pa_event_raw"] is None
 
 
 # ---------------------------------------------------------------------------

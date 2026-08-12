@@ -95,6 +95,19 @@ RATE_CATEGORIES = (
 
 assert set(RATE_CATEGORIES) == set(DETAILED_TO_CATEGORY.values())
 
+# Closed set of raw terminal pa_event_raw values that represent a genuinely
+# interrupted/incomplete plate appearance rather than a completed outcome.
+# These are deliberately kept out of TERMINAL_EVENT_TAXONOMY, DETAILED_TO_CATEGORY,
+# and RATE_CATEGORIES: they must never classify as a completed outcome or
+# contribute to any historical rate denominator. Established from a manual
+# Baseball Savant review sample; unknown future non-null terminal codes still
+# fail closed rather than being silently added here.
+INCOMPLETE_TERMINAL_EVENTS = frozenset({
+    "truncated_pa",
+})
+
+assert INCOMPLETE_TERMINAL_EVENTS.isdisjoint(TERMINAL_EVENT_TAXONOMY)
+
 PLATE_APPEARANCE_FIELD_ORDER = (
     "rsb_pa_id",
     "source_game_id",
@@ -131,9 +144,10 @@ PLATE_APPEARANCE_FIELD_ORDER = (
 _EXPECTED_PITCH_FIELDS = frozenset(NORMALIZED_PITCH_FIELD_ORDER)
 
 # Context fields that must not vary across the pitches of a single plate
-# appearance. batter_id/batter_stands are included: unlike a pitcher, a
-# batter cannot legitimately be substituted mid-plate-appearance under MLB
-# rules, so any variation here is treated as a genuine contradiction.
+# appearance. batter_id/batter_stands are included: v0.3.2 does not resolve
+# attribution when multiple batter identities or batting sides appear inside
+# one grouped PA, so any variation here fails closed rather than guessing
+# historical credit.
 _CONSTANT_CONTEXT_FIELDS = (
     "game_date",
     "game_year",
@@ -260,7 +274,7 @@ def _build_pa_record(source_game_id, at_bat_number, group: list) -> dict:
             )
 
     terminal_event_raw = terminal_pitch["pa_event_raw"]
-    if terminal_event_raw is None:
+    if terminal_event_raw is None or terminal_event_raw in INCOMPLETE_TERMINAL_EVENTS:
         pa_status = "incomplete"
         pa_outcome_detailed = None
         pa_outcome_category = None

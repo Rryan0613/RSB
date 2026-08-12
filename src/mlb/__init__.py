@@ -24,6 +24,7 @@ from .statcast_snapshot import (
 )
 from .plate_appearance import (
     DETAILED_TO_CATEGORY,
+    INCOMPLETE_TERMINAL_EVENTS,
     PLATE_APPEARANCE_FIELD_ORDER,
     PLATE_APPEARANCE_SCHEMA_VERSION,
     RATE_CATEGORIES,
@@ -68,6 +69,7 @@ __all__ = [
     "create_statcast_snapshot",
     "serialize_normalized_records",
     "DETAILED_TO_CATEGORY",
+    "INCOMPLETE_TERMINAL_EVENTS",
     "PLATE_APPEARANCE_FIELD_ORDER",
     "PLATE_APPEARANCE_SCHEMA_VERSION",
     "RATE_CATEGORIES",

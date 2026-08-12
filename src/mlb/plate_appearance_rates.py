@@ -3,6 +3,7 @@ import itertools
 
 from .plate_appearance import (
     DETAILED_TO_CATEGORY,
+    INCOMPLETE_TERMINAL_EVENTS,
     PLATE_APPEARANCE_FIELD_ORDER,
     PLATE_APPEARANCE_SCHEMA_VERSION,
     RATE_CATEGORIES,
@@ -69,9 +70,12 @@ def _validate_pa_record_shape(record, index: int) -> None:
             raise PlateAppearanceRateError(
                 f"PA record {index} is incomplete but has a non-null pa_outcome_category"
             )
-        if record["terminal_pa_event_raw"] is not None:
+        terminal_raw = record["terminal_pa_event_raw"]
+        if terminal_raw is not None and terminal_raw not in INCOMPLETE_TERMINAL_EVENTS:
             raise PlateAppearanceRateError(
-                f"PA record {index} is incomplete but has a non-null terminal_pa_event_raw"
+                f"PA record {index} is incomplete but has a terminal_pa_event_raw that "
+                f"is neither None nor a recognized incomplete-terminal marker: "
+                f"{terminal_raw!r}"
             )
     else:
         terminal_raw = record["terminal_pa_event_raw"]
