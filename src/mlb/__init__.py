@@ -22,6 +22,31 @@ from .statcast_snapshot import (
     create_statcast_snapshot,
     serialize_normalized_records,
 )
+from .plate_appearance import (
+    DETAILED_TO_CATEGORY,
+    PLATE_APPEARANCE_FIELD_ORDER,
+    PLATE_APPEARANCE_SCHEMA_VERSION,
+    RATE_CATEGORIES,
+    TERMINAL_EVENT_TAXONOMY,
+    PlateAppearanceValidationError,
+    build_rsb_pa_id,
+    classify_terminal_event,
+    group_pitches_into_plate_appearances,
+)
+from .plate_appearance_rates import (
+    RATE_ENRICHED_FIELD_ORDER,
+    PlateAppearanceRateError,
+    attach_prior_outcome_rates,
+)
+from .plate_appearance_snapshot import (
+    COVERAGE_BASIS,
+    PA_MANIFEST_FIELD_ORDER,
+    PLATE_APPEARANCE_DERIVATION_VERSION,
+    PlateAppearanceSnapshotError,
+    build_derived_dataset_id,
+    create_plate_appearance_dataset,
+    serialize_plate_appearance_records,
+)
 
 __all__ = [
     "EXPECTED_SOURCE_COLUMNS",
@@ -42,4 +67,23 @@ __all__ = [
     "build_snapshot_id",
     "create_statcast_snapshot",
     "serialize_normalized_records",
+    "DETAILED_TO_CATEGORY",
+    "PLATE_APPEARANCE_FIELD_ORDER",
+    "PLATE_APPEARANCE_SCHEMA_VERSION",
+    "RATE_CATEGORIES",
+    "TERMINAL_EVENT_TAXONOMY",
+    "PlateAppearanceValidationError",
+    "build_rsb_pa_id",
+    "classify_terminal_event",
+    "group_pitches_into_plate_appearances",
+    "RATE_ENRICHED_FIELD_ORDER",
+    "PlateAppearanceRateError",
+    "attach_prior_outcome_rates",
+    "COVERAGE_BASIS",
+    "PA_MANIFEST_FIELD_ORDER",
+    "PLATE_APPEARANCE_DERIVATION_VERSION",
+    "PlateAppearanceSnapshotError",
+    "build_derived_dataset_id",
+    "create_plate_appearance_dataset",
+    "serialize_plate_appearance_records",
 ]

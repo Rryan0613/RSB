@@ -60,5 +60,9 @@ def get_mlb_normalized_statcast_pitch_dir() -> Path:
     return get_mlb_data_dir() / "normalized" / "statcast_pitch"
 
 
+def get_mlb_normalized_plate_appearance_dir() -> Path:
+    return get_mlb_data_dir() / "normalized" / "plate_appearances"
+
+
 def get_mlb_snapshot_dir() -> Path:
     return get_mlb_data_dir() / "snapshots"

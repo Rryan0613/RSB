@@ -169,6 +169,13 @@ def test_mlb_normalized_statcast_pitch_dir_default():
     )
 
 
+def test_mlb_normalized_plate_appearance_dir_default():
+    assert (
+        paths.get_mlb_normalized_plate_appearance_dir()
+        == paths.DATA_MLB_DIR / "normalized" / "plate_appearances"
+    )
+
+
 def test_mlb_snapshot_dir_default():
     assert paths.get_mlb_snapshot_dir() == paths.DATA_MLB_DIR / "snapshots"
 
@@ -181,5 +188,9 @@ def test_mlb_subdirs_follow_rsb_mlb_data_dir_override(tmp_path, monkeypatch):
     assert (
         paths.get_mlb_normalized_statcast_pitch_dir()
         == override / "normalized" / "statcast_pitch"
+    )
+    assert (
+        paths.get_mlb_normalized_plate_appearance_dir()
+        == override / "normalized" / "plate_appearances"
     )
     assert paths.get_mlb_snapshot_dir() == override / "snapshots"
