@@ -1,19 +1,20 @@
 window.RSB_PROGRESS = {
   schemaVersion: "2.0.0",
-  lastVerifiedAt: "2026-08-11",
+  lastVerifiedAt: "2026-08-12",
 
   sourceOfTruth: [
     "Handoffs/ChatGpt_Handoff.txt",
     "Handoffs/Claude_handoff.txt",
     "docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md (merged, PR #42)",
-    "docs/CANDIDATE_EVALUATION_CONTRACT.md (merged, PR #43)"
+    "docs/CANDIDATE_EVALUATION_CONTRACT.md (merged, PR #43)",
+    "docs/MLB_NBA_ROADMAP.md (current MLB/NBA roadmap; updated through v0.3.1)"
   ],
 
   project: {
     name: "RSB",
     subtitle: "Disciplined sportsbook analytics and +EV simulation research project",
     repository: "https://github.com/Rryan0613/RSB",
-    productFocus: "Long-term target: MLB and NBA singles, PASS always a valid result. Today: pure decision-contract primitives only — no sport runtime is wired to them yet. See Readiness."
+    productFocus: "Long-term target: MLB and NBA singles, PASS always a valid result. Today: pure decision-contract primitives plus a historical MLB Statcast data foundation — no sport runtime is wired to them yet. See Readiness."
   },
 
   statusLegend: [
@@ -28,8 +29,8 @@ window.RSB_PROGRESS = {
 
   repositoryBaseline: {
     label: "Repository baseline (merged, verified)",
-    latestMergedVersion: "v0.3.0",
-    latestMergedVersionTitle: "Candidate Evaluation Contract",
+    latestMergedVersion: "v0.3.1",
+    latestMergedVersionTitle: "MLB Statcast Data Foundation",
     latestMergedVersionStatus: "Verified complete",
     latestMergedArchitectureChore: {
       title: "Legacy Pipeline Architecture Audit",
@@ -37,34 +38,23 @@ window.RSB_PROGRESS = {
       note: "Read-only architecture audit reconciling the legacy World Cup runtime against the pure-primitives candidate contract. No source, config, schema, test, or CI changes were made by this chore — it is documentation only, not a version bump. Merged immediately before v0.3.0."
     },
     releaseEvidence: {
-      prNumber: 43,
-      mergeCommit: "20f34ab",
-      testCount: 1938
+      prNumber: 46,
+      mergeCommit: "3ae353f",
+      testCount: 2156
     },
-    note: "The v0.3.0 release merge commit is 20f34ab (PR #43, implementation commit 151010b). The roadmap-sync work was based on main at 280527f after PR #44, the post-v0.3.0 docs/dashboard synchronization. This baseline card describes the verified v0.3.0 release; it does not include any work described under Active workspace below."
+    note: "The v0.3.1 release merge commit is 3ae353f (PR #46, implementation commit 765b5ed). main is synchronized with origin/main; feature/v0.3.1-mlb-statcast-data-foundation was deleted locally and remotely after merge. This baseline card describes the verified v0.3.1 release. There is no active workspace beyond this baseline as of the post-v0.3.1 documentation sync."
   },
 
-  activeWorkspace: {
-    branch: "feature/v0.3.1-mlb-statcast-data-foundation",
-    version: "v0.3.1",
-    title: "MLB Statcast Data Foundation",
-    status: "Implemented, awaiting review",
-    summary: "v0.3.1 implementation is complete on this feature branch, built to the ChatGPT-approved Stage 1 architecture, plus two focused pre-commit correction passes: (1) structured declared_query dict, fixed source_provider=\"baseball_savant\", snapshot-level argument validation on zero-row snapshots, microsecond-precision ingestion timestamps, tightened source_downloaded_at timezone handling, and a 32-to-33 source-column documentation fix; (2) split EXPECTED_SOURCE_COLUMNS (all 33 mapped columns) from REQUIRED_SOURCE_COLUMNS (the 17 backing mandatory normalized fields) so CSVs missing an optional column (e.g. launch_angle, sv_id) import successfully and normalize that field to null instead of failing closed. Adds src/mlb/ (statcast_import.py, statcast_normalize.py, statcast_snapshot.py) implementing manual-CSV-only Statcast ingestion, RSB-owned pitch-level normalization, and immutable raw/normalized/manifest snapshots; adds MLB data-root path helpers (get_mlb_data_dir() and subdir helpers, RSB_MLB_DATA_DIR override) to paths.py. No automated Baseball Savant/MLB access, no World Cup runtime or database changes, no new dependency, no plate-appearance aggregation or probability/model work. Not yet merged to main — awaiting ChatGPT review and Ryan's git validation/commit/PR workflow.",
-    evidence: {
-      fullSuiteResult: "2156 passed (1938 baseline + 218 new v0.3.1 tests), 0 failed, 0 skipped",
-      newModules: ["src/mlb/__init__.py", "src/mlb/statcast_import.py", "src/mlb/statcast_normalize.py", "src/mlb/statcast_snapshot.py"],
-      newTestFiles: ["tests/test_statcast_import.py", "tests/test_statcast_normalize.py", "tests/test_statcast_snapshot.py", "tests/fixtures/mlb/statcast_sample.csv"]
-    }
-  },
+  activeWorkspace: null,
 
   currentGate: {
-    version: "v0.3.1",
-    title: "MLB Statcast Data Foundation",
-    status: "Implemented, awaiting review",
+    version: "v0.3.2",
+    title: "MLB Plate-Appearance Dataset & Rate Foundation",
+    status: "Active planning",
     owner: "ChatGPT (roadmap/gatekeeper) + Ryan (approval)",
-    summary: "v0.3.1 — MLB Statcast Data Foundation is approved as the next roadmap objective at the objective level (2026-08-11 roadmap reassessment), superseding the earlier Legacy Candidate Translation / Canonical Odds Snapshot Reconciliation / Candidate Persistence Framework / First MLB Runtime Skeleton sequence. The Stage 1 implementation-architecture inspection was reviewed and approved by ChatGPT, and Stage 2 implementation is now complete on feature/v0.3.1-mlb-statcast-data-foundation (see activeWorkspace) — not yet merged. v0.3.2 MLB Plate-Appearance Dataset & Rate Foundation, v0.3.3 MLB Plate-Appearance Probability Baseline, and v0.3.4 MLB Walk-Forward Evaluation & Calibration remain a directional planning batch, not independently approved implementation scopes. See docs/MLB_NBA_ROADMAP.md.",
+    summary: "v0.3.1 — MLB Statcast Data Foundation merged to main (PR #46, merge commit 3ae353f, implementation commit 765b5ed, 2156 tests passed). v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation is the next roadmap objective at the directional level, superseding nothing new — it was already recorded as a directional planning-batch entry. It is not yet implementation-approved: a separate v0.3.2 inspection/planning stage requires ChatGPT review of the detailed implementation architecture before coding begins. v0.3.3 MLB Plate-Appearance Probability Baseline and v0.3.4 MLB Walk-Forward Evaluation & Calibration remain directional planning-batch entries further out. See docs/MLB_NBA_ROADMAP.md.",
     nextActions: [
-      "ChatGPT reviews the v0.3.1 implementation review package; Ryan runs git validation, commit, push, and PR once approved."
+      "Perform the v0.3.2 inspection/planning stage for MLB Plate-Appearance Dataset & Rate Foundation; ChatGPT must review and approve the detailed implementation plan before Claude begins coding."
     ]
   },
 
@@ -92,12 +82,12 @@ window.RSB_PROGRESS = {
     {
       area: "Provider and data ingestion",
       status: "Not built",
-      note: "No provider source contract, canonical ID normalization, or coverage/staleness diagnostics exist for the pure-primitives pipeline. The legacy World Cup runtime has its own working odds_collector.py and odds_providers/ package, but it is scoped to World Cup only and frozen for new development."
+      note: "No provider source contract, canonical ID normalization, or coverage/staleness diagnostics exist for the pure-primitives pipeline. The legacy World Cup runtime has its own working odds_collector.py and odds_providers/ package, but it is scoped to World Cup only and frozen for new development. The v0.3.1 MLB Statcast data foundation (below) is a separate, MLB-specific, manual-CSV-only historical data pipeline — not a generic provider/ingestion contract."
     },
     {
       area: "MLB operational runtime",
       status: "Not built",
-      note: "MLB has a capability profile seed only — declared market shapes, nothing else. There is no MLB data ingestion, no MLB features, no MLB probability model, and no MLB orchestration. The capability profile must not be read as an operational runtime."
+      note: "MLB has a capability profile seed (declared market shapes) and, as of v0.3.1, a manual-CSV-only historical Statcast data foundation (src/mlb/statcast_import.py, statcast_normalize.py, statcast_snapshot.py) that produces immutable, provenance-tagged raw/normalized pitch-level snapshots. There is still no plate-appearance aggregation, no MLB features, no MLB probability model, and no MLB orchestration. Neither the capability profile nor the Statcast data foundation is an operational runtime."
     },
     {
       area: "NBA operational runtime",
@@ -209,7 +199,11 @@ window.RSB_PROGRESS = {
     { name: "stage_market.py", area: "Review vocabulary (pure, unwired)", status: "Verified complete", purpose: "Tournament stage and market-type vocabulary. Built with soccer tournament structure in mind; currently unwired and imported by no other module." },
 
     { name: "market_capability.py", area: "Capability profile", status: "Verified complete", purpose: "Generic sport/market capability schema builder — declares what a market requires (player/team/line/settlement fields), not a data pipeline." },
-    { name: "mlb_capability.py", area: "Capability profile", status: "Verified complete", purpose: "MLB capability profile seed built on market_capability.py — declares 15 supported MLB market shapes. This is metadata only: no live provider integration, no odds ingestion, no predictive MLB modeling, and no runtime wiring." }
+    { name: "mlb_capability.py", area: "Capability profile", status: "Verified complete", purpose: "MLB capability profile seed built on market_capability.py — declares 15 supported MLB market shapes. This is metadata only: no live provider integration, no odds ingestion, no predictive MLB modeling, and no runtime wiring." },
+
+    { name: "mlb/statcast_import.py", area: "MLB data foundation", status: "Verified complete", purpose: "Reads a local, manually supplied Baseball Savant CSV export and validates file existence/readability/UTF-8/header structure. No automated Baseball Savant/MLB access — the operator supplies the file path. No baseball-semantic normalization at this layer." },
+    { name: "mlb/statcast_normalize.py", area: "MLB data foundation", status: "Verified complete", purpose: "Builds the RSB-owned normalized pitch-level contract from the raw import. Fail-closed on missing/malformed required identity, chronology, game-context, or pre-pitch-state fields; provider-nullable fields normalize to null. No terminal-PA taxonomy derivation yet." },
+    { name: "mlb/statcast_snapshot.py", area: "MLB data foundation", status: "Verified complete", purpose: "Orchestrates import to normalize to persist, writing three immutable artifacts per snapshot (raw .csv.gz, normalized .jsonl.gz, .manifest.json) with SHA-256 content hashes and full source provenance. Existing snapshot artifacts are never overwritten." }
   ],
 
   milestones: [
@@ -236,7 +230,8 @@ window.RSB_PROGRESS = {
     { version: "v0.2.11", title: "Sport/market capability profile primitives", status: "Verified complete", group: "Capability" },
     { version: "v0.2.12", title: "MLB capability profile seed", status: "Verified complete", group: "Capability" },
     { version: "PR #42", title: "Legacy Pipeline Architecture Audit (merged, docs-only chore, no version bump)", status: "Verified complete", group: "Architecture" },
-    { version: "v0.3.0", title: "Candidate Evaluation Contract", status: "Verified complete", group: "Architecture" }
+    { version: "v0.3.0", title: "Candidate Evaluation Contract", status: "Verified complete", group: "Architecture" },
+    { version: "v0.3.1", title: "MLB Statcast data foundation", status: "Verified complete", group: "MLB data" }
   ],
 
   roadmap: [
@@ -265,14 +260,14 @@ window.RSB_PROGRESS = {
       phase: 4,
       title: "Automated historical and current ingestion",
       status: "Directional future",
-      description: "Build the trustworthy data layer required by MLB and NBA models. This does not extend run_slate.py — it is new orchestration built on the pure-primitives foundation. v0.3.1 — MLB Statcast Data Foundation is the APPROVED NEXT first concrete subset of this broader directional ingestion phase (normalized historical MLB/Statcast data only); the rest of this phase — later games/results, player/team data, odds history, injuries/lineups, and eventual NBA ingestion — is not approved as a complete phase.",
-      deliverables: ["MLB Statcast historical data foundation (v0.3.1, approved next)", "Games and results", "Player and team data", "Odds history", "Injuries and lineups"]
+      description: "Build the trustworthy data layer required by MLB and NBA models. This does not extend run_slate.py — it is new orchestration built on the pure-primitives foundation. v0.3.1 — MLB Statcast Data Foundation delivered the first concrete subset of this broader directional ingestion phase: a manual-CSV-only, provenance-tagged historical MLB/Statcast data pipeline (merged, PR #46). The rest of this phase — later games/results, player/team data, odds history, injuries/lineups, automated (non-manual-CSV) MLB ingestion, and eventual NBA ingestion — remains directional and not approved as a complete phase.",
+      deliverables: ["MLB Statcast historical data foundation (v0.3.1, merged)", "Games and results", "Player and team data", "Odds history", "Injuries and lineups"]
     },
     {
       phase: 5,
       title: "Feature engineering and validation",
       status: "Directional future",
-      description: "Keep variables that improve out-of-sample performance; reject fake-smart noise. Directional next step for MLB: v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation, a directional planning batch entry, not yet an independently approved implementation scope.",
+      description: "Keep variables that improve out-of-sample performance; reject fake-smart noise. Directional next step for MLB: v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation, the next roadmap objective at the directional-planning-batch level, not yet an independently approved implementation scope.",
       deliverables: ["Sport-specific features", "Feature ablation", "Leakage-safe validation"]
     },
     {

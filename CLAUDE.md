@@ -3,12 +3,12 @@
 RSB is a sportsbook analytics / +EV simulation project.
 
 Current project status:
-- Version: v0.3.0
+- Version: v0.3.1
 - Python: 3.13 virtual environment
-- Tests: pytest, verified baseline 1938 passing tests
-- Roadmap-sync base: 280527f — post-v0.3.0 docs/dashboard synchronization (PR #44)
-- Latest numbered release: v0.3.0 — Candidate Evaluation Contract (PR #43, merge commit 20f34ab, implementation commit 151010b)
-- Current roadmap: v0.3.1 — MLB Statcast Data Foundation is APPROVED NEXT at the roadmap/objective level (2026-08-11). Its detailed implementation architecture is not yet approved — a separate v0.3.1 inspection/planning stage requires ChatGPT approval before coding begins.
+- Tests: pytest, verified baseline 2156 passing tests
+- Verified release base: 3ae353f — v0.3.1 merge (PR #46)
+- Latest numbered release: v0.3.1 — MLB Statcast Data Foundation (PR #46, merge commit 3ae353f, implementation commit 765b5ed)
+- Current roadmap: v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation is the next roadmap objective (directional). It is not yet implementation-approved — a separate v0.3.2 inspection/planning stage requires ChatGPT approval before coding begins.
 - Future goal: automation-first sportsbook analytics website/app
 
 Architecture:
@@ -25,7 +25,7 @@ Final sport scope:
 Long-term:
 - After MLB and NBA reach a defined finished RSB state, a separate, non-sports probabilistic forecasting/quantitative project may follow — not a fork or rebrand of RSB. Do not add finance-specific abstractions to RSB.
 
-Completed foundation (v0.1.8.x – v0.3.0):
+Completed foundation (v0.1.8.x – v0.3.1):
 - v0.1.8.2: centralized absolute path resolution via src/paths.py
 - v0.1.8.3: runtime path overrides (RSB_DB_PATH, RSB_SLATE_PATH, RSB_MODEL_OUTPUT_PATH) for safe test isolation
 - v0.1.8.4: dependency-free config validation (ConfigValidationError, load_json_config, validate_*_config)
@@ -53,7 +53,7 @@ Completed foundation (v0.1.8.x – v0.3.0):
 - v0.2.11: pure sport/market capability profile primitives — MarketCapabilityValidationError, normalize_sport/league/market_type/selection_type, build_market_capability, build_sport_market_profile (src/market_capability.py)
 - v0.2.12: pure MLB capability profile seed — 15 declared MLB markets built on v0.2.11 (src/mlb_capability.py)
 - v0.3.0: Candidate Evaluation Contract — validate_candidate_evaluation_record(), the canonical whole-record validator; candidate_ranking.py delegates to it (src/candidate_evaluation.py; docs/CANDIDATE_EVALUATION_CONTRACT.md)
-- v0.3.1: MLB Statcast Data Foundation — manual-CSV-only historical MLB Statcast ingestion (no automated Baseball Savant/MLB access), RSB-owned normalized pitch-level contract, and immutable raw/normalized/manifest snapshots with SHA-256 provenance (src/mlb/statcast_import.py, statcast_normalize.py, statcast_snapshot.py; MLB data root in src/paths.py via RSB_MLB_DATA_DIR). Implemented on feature/v0.3.1-mlb-statcast-data-foundation, awaiting ChatGPT review/merge. No plate-appearance aggregation, modeling, or MLB runtime wiring — that is v0.3.2+ scope.
+- v0.3.1: MLB Statcast Data Foundation — manual-CSV-only historical MLB Statcast ingestion (no automated Baseball Savant/MLB access), RSB-owned normalized pitch-level contract, and immutable raw/normalized/manifest snapshots with SHA-256 provenance (src/mlb/statcast_import.py, statcast_normalize.py, statcast_snapshot.py; MLB data root in src/paths.py via RSB_MLB_DATA_DIR). Merged to main (PR #46, merge commit 3ae353f, implementation commit 765b5ed, 2156 passing tests). Feature branch feature/v0.3.1-mlb-statcast-data-foundation deleted locally and remotely. No plate-appearance aggregation, modeling, or MLB runtime wiring — that is v0.3.2+ scope.
 
 Long-term product goal:
 The final workflow should not require manual match/team/player/odds input. The user should specify sport, date range/week, markets, sportsbooks, and number of legs. The system should automatically collect fixtures, odds, props, stats, injuries, lineups, build features, run simulations/models, compare EV, rank singles/parlays, and recommend the best sportsbook for each card.

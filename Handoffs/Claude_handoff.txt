@@ -150,44 +150,66 @@ Going forward, RSB should plan 2-4 versions ahead at a time instead of one versi
 * UPDATE 2026-08-11: the previous directional sequence (v0.3.1 Legacy Candidate
   Translation, v0.3.2 Canonical Odds Snapshot Reconciliation, v0.3.3 Candidate Persistence
   Framework, v0.3.4 First MLB Runtime Skeleton) is superseded. v0.3.1 is now MLB Statcast
-  Data Foundation, APPROVED NEXT at the roadmap/objective level. v0.3.2-v0.3.4 (MLB
-  Plate-Appearance Dataset & Rate Foundation, MLB Plate-Appearance Probability Baseline,
-  MLB Walk-Forward Evaluation & Calibration) remain a directional planning batch, not
-  independently approved. See docs/MLB_NBA_ROADMAP.md and the 2026-08-11 ROADMAP
-  REASSESSMENT section below. Next required action: perform the v0.3.1
-  inspection/planning stage; ChatGPT must approve the detailed implementation plan
-  before coding begins.
+  Data Foundation. v0.3.2-v0.3.4 (MLB Plate-Appearance Dataset & Rate Foundation, MLB
+  Plate-Appearance Probability Baseline, MLB Walk-Forward Evaluation & Calibration) remain
+  a directional planning batch, not independently approved. See docs/MLB_NBA_ROADMAP.md.
+* UPDATE 2026-08-12: v0.3.1 — MLB Statcast Data Foundation merged to main (PR #46, merge
+  commit 3ae353f, implementation commit 765b5ed, 2156 tests passed). Feature branch
+  feature/v0.3.1-mlb-statcast-data-foundation deleted locally and remotely. v0.3.2 — MLB
+  Plate-Appearance Dataset & Rate Foundation is now the next roadmap objective, still
+  directional and not implementation-approved. Next required action: perform the v0.3.2
+  inspection/planning stage; ChatGPT must approve the detailed implementation plan before
+  coding begins.
+
+FUTURE MLB OPERATIONAL REQUIREMENTS (directional, NOT v0.3.2 scope) — full detail lives
+in docs/MLB_NBA_ROADMAP.md §16, "Future MLB operational requirements". Preserved here as
+a pointer so these are not lost across sessions:
+  A. On-run historical synchronization/completeness at run time (last-complete-coverage
+     detection, gap fill through current run date, configurable overlap/backfill window,
+     idempotent reconciliation, fail-closed on incomplete/conflicted mandatory data). No
+     background updater required.
+  B. External production persistence: hosted PostgreSQL for structured data, object
+     storage for large immutable raw/normalized snapshots; local files are temporary
+     cache only; laptop is not the canonical warehouse; exact vendor undecided.
+  C. Multi-source verification/reconciliation with provenance states (VERIFIED /
+     UNVERIFIED / CONFLICTED / STALE), field-aware cross-checking, fail-closed on
+     unresolved conflicts where the model requires the field. No scraping/provider
+     integration yet.
+  D. Simulation-driven MLB analysis: historical data → leakage-safe rates/features →
+     calibrated PA probabilities → current matchup/context → MLB-specific simulation →
+     market probabilities → sportsbook EV/ranking. Simulation only after probability
+     quality is validated/calibrated.
 
 ═══════════════════════════════════════════════════════
 CURRENT VERIFIED STATE
 ═══════════════════════════════════════════════════════
 
-Version:        0.3.0
-Project verified state (main): main is at merge commit 20f34ab (PR #43), based on
-                Ryan's post-merge verification.
-Tests passing:  1938
+Version:        0.3.1
+Project verified state (main): main is at merge commit 3ae353f (PR #46), based on
+                Ryan's post-merge verification. main is synchronized with origin/main.
+Tests passing:  2156
 
-Current task branch: chore/update-handoffs-after-v0.3.0 — a temporary docs/ops
+Current task branch: chore/update-handoffs-after-v0.3.1 — a temporary docs/ops
                 handoff-update branch only, not the permanent verified project branch.
                 This branch does not change the verified project state above, which
-                reflects main after the v0.3.0 merge.
+                reflects main after the v0.3.1 merge.
 
 Preceding architecture chore: PR #42 — Legacy Pipeline Architecture Audit (merged,
                 docs-only, no version bump) — merged immediately before v0.3.0.
 
-Latest version PR:      PR #43 — v0.3.0 Candidate Evaluation Contract — merged
-                        https://github.com/Rryan0613/RSB/pull/43
-Merge commit:           20f34ab
-Implementation commit:  151010b
-Feature branch:         feature/v0.3.0-candidate-evaluation-contract
-PR #43 post-merge verification: complete — 1938 tests passed
+Latest version PR:      PR #46 — v0.3.1 MLB Statcast Data Foundation — merged
+                        https://github.com/Rryan0613/RSB/pull/46
+Merge commit:           3ae353f
+Implementation commit:  765b5ed
+Feature branch:         feature/v0.3.1-mlb-statcast-data-foundation (deleted locally and
+                        remotely)
+PR #46 post-merge verification: complete — 2156 tests passed
 
-Latest completed version: v0.3.0 — Candidate Evaluation Contract
-Next target:    v0.3.1 — MLB Statcast Data Foundation, APPROVED NEXT at the roadmap/
-                objective level (2026-08-11). See the 2026-08-11 ROADMAP REASSESSMENT
-                section below and docs/MLB_NBA_ROADMAP.md.
+Latest completed version: v0.3.1 — MLB Statcast Data Foundation
+Next target:    v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation, the next
+                roadmap objective (directional). See docs/MLB_NBA_ROADMAP.md.
 Next status:    Not started. Implementation architecture not yet approved — a separate
-                v0.3.1 inspection/planning stage requires ChatGPT review and approval
+                v0.3.2 inspection/planning stage requires ChatGPT review and approval
                 before coding begins. Do not create a new version branch until that
                 plan is approved.
 
@@ -216,6 +238,7 @@ v0.2.10   Ranked Candidate Report Primitives                                 ←
 v0.2.11   Sport / Market Capability Profile Primitives                      ← COMPLETE
 v0.2.12   MLB Capability Profile Seed                                        ← COMPLETE
 v0.3.0    Candidate Evaluation Contract                                      ← COMPLETE
+v0.3.1    MLB Statcast Data Foundation                                       ← COMPLETE
 
 ── Near-term v0.2.x ──────────────────────────────────────────
 
@@ -323,20 +346,20 @@ v0.3.0    Candidate Evaluation Contract                                      ←
           v0.2.12 seeded the MLB capability profile. A World Cup capability profile
           seed and provider contracts remain future, unscoped work.
 
-v0.3.1    MLB Statcast Data Foundation                                   ← APPROVED NEXT
-          Approved at the roadmap/objective level, 2026-08-11, superseding the earlier
-          Legacy Candidate Translation / Canonical Odds Snapshot Reconciliation /
-          Candidate Persistence Framework / First MLB Runtime Skeleton sequence.
-          Implementation architecture not yet approved — requires a separate v0.3.1
-          inspection/planning stage and ChatGPT review before coding. See
-          docs/MLB_NBA_ROADMAP.md.
+v0.3.1    MLB Statcast Data Foundation                                       ← COMPLETE
+          Merged 2026-08-12, superseding the earlier Legacy Candidate Translation /
+          Canonical Odds Snapshot Reconciliation / Candidate Persistence Framework /
+          First MLB Runtime Skeleton sequence. PR #46, merge commit 3ae353f,
+          implementation commit 765b5ed, 2156 tests passed. Feature branch deleted
+          locally and remotely. See docs/MLB_NBA_ROADMAP.md.
 
-v0.3.2    MLB Plate-Appearance Dataset & Rate Foundation                 ← DIRECTIONAL
+v0.3.2    MLB Plate-Appearance Dataset & Rate Foundation             ← NEXT (DIRECTIONAL)
 v0.3.3    MLB Plate-Appearance Probability Baseline                      ← DIRECTIONAL
 v0.3.4    MLB Walk-Forward Evaluation & Calibration                      ← DIRECTIONAL
           Directional planning batch, not independently approved implementation scopes.
-          Version numbers/titles may be reassessed after preceding versions teach us
-          more. See docs/MLB_NBA_ROADMAP.md.
+          v0.3.2 is the next roadmap objective but requires its own inspection/planning
+          stage and ChatGPT approval before coding begins. Version numbers/titles may be
+          reassessed after preceding versions teach us more. See docs/MLB_NBA_ROADMAP.md.
 
 v0.2.x    Controlled staking / Kelly primitives (possible, later)
           Kelly treated as stake-sizing math only, not recommendation logic.
@@ -697,6 +720,18 @@ that claim with verified settled results.
 RECENT COMPLETED PRs
 ═══════════════════════════════════════════════════════
 
+PR #46:
+v0.3.1 MLB Statcast Data Foundation
+https://github.com/Rryan0613/RSB/pull/46
+
+PR #45:
+Update roadmap for MLB-first development — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/45
+
+PR #44:
+Update handoffs after v0.3.0 — docs/ops chore (not a version)
+https://github.com/Rryan0613/RSB/pull/44
+
 PR #43:
 v0.3.0 Candidate Evaluation Contract
 https://github.com/Rryan0613/RSB/pull/43
@@ -822,7 +857,72 @@ v0.1.9.0 backtest report output, build_backtest_report
 https://github.com/Rryan0613/RSB/pull/9
 
 ═══════════════════════════════════════════════════════
-v0.3.0 SUMMARY — LATEST COMPLETED VERSION
+v0.3.1 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.3.1 added a manual-CSV-only historical MLB Statcast data foundation: an RSB-owned
+normalized pitch-level contract and immutable raw/normalized/manifest snapshots with
+SHA-256 provenance. No automated Baseball Savant/MLB access.
+
+Files added:
+
+* src/mlb/__init__.py
+* src/mlb/statcast_import.py
+* src/mlb/statcast_normalize.py
+* src/mlb/statcast_snapshot.py
+* tests/test_statcast_import.py
+* tests/test_statcast_normalize.py
+* tests/test_statcast_snapshot.py
+* tests/fixtures/mlb/statcast_sample.csv
+
+Files modified:
+
+* src/paths.py (MLB data root: get_mlb_data_dir(), RSB_MLB_DATA_DIR override, and
+  get_mlb_manual_input_dir()/get_mlb_raw_statcast_dir()/
+  get_mlb_normalized_statcast_pitch_dir()/get_mlb_snapshot_dir() subdir helpers)
+* tests/test_paths.py (MLB path-override tests)
+* .gitignore (data/mlb/ added; no real historical MLB data committed)
+* CHANGELOG.md
+
+Behavior summary:
+
+* statcast_import.py reads a local CSV export and validates file existence/
+  readability/UTF-8/header structure; no baseball-semantic normalization.
+* statcast_normalize.py builds the RSB-owned normalized pitch-level contract, fail-closed
+  on missing/malformed required fields; provider-nullable fields normalize to None.
+  rsb_pitch_id is a deterministic SHA-256 of (source_game_id, at_bat_number,
+  pitch_number), validated unique per snapshot.
+* statcast_snapshot.py orchestrates import → normalize → persist, writing three immutable
+  artifacts per snapshot (raw .csv.gz, normalized .jsonl.gz, .manifest.json with SHA-256
+  content hashes and full provenance). Existing snapshot artifacts are never overwritten.
+* Zero new dependencies. CSV parsing uses the Python standard library (csv), not pandas.
+* No plate-appearance aggregation, terminal-PA taxonomy, batter/pitcher rates, league
+  priors, feature engineering, probability generation, modeling, calibration,
+  simulation, sportsbook odds, candidate EV/ranking, or MLB runtime wiring — that begins
+  at v0.3.2.
+* data/worldcup_ai.db, src/database.py, and the World Cup runtime are unchanged.
+* AST-based architecture isolation verified: new MLB modules do not import run_slate,
+  database, data_quality, or market_selector.
+
+Tests:
+
+* 218 new tests across tests/test_statcast_import.py, tests/test_statcast_normalize.py,
+  tests/test_statcast_snapshot.py, plus MLB path-override tests in tests/test_paths.py
+* Full local test result after merge: 2156 passed (1938 baseline + 218 new), 0 failed,
+  0 skipped
+
+Implementation commit: 765b5ed
+Merge commit: 3ae353f (PR #46)
+
+v0.3.1 intentionally did not add: automated Baseball Savant/MLB access, PyBaseball or
+any new dependency, plate-appearance aggregation, a terminal-PA outcome taxonomy,
+batter/pitcher/league rate construction, feature engineering, probability generation,
+modeling, calibration, simulation, sportsbook odds work, candidate EV/ranking bridging,
+or MLB runtime orchestration. See docs/MLB_NBA_ROADMAP.md for the v0.3.2+ directional
+sequence.
+
+═══════════════════════════════════════════════════════
+v0.3.0 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.3.0 added the canonical whole-record validator for the Candidate Evaluation Contract

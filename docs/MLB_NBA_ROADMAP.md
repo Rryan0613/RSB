@@ -1,9 +1,10 @@
 # MLB / NBA Roadmap
 
-Status: Approved roadmap direction. v0.3.1's Stage 1 implementation architecture was reviewed and approved by ChatGPT; Stage 2 implementation is complete on feature/v0.3.1-mlb-statcast-data-foundation, awaiting ChatGPT review and merge (see Handoffs for detail). v0.3.2+ still require their own version-specific implementation-planning approval.
+Status: Approved roadmap direction. v0.3.1 — MLB Statcast Data Foundation is merged to main (PR #46, merge commit 3ae353f, implementation commit 765b5ed, 2156 tests passed; see Handoffs for detail). v0.3.2+ still require their own version-specific implementation-planning approval.
 Date: 2026-08-11
-Current release baseline: v0.3.0
-Next approved objective: v0.3.1 — MLB Statcast Data Foundation
+Last synchronized: 2026-08-12 — v0.3.1 merge verified.
+Current release baseline: v0.3.1
+Next roadmap objective (directional, not yet implementation-approved): v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation
 
 This is a durable project-direction document, not an implementation spec. It records the roadmap decision made on 2026-08-11 and the reasoning behind it. It does not define any version's detailed schema, data contract, or code — those are separately scoped and approved at implementation-planning time for each version.
 
@@ -87,9 +88,9 @@ Build MLB concretely first. Reuse only infrastructure that is genuinely sport-ag
 
 Do not build a universal sports-model abstraction prematurely. Sport-specific probability models, feature engineering, and simulation assumptions remain sport-specific; only the shared decision/reporting/math infrastructure is intended to be common.
 
-## 7. v0.3.1 — MLB Statcast Data Foundation (approved next objective)
+## 7. v0.3.1 — MLB Statcast Data Foundation (merged)
 
-**Status:** Approved next at the roadmap/objective level. The Stage 1 implementation-architecture inspection was reviewed and approved by ChatGPT; Stage 2 implementation is complete on feature/v0.3.1-mlb-statcast-data-foundation, awaiting ChatGPT review and merge.
+**Status:** Merged and verified. PR #46, merge commit 3ae353f, implementation commit 765b5ed, 2156 tests passed. Feature branch feature/v0.3.1-mlb-statcast-data-foundation deleted locally and remotely.
 
 **Goal:** Obtain, normalize, provenance-tag, and locally snapshot trustworthy historical MLB/Statcast data for later modeling.
 
@@ -111,7 +112,7 @@ The exact data contract, schema, and adapter design are v0.3.1 implementation-pl
 
 ## 8. Directional v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation
 
-**Status:** Directional planning batch; not an independently approved implementation scope.
+**Status:** Next roadmap objective. Directional planning batch; not yet an independently approved implementation scope — requires its own inspection/planning stage and ChatGPT approval before coding begins.
 
 - Transform normalized historical data (v0.3.1 output) into leakage-safe modeling observations.
 - Likely one completed plate appearance per modeling observation.
@@ -190,4 +191,71 @@ After MLB and NBA reach an explicitly defined finished RSB state:
 
 ## 15. Immediate next action
 
-After this documentation chore merges, the next step is a separate **v0.3.1 inspection/planning stage** for MLB Statcast Data Foundation. No MLB code is written until that implementation plan is reviewed and approved by ChatGPT.
+v0.3.1 — MLB Statcast Data Foundation has merged (PR #46). The next step is a separate **v0.3.2 inspection/planning stage** for MLB Plate-Appearance Dataset & Rate Foundation. No MLB code is written until that implementation plan is reviewed and approved by ChatGPT.
+
+## 16. Future MLB operational requirements
+
+**Status:** Directional architectural requirements, recorded here so they are not lost across handoffs. **These are not v0.3.2 implementation scope.** Each requires its own separately scoped and ChatGPT-approved implementation plan when RSB reaches it. Do not implement any part of this section as a side effect of v0.3.2 or any other current chore.
+
+### A. On-run historical synchronization and completeness
+
+When a future operational MLB analysis run starts, RSB must:
+
+- determine the latest successfully stored / complete historical coverage
+- determine the missing range through the current run date
+- include a configurable recent overlap/backfill window so provider corrections can be rediscovered
+- ingest/reconcile that range idempotently
+- verify expected games / mandatory data completeness
+- refuse downstream model execution when mandatory historical data remains incomplete or conflicted
+- perform this at run time; no continuously running/background updater is required
+
+### B. External production persistence
+
+Long-term production MLB history must not depend on Ryan's laptop filesystem as the canonical warehouse.
+
+Direction:
+
+- hosted relational database, preferably **PostgreSQL**, for structured/queryable data
+- external **object storage** for large immutable raw/normalized snapshot artifacts
+- local files only as temporary ingestion/cache artifacts
+- exact hosted vendor remains undecided
+- do not implement this in the current docs chore or v0.3.2 unless separately scoped
+
+### C. Multi-source verification / reconciliation
+
+Future approved data sources may independently verify important observations.
+
+RSB should preserve provenance and support concepts such as:
+
+```text
+VERIFIED
+UNVERIFIED
+CONFLICTED
+STALE
+```
+
+Important unresolved conflicts should be fail-closed where the downstream model requires those fields.
+
+Cross-checking should be field-aware; multiple sites agreeing is not automatically multiple independent observations.
+
+Do not add scraping or a provider integration in this chore.
+
+### D. Simulation-driven MLB analysis
+
+Historical data is the evidence used to estimate and calibrate probability distributions; it is not itself the final prediction.
+
+Future MLB flow should directionally be:
+
+```text
+historical data
+→ leakage-safe observations/rates/features
+→ calibrated PA probabilities
+→ current matchup/context
+→ MLB-specific simulation
+→ game/team/player market probabilities
+→ sportsbook EV/ranking
+```
+
+Simulation must be sport-specific and should occur only after probability quality is validated/calibrated.
+
+This requirement must remain distinct from v0.3.2; v0.3.2 is still only the next dataset/rate foundation.
