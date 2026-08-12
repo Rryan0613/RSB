@@ -160,6 +160,13 @@ Going forward, RSB should plan 2-4 versions ahead at a time instead of one versi
   directional and not implementation-approved. Next required action: perform the v0.3.2
   inspection/planning stage; ChatGPT must approve the detailed implementation plan before
   coding begins.
+* UPDATE 2026-08-12 (later same day): v0.3.2 — MLB Plate-Appearance Dataset & Rate
+  Foundation is COMPLETE. PR #48, merge commit b876eb1, implementation commit 9212c93,
+  real-Savant correction commit ba3ce68, 2307 tests passed. Feature branch
+  feature/v0.3.2-mlb-plate-appearance-dataset-rate-foundation deleted locally and
+  remotely. v0.3.3 — MLB Plate-Appearance Probability Baseline is now the next roadmap
+  objective. Implementation architecture is not approved — a separate v0.3.3
+  inspection/planning stage is required before coding begins.
 
 FUTURE MLB OPERATIONAL REQUIREMENTS (directional, NOT v0.3.2 scope) — full detail lives
 in docs/MLB_NBA_ROADMAP.md §16, "Future MLB operational requirements". Preserved here as
@@ -184,32 +191,34 @@ a pointer so these are not lost across sessions:
 CURRENT VERIFIED STATE
 ═══════════════════════════════════════════════════════
 
-Version:        0.3.1
-Project verified state (main): main is at merge commit 3ae353f (PR #46), based on
+Version:        0.3.2
+Project verified state (main): main is at merge commit b876eb1 (PR #48), based on
                 Ryan's post-merge verification. main is synchronized with origin/main.
-Tests passing:  2156
+Tests passing:  2307
 
-Current task branch: chore/update-handoffs-after-v0.3.1 — a temporary docs/ops
+Current task branch: chore/update-handoffs-after-v0.3.2 — a temporary docs/ops
                 handoff-update branch only, not the permanent verified project branch.
                 This branch does not change the verified project state above, which
-                reflects main after the v0.3.1 merge.
+                reflects main after the v0.3.2 merge.
 
 Preceding architecture chore: PR #42 — Legacy Pipeline Architecture Audit (merged,
                 docs-only, no version bump) — merged immediately before v0.3.0.
 
-Latest version PR:      PR #46 — v0.3.1 MLB Statcast Data Foundation — merged
-                        https://github.com/Rryan0613/RSB/pull/46
-Merge commit:           3ae353f
-Implementation commit:  765b5ed
-Feature branch:         feature/v0.3.1-mlb-statcast-data-foundation (deleted locally and
-                        remotely)
-PR #46 post-merge verification: complete — 2156 tests passed
+Latest version PR:      PR #48 — v0.3.2 MLB Plate-Appearance Dataset & Rate Foundation
+                        — merged
+                        https://github.com/Rryan0613/RSB/pull/48
+Merge commit:           b876eb1
+Implementation commit:  9212c93
+Real-Savant correction commit: ba3ce68
+Feature branch:         feature/v0.3.2-mlb-plate-appearance-dataset-rate-foundation
+                        (deleted locally and remotely)
+PR #48 post-merge verification: complete — 2307 tests passed
 
-Latest completed version: v0.3.1 — MLB Statcast Data Foundation
-Next target:    v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation, the next
+Latest completed version: v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation
+Next target:    v0.3.3 — MLB Plate-Appearance Probability Baseline, the next
                 roadmap objective (directional). See docs/MLB_NBA_ROADMAP.md.
 Next status:    Not started. Implementation architecture not yet approved — a separate
-                v0.3.2 inspection/planning stage requires ChatGPT review and approval
+                v0.3.3 inspection/planning stage requires ChatGPT review and approval
                 before coding begins. Do not create a new version branch until that
                 plan is approved.
 
@@ -239,6 +248,7 @@ v0.2.11   Sport / Market Capability Profile Primitives                      ← 
 v0.2.12   MLB Capability Profile Seed                                        ← COMPLETE
 v0.3.0    Candidate Evaluation Contract                                      ← COMPLETE
 v0.3.1    MLB Statcast Data Foundation                                       ← COMPLETE
+v0.3.2    MLB Plate-Appearance Dataset & Rate Foundation                     ← COMPLETE
 
 ── Near-term v0.2.x ──────────────────────────────────────────
 
@@ -353,11 +363,18 @@ v0.3.1    MLB Statcast Data Foundation                                       ←
           implementation commit 765b5ed, 2156 tests passed. Feature branch deleted
           locally and remotely. See docs/MLB_NBA_ROADMAP.md.
 
-v0.3.2    MLB Plate-Appearance Dataset & Rate Foundation             ← NEXT (DIRECTIONAL)
-v0.3.3    MLB Plate-Appearance Probability Baseline                      ← DIRECTIONAL
+v0.3.2    MLB Plate-Appearance Dataset & Rate Foundation                     ← COMPLETE
+          Merged 2026-08-12. Derived leakage-safe plate-appearance records and prior
+          batter/pitcher/league empirical outcome rates from v0.3.1's normalized
+          pitch-level snapshots, per docs/MLB_PLATE_APPEARANCE_CONTRACT.md. PR #48,
+          merge commit b876eb1, implementation commit 9212c93, real-Savant correction
+          commit ba3ce68, 2307 tests passed. Feature branch deleted locally and
+          remotely. See docs/MLB_NBA_ROADMAP.md and the v0.3.2 SUMMARY section below.
+
+v0.3.3    MLB Plate-Appearance Probability Baseline                      ← NEXT (DIRECTIONAL)
 v0.3.4    MLB Walk-Forward Evaluation & Calibration                      ← DIRECTIONAL
           Directional planning batch, not independently approved implementation scopes.
-          v0.3.2 is the next roadmap objective but requires its own inspection/planning
+          v0.3.3 is the next roadmap objective but requires its own inspection/planning
           stage and ChatGPT approval before coding begins. Version numbers/titles may be
           reassessed after preceding versions teach us more. See docs/MLB_NBA_ROADMAP.md.
 
@@ -720,6 +737,10 @@ that claim with verified settled results.
 RECENT COMPLETED PRs
 ═══════════════════════════════════════════════════════
 
+PR #48:
+v0.3.2 MLB Plate-Appearance Dataset & Rate Foundation
+https://github.com/Rryan0613/RSB/pull/48
+
 PR #46:
 v0.3.1 MLB Statcast Data Foundation
 https://github.com/Rryan0613/RSB/pull/46
@@ -857,7 +878,95 @@ v0.1.9.0 backtest report output, build_backtest_report
 https://github.com/Rryan0613/RSB/pull/9
 
 ═══════════════════════════════════════════════════════
-v0.3.1 SUMMARY — LATEST COMPLETED VERSION
+v0.3.2 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.3.2 added a leakage-safe MLB plate-appearance (PA) dataset and prior batter/pitcher/
+league empirical rate foundation, derived from v0.3.1's normalized pitch-level Statcast
+records, per the new docs/MLB_PLATE_APPEARANCE_CONTRACT.md.
+
+Files added:
+
+* docs/MLB_PLATE_APPEARANCE_CONTRACT.md
+* src/mlb/plate_appearance.py
+* src/mlb/plate_appearance_rates.py
+* src/mlb/plate_appearance_snapshot.py
+* tests/test_plate_appearance.py
+* tests/test_plate_appearance_rates.py
+* tests/test_plate_appearance_snapshot.py
+
+Files modified:
+
+* src/mlb/__init__.py
+* src/paths.py
+* tests/test_paths.py
+
+Behavior summary:
+
+* plate_appearance.py groups pitches into one PA per (source_game_id, at_bat_number),
+  with a deterministic rsb_pa_id and contiguous pitch_number chronology validation
+  (fail-closed on gaps, duplicates, or batter/game-context/provenance mismatches).
+* Chronology-first terminal-pitch detection: the max-pitch_number pitch is the only
+  terminal candidate; a non-null pa_event_raw on any earlier pitch fails closed.
+* Closed detailed/category outcome taxonomy for completed PAs, with intentional_walk
+  kept distinct from ordinary walk at every layer. A null terminal event yields
+  pa_status = "incomplete" with no outcome classification.
+* Real-Savant correction (commit ba3ce68): a terminal pa_event_raw of "truncated_pa"
+  (INCOMPLETE_TERMINAL_EVENTS) is recognized as pa_status = "incomplete" — never a
+  completed taxonomy/rate category — with the raw value preserved in
+  terminal_pa_event_raw for provenance. Any other unrecognized non-null terminal value
+  still fails closed.
+* Forward-only mid-PA pitcher substitutions (e.g. A,A,B,B) are preserved, not rejected,
+  with pitcher_rate_eligible = False and every distinct pitcher recorded in
+  source_pitcher_ids; a sequence reverting to an earlier pitcher fails closed.
+* plate_appearance_rates.py's attach_prior_outcome_rates() attaches leakage-safe
+  batter/pitcher/league prior counts and raw empirical rates (rate is None, never 0.0,
+  when the prior count is 0) to every PA. Only completed PAs update the running
+  counters; the pitcher counter updates only when pitcher_rate_eligible == True.
+  Batter/league counters can still update from a completed multi-pitcher PA.
+* Same-day cross-game leakage policy: an earlier PA counts as prior only if its
+  game_date is strictly earlier, or it shares the same source_game_id with a smaller
+  at_bat_number — two different games on the same date never inform each other's
+  prior_* state.
+* plate_appearance_snapshot.py's create_plate_appearance_dataset() validates strict
+  single-source-snapshot provenance (manifest key set, row count, re-serialized content
+  hash, per-record snapshot_id/source_provider/normalized_schema_version agreement)
+  before deriving anything, and produces a deterministic, content-derived
+  derived_dataset_id (not timestamp-salted).
+* No predictive/calibrated probabilities, shrinkage, ML, simulation, sportsbook
+  odds/EV/ranking, or MLB runtime wiring — that begins at v0.3.3.
+* data/worldcup_ai.db, src/database.py, and the World Cup runtime are unchanged.
+
+Real-Savant validation summary: a representative manual detailed-pitch Baseball Savant
+CSV was used as validation evidence before merge (not committed; not an RSB dataset
+artifact). Representative, not exhaustive, observations: no non-null events on
+non-terminal pitches in the sample; intent_walk observed; truncated_pa observed as an
+incomplete/interrupted PA marker; null-terminal incomplete PAs also observed;
+provider/export result-boundary behavior produced partial PA pitch sequences in the
+oldest included data, and current fail-closed chronology validation correctly rejected
+those as intended. Does not claim every future/historical Savant event code is known;
+does not claim to establish why Baseball Savant emits truncated_pa.
+
+Tests:
+
+* tests/test_plate_appearance.py, tests/test_plate_appearance_rates.py,
+  tests/test_plate_appearance_snapshot.py, plus tests/test_paths.py additions
+* Full local test result after merge: 2307 passed, 0 failed, 0 skipped
+
+Implementation commit: 9212c93
+Real-Savant correction commit: ba3ce68
+Merge commit: b876eb1 (PR #48)
+
+v0.3.2 intentionally did not add: predictive/calibrated probabilities, shrinkage or
+Bayesian priors, ML, simulation, sportsbook odds/EV/ranking/parlays, MLB
+runtime/orchestration, automated Baseball Savant network ingestion, PostgreSQL/object
+storage, multi-source reconciliation, World Cup changes, NBA changes, handedness-split
+or park/opponent-adjusted rates, or a minimum-sample betting policy. See
+docs/MLB_PLATE_APPEARANCE_CONTRACT.md §14 and docs/MLB_NBA_ROADMAP.md for the v0.3.3+
+directional sequence.
+
+═══════════════════════════════════════════════════════
+v0.3.1 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.3.1 added a manual-CSV-only historical MLB Statcast data foundation: an RSB-owned
