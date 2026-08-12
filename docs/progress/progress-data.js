@@ -7,14 +7,15 @@ window.RSB_PROGRESS = {
     "Handoffs/Claude_handoff.txt",
     "docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md (merged, PR #42)",
     "docs/CANDIDATE_EVALUATION_CONTRACT.md (merged, PR #43)",
-    "docs/MLB_NBA_ROADMAP.md (current MLB/NBA roadmap; updated through v0.3.1)"
+    "docs/MLB_PLATE_APPEARANCE_CONTRACT.md (merged, PR #48)",
+    "docs/MLB_NBA_ROADMAP.md (current MLB/NBA roadmap; updated through v0.3.2)"
   ],
 
   project: {
     name: "RSB",
     subtitle: "Disciplined sportsbook analytics and +EV simulation research project",
     repository: "https://github.com/Rryan0613/RSB",
-    productFocus: "Long-term target: MLB and NBA singles, PASS always a valid result. Today: pure decision-contract primitives plus a historical MLB Statcast data foundation — no sport runtime is wired to them yet. See Readiness."
+    productFocus: "Long-term target: MLB and NBA singles, PASS always a valid result. Today: pure decision-contract primitives plus a historical MLB Statcast data foundation and a plate-appearance dataset/rate foundation — no sport runtime is wired to them yet. See Readiness."
   },
 
   statusLegend: [
@@ -29,8 +30,8 @@ window.RSB_PROGRESS = {
 
   repositoryBaseline: {
     label: "Repository baseline (merged, verified)",
-    latestMergedVersion: "v0.3.1",
-    latestMergedVersionTitle: "MLB Statcast Data Foundation",
+    latestMergedVersion: "v0.3.2",
+    latestMergedVersionTitle: "MLB Plate-Appearance Dataset & Rate Foundation",
     latestMergedVersionStatus: "Verified complete",
     latestMergedArchitectureChore: {
       title: "Legacy Pipeline Architecture Audit",
@@ -38,23 +39,24 @@ window.RSB_PROGRESS = {
       note: "Read-only architecture audit reconciling the legacy World Cup runtime against the pure-primitives candidate contract. No source, config, schema, test, or CI changes were made by this chore — it is documentation only, not a version bump. Merged immediately before v0.3.0."
     },
     releaseEvidence: {
-      prNumber: 46,
-      mergeCommit: "3ae353f",
-      testCount: 2156
+      prNumber: 48,
+      mergeCommit: "b876eb1",
+      testCount: 2307,
+      note: "Implementation commit 9212c93; real-Savant correction commit ba3ce68."
     },
-    note: "The v0.3.1 release merge commit is 3ae353f (PR #46, implementation commit 765b5ed). main is synchronized with origin/main; feature/v0.3.1-mlb-statcast-data-foundation was deleted locally and remotely after merge. This baseline card describes the verified v0.3.1 release. There is no active workspace beyond this baseline as of the post-v0.3.1 documentation sync."
+    note: "The v0.3.2 release merge commit is b876eb1 (PR #48, implementation commit 9212c93, real-Savant correction commit ba3ce68). main is synchronized with origin/main; feature/v0.3.2-mlb-plate-appearance-dataset-rate-foundation was deleted locally and remotely after merge. This baseline card describes the verified v0.3.2 release. There is no active workspace beyond this baseline as of the post-v0.3.2 documentation sync."
   },
 
   activeWorkspace: null,
 
   currentGate: {
-    version: "v0.3.2",
-    title: "MLB Plate-Appearance Dataset & Rate Foundation",
+    version: "v0.3.3",
+    title: "MLB Plate-Appearance Probability Baseline",
     status: "Active planning",
     owner: "ChatGPT (roadmap/gatekeeper) + Ryan (approval)",
-    summary: "v0.3.1 — MLB Statcast Data Foundation merged to main (PR #46, merge commit 3ae353f, implementation commit 765b5ed, 2156 tests passed). v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation is the next roadmap objective at the directional level, superseding nothing new — it was already recorded as a directional planning-batch entry. It is not yet implementation-approved: a separate v0.3.2 inspection/planning stage requires ChatGPT review of the detailed implementation architecture before coding begins. v0.3.3 MLB Plate-Appearance Probability Baseline and v0.3.4 MLB Walk-Forward Evaluation & Calibration remain directional planning-batch entries further out. See docs/MLB_NBA_ROADMAP.md.",
+    summary: "v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation merged to main (PR #48, merge commit b876eb1, implementation commit 9212c93, real-Savant correction commit ba3ce68, 2307 tests passed). v0.3.3 — MLB Plate-Appearance Probability Baseline is now the next roadmap objective at the directional level — it was already recorded as a directional planning-batch entry. It is not yet implementation-approved: a separate v0.3.3 inspection/planning stage requires ChatGPT review of the detailed implementation architecture before coding begins. No v0.3.3 implementation has started. v0.3.4 MLB Walk-Forward Evaluation & Calibration remains a directional planning-batch entry further out. See docs/MLB_NBA_ROADMAP.md.",
     nextActions: [
-      "Perform the v0.3.2 inspection/planning stage for MLB Plate-Appearance Dataset & Rate Foundation; ChatGPT must review and approve the detailed implementation plan before Claude begins coding."
+      "Perform the v0.3.3 inspection/planning stage for MLB Plate-Appearance Probability Baseline; ChatGPT must review and approve the detailed implementation plan before Claude begins coding."
     ]
   },
 
@@ -87,7 +89,7 @@ window.RSB_PROGRESS = {
     {
       area: "MLB operational runtime",
       status: "Not built",
-      note: "MLB has a capability profile seed (declared market shapes) and, as of v0.3.1, a manual-CSV-only historical Statcast data foundation (src/mlb/statcast_import.py, statcast_normalize.py, statcast_snapshot.py) that produces immutable, provenance-tagged raw/normalized pitch-level snapshots. There is still no plate-appearance aggregation, no MLB features, no MLB probability model, and no MLB orchestration. Neither the capability profile nor the Statcast data foundation is an operational runtime."
+      note: "MLB has a capability profile seed (declared market shapes), a v0.3.1 manual-CSV-only historical Statcast data foundation (src/mlb/statcast_import.py, statcast_normalize.py, statcast_snapshot.py) that produces immutable, provenance-tagged raw/normalized pitch-level snapshots, and a v0.3.2 plate-appearance dataset/rate foundation built on top of it (src/mlb/plate_appearance.py, plate_appearance_rates.py, plate_appearance_snapshot.py) that derives leakage-safe PA records and prior batter/pitcher/league empirical outcome rates. MLB still has no probability generation, no calibration pipeline, no simulation, no sportsbook bridge, and no operational MLB runtime/orchestrator. None of the capability profile, the Statcast data foundation, or the PA dataset/rate foundation is an operational runtime."
     },
     {
       area: "NBA operational runtime",
@@ -147,7 +149,7 @@ window.RSB_PROGRESS = {
       status: "Not built",
       description: "No MLB or NBA runtime exists today — shown here as intended direction only, never as a built system. When a future runtime is built, it must own its own sport-specific data, features, probability model, simulation assumptions, calibration, and market support, while reusing the shared infrastructure named below. It will be new, independent orchestration — not an extension of run_slate.py.",
       nodes: [
-        { title: "MLB runtime (not built)", detail: "Would need its own data ingestion, features, and probability model built on top of the existing MLB capability profile seed." },
+        { title: "MLB runtime (not built)", detail: "Would need its own probability model and orchestration built on top of the existing MLB capability profile seed, the v0.3.1 Statcast data foundation, and the v0.3.2 plate-appearance dataset/rate foundation." },
         { title: "NBA runtime (not built)", detail: "Would need a capability profile, data ingestion, features, and probability model — none exist yet." },
         { title: "Shared infrastructure it would reuse", detail: "Identity, odds-snapshot, EV/edge math, candidate evaluation, ranking, and reporting primitives from the foundation lane above." }
       ]
@@ -203,7 +205,10 @@ window.RSB_PROGRESS = {
 
     { name: "mlb/statcast_import.py", area: "MLB data foundation", status: "Verified complete", purpose: "Reads a local, manually supplied Baseball Savant CSV export and validates file existence/readability/UTF-8/header structure. No automated Baseball Savant/MLB access — the operator supplies the file path. No baseball-semantic normalization at this layer." },
     { name: "mlb/statcast_normalize.py", area: "MLB data foundation", status: "Verified complete", purpose: "Builds the RSB-owned normalized pitch-level contract from the raw import. Fail-closed on missing/malformed required identity, chronology, game-context, or pre-pitch-state fields; provider-nullable fields normalize to null. No terminal-PA taxonomy derivation yet." },
-    { name: "mlb/statcast_snapshot.py", area: "MLB data foundation", status: "Verified complete", purpose: "Orchestrates import to normalize to persist, writing three immutable artifacts per snapshot (raw .csv.gz, normalized .jsonl.gz, .manifest.json) with SHA-256 content hashes and full source provenance. Existing snapshot artifacts are never overwritten." }
+    { name: "mlb/statcast_snapshot.py", area: "MLB data foundation", status: "Verified complete", purpose: "Orchestrates import to normalize to persist, writing three immutable artifacts per snapshot (raw .csv.gz, normalized .jsonl.gz, .manifest.json) with SHA-256 content hashes and full source provenance. Existing snapshot artifacts are never overwritten." },
+    { name: "mlb/plate_appearance.py", area: "MLB data foundation", status: "Verified complete", purpose: "Groups v0.3.1 normalized pitches into one plate appearance per (source_game_id, at_bat_number), with contiguous chronology validation, chronology-first terminal-pitch detection, a closed completed-event taxonomy (intentional_walk kept distinct from walk), truncated_pa recognized as an incomplete-status marker (never a completed outcome), and forward-only mid-PA pitcher-substitution handling that excludes the PA from pitcher-rate attribution without discarding it." },
+    { name: "mlb/plate_appearance_rates.py", area: "MLB data foundation", status: "Verified complete", purpose: "Attaches leakage-safe prior batter/pitcher/league empirical outcome counts and rates to every plate appearance, using a same-day cross-game leakage policy so two games on the same date can never inform each other's prior state. Raw empirical counting only — no shrinkage, priors, or modeling." },
+    { name: "mlb/plate_appearance_snapshot.py", area: "MLB data foundation", status: "Verified complete", purpose: "Validates strict single-source-snapshot provenance against a v0.3.1 manifest before deriving anything, then persists a deterministic, content-derived plate-appearance dataset artifact (derived_dataset_id is not timestamp-salted, unlike v0.3.1's snapshot_id)." }
   ],
 
   milestones: [
@@ -231,7 +236,8 @@ window.RSB_PROGRESS = {
     { version: "v0.2.12", title: "MLB capability profile seed", status: "Verified complete", group: "Capability" },
     { version: "PR #42", title: "Legacy Pipeline Architecture Audit (merged, docs-only chore, no version bump)", status: "Verified complete", group: "Architecture" },
     { version: "v0.3.0", title: "Candidate Evaluation Contract", status: "Verified complete", group: "Architecture" },
-    { version: "v0.3.1", title: "MLB Statcast data foundation", status: "Verified complete", group: "MLB data" }
+    { version: "v0.3.1", title: "MLB Statcast data foundation", status: "Verified complete", group: "MLB data" },
+    { version: "v0.3.2", title: "MLB plate-appearance dataset and rate foundation", status: "Verified complete", group: "MLB data" }
   ],
 
   roadmap: [
@@ -267,14 +273,14 @@ window.RSB_PROGRESS = {
       phase: 5,
       title: "Feature engineering and validation",
       status: "Directional future",
-      description: "Keep variables that improve out-of-sample performance; reject fake-smart noise. Directional next step for MLB: v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation, the next roadmap objective at the directional-planning-batch level, not yet an independently approved implementation scope.",
-      deliverables: ["Sport-specific features", "Feature ablation", "Leakage-safe validation"]
+      description: "Keep variables that improve out-of-sample performance; reject fake-smart noise. v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation delivered a verified completed MLB deliverable within this phase: leakage-safe plate-appearance records and prior batter/pitcher/league empirical outcome rates (merged, PR #48). This phase remains broader than that one MLB release — it also covers future feature work and eventual NBA applicability — so the phase-level status stays directional future even though this specific deliverable is complete.",
+      deliverables: ["MLB plate-appearance dataset and rate foundation (v0.3.2, merged)", "Sport-specific features", "Feature ablation", "Leakage-safe validation"]
     },
     {
       phase: 6,
       title: "Probability generation engines",
       status: "Directional future",
-      description: "Generate RSB probabilities for supported MLB and NBA markets. No such engine exists for either sport today. Directional next step for MLB: v0.3.3 — MLB Plate-Appearance Probability Baseline, a directional planning batch entry, not yet an independently approved implementation scope.",
+      description: "Generate RSB probabilities for supported MLB and NBA markets. No such engine exists for either sport today. v0.3.3 — MLB Plate-Appearance Probability Baseline is now the immediate directional planning target for MLB — not yet implemented, and not an independently approved implementation scope. A separate v0.3.3 inspection/planning stage requires ChatGPT approval before coding begins.",
       deliverables: ["Baseline models", "Simulation or ensemble models", "Probability calibration"]
     },
     {

@@ -1,4 +1,4 @@
-# RSB v0.3.1
+# RSB v0.3.2
 
 RSB is a probabilistic sports forecasting, simulation, and +EV research framework. The existing World Cup runtime is RSB's first operational sport implementation and is frozen for new feature development. MLB is the next active modeling domain, with NBA planned as the second and final new sport engine.
 
@@ -10,8 +10,8 @@ RSB's current architecture:
 
 - The World Cup runtime (`run_slate.py` and everything it orchestrates) is the only currently operational, end-to-end pipeline. It is frozen for new feature development — maintenance and bug fixes only.
 - A separate, reusable pure-primitives foundation (candidate identity, odds snapshot, evaluation, EV enrichment, ranking, reporting, settlement, sport/market capability profiles, and backtest math) exists independently of the World Cup runtime and is not yet wired into any operational sport pipeline.
-- MLB has a declared market capability profile (`src/mlb_capability.py`) and a manual-CSV-only historical Statcast data foundation (`src/mlb/`) — no plate-appearance aggregation, features, probability model, or runtime exist yet.
-- **v0.3.1 — MLB Statcast Data Foundation is merged.** (PR #46, merge commit `3ae353f`, 2156 tests passed.) **v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation is the next roadmap objective**, directional and not yet implementation-approved.
+- MLB has a declared market capability profile (`src/mlb_capability.py`) and, as of v0.3.1/v0.3.2, a manual-CSV-only historical Statcast data foundation plus a plate-appearance dataset/rate foundation built on top of it (`src/mlb/`). MLB now has the v0.3.1 pitch-level Statcast data foundation and the v0.3.2 plate-appearance dataset/rate foundation. There is still no MLB probability model, no MLB simulation, and no MLB runtime.
+- **v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation is merged.** (PR #48, merge commit `b876eb1`, 2307 tests passed.) **v0.3.3 — MLB Plate-Appearance Probability Baseline is the next directional objective**, not yet implementation-approved.
 - NBA is planned as the second and final new sport engine, after MLB. No NBA code exists yet.
 
 For the full roadmap and sport-scope decisions, see [docs/MLB_NBA_ROADMAP.md](docs/MLB_NBA_ROADMAP.md). For the architecture audit behind the World Cup freeze decision, see [docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md](docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md).
@@ -58,6 +58,7 @@ The project currently supports:
 - pure MLB capability profile seed — 15 declared MLB markets (`src/mlb_capability.py`)
 - the Candidate Evaluation Contract's canonical whole-record validator (`src/candidate_evaluation.py`; see [docs/CANDIDATE_EVALUATION_CONTRACT.md](docs/CANDIDATE_EVALUATION_CONTRACT.md))
 - manual-CSV-only historical MLB Statcast ingestion, normalization, and immutable provenance-tagged snapshots (`src/mlb/statcast_import.py`, `statcast_normalize.py`, `statcast_snapshot.py`)
+- MLB plate-appearance dataset and leakage-safe prior batter/pitcher/league rate foundation (`src/mlb/plate_appearance.py`, `plate_appearance_rates.py`, `plate_appearance_snapshot.py`; see [docs/MLB_PLATE_APPEARANCE_CONTRACT.md](docs/MLB_PLATE_APPEARANCE_CONTRACT.md))
 
 ## Runtime Target
 
@@ -352,8 +353,8 @@ Workflow file:
 
 ## Roadmap
 
-Completed versions through v0.3.1 are listed under Current Foundation above.
+Completed versions through v0.3.2 are listed under Current Foundation above.
 
-**v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation** is the next roadmap objective. It is directional and its detailed implementation plan is not yet approved — a separate v0.3.2 inspection/planning stage requires ChatGPT approval before coding begins.
+**v0.3.3 — MLB Plate-Appearance Probability Baseline** is the next directional roadmap objective. It requires a separate v0.3.3 inspection/planning stage and ChatGPT approval before coding begins.
 
-For the full roadmap, including the MLB-first / NBA-second sport-scope decision and the directional v0.3.2–v0.3.4 MLB batch, see [docs/MLB_NBA_ROADMAP.md](docs/MLB_NBA_ROADMAP.md).
+For the full roadmap, including the MLB-first / NBA-second sport-scope decision and the directional v0.3.3–v0.3.4 MLB batch, see [docs/MLB_NBA_ROADMAP.md](docs/MLB_NBA_ROADMAP.md).

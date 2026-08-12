@@ -3,24 +3,25 @@
 RSB is a sportsbook analytics / +EV simulation project.
 
 Current project status:
-- Version: v0.3.1
+- Version: v0.3.2
 - Python: 3.13 virtual environment
-- Tests: pytest, verified baseline 2156 passing tests
-- Verified release base: 3ae353f — v0.3.1 merge (PR #46)
-- Latest numbered release: v0.3.1 — MLB Statcast Data Foundation (PR #46, merge commit 3ae353f, implementation commit 765b5ed)
-- Current roadmap: v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation is the next roadmap objective (directional). It is not yet implementation-approved — a separate v0.3.2 inspection/planning stage requires ChatGPT approval before coding begins.
+- Tests: pytest, verified baseline 2307 passing tests
+- Verified release base: b876eb1 — v0.3.2 merge (PR #48)
+- Latest numbered release: v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation (PR #48, merge commit b876eb1, implementation commit 9212c93, real-Savant correction commit ba3ce68)
+- Current roadmap: v0.3.3 — MLB Plate-Appearance Probability Baseline is the next roadmap objective (directional). It is not yet implementation-approved — a separate v0.3.3 inspection/planning stage requires ChatGPT approval before coding begins.
 - Future goal: automation-first sportsbook analytics website/app
 
 Architecture:
 - The World Cup runtime (`run_slate.py` and everything it orchestrates) is the only operational, end-to-end pipeline today. It is frozen for new feature development — maintenance/bug fixes only. It will not become a generic multi-sport orchestrator. See docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md.
 - A separate, reusable pure-primitives foundation (candidate identity, odds snapshot, evaluation, EV enrichment, ranking, reporting, settlement, sport/market capability profiles, backtest math) exists independently and is not wired into any runtime yet. See docs/CANDIDATE_EVALUATION_CONTRACT.md.
+- MLB now has a v0.3.1 pitch-level Statcast historical data foundation and a v0.3.2 plate-appearance dataset/rate foundation built on top of it. MLB still has no probability model, no calibration pipeline, no simulation, no sportsbook bridge, and no operational MLB runtime/orchestrator.
 - New sports get their own data/features/model/runtime built on the pure-primitives foundation — never by extending run_slate.py.
 
 Final sport scope:
 - MLB is the next active modeling domain (first new sport engine).
 - NBA is planned as the second and final new sport engine, after MLB.
 - No NFL, NHL, or further sport expansion is currently planned.
-- See docs/MLB_NBA_ROADMAP.md for the full roadmap, including the directional v0.3.2-v0.3.4 MLB batch.
+- See docs/MLB_NBA_ROADMAP.md for the full roadmap, including the directional v0.3.3-v0.3.4 MLB batch.
 
 Long-term:
 - After MLB and NBA reach a defined finished RSB state, a separate, non-sports probabilistic forecasting/quantitative project may follow — not a fork or rebrand of RSB. Do not add finance-specific abstractions to RSB.
@@ -54,6 +55,7 @@ Completed foundation (v0.1.8.x – v0.3.1):
 - v0.2.12: pure MLB capability profile seed — 15 declared MLB markets built on v0.2.11 (src/mlb_capability.py)
 - v0.3.0: Candidate Evaluation Contract — validate_candidate_evaluation_record(), the canonical whole-record validator; candidate_ranking.py delegates to it (src/candidate_evaluation.py; docs/CANDIDATE_EVALUATION_CONTRACT.md)
 - v0.3.1: MLB Statcast Data Foundation — manual-CSV-only historical MLB Statcast ingestion (no automated Baseball Savant/MLB access), RSB-owned normalized pitch-level contract, and immutable raw/normalized/manifest snapshots with SHA-256 provenance (src/mlb/statcast_import.py, statcast_normalize.py, statcast_snapshot.py; MLB data root in src/paths.py via RSB_MLB_DATA_DIR). Merged to main (PR #46, merge commit 3ae353f, implementation commit 765b5ed, 2156 passing tests). Feature branch feature/v0.3.1-mlb-statcast-data-foundation deleted locally and remotely. No plate-appearance aggregation, modeling, or MLB runtime wiring — that is v0.3.2+ scope.
+- v0.3.2: MLB Plate-Appearance Dataset & Rate Foundation — derives plate-appearance (PA) records and leakage-safe prior batter/pitcher/league empirical outcome rates from v0.3.1's normalized pitch-level snapshots (src/mlb/plate_appearance.py, plate_appearance_rates.py, plate_appearance_snapshot.py; docs/MLB_PLATE_APPEARANCE_CONTRACT.md). Deterministic `(source_game_id, at_bat_number)` PA grouping with contiguous chronology validation; completed vs. incomplete PA semantics via chronology-first terminal-pitch detection; a closed completed-event taxonomy with `intentional_walk` kept distinct from ordinary `walk`; forward-only mid-PA pitcher substitutions preserved but excluded from pitcher-rate attribution (`pitcher_rate_eligible = False`), while still allowed to update batter/league history when otherwise completed; raw empirical prior counts/rates only, no shrinkage or modeling; strict single-source-snapshot provenance and deterministic immutable derived artifacts. A real-Savant-backed correction (commit ba3ce68) added recognition of the `truncated_pa` terminal marker as `pa_status = "incomplete"` (never a completed taxonomy/rate category), with the raw value preserved for provenance. Merged to main (PR #48, merge commit b876eb1, implementation commit 9212c93, real-Savant correction commit ba3ce68, 2307 passing tests). Feature branch feature/v0.3.2-mlb-plate-appearance-dataset-rate-foundation deleted locally and remotely. No probability model, calibration, simulation, or MLB runtime wiring — that is v0.3.3+ scope.
 
 Long-term product goal:
 The final workflow should not require manual match/team/player/odds input. The user should specify sport, date range/week, markets, sportsbooks, and number of legs. The system should automatically collect fixtures, odds, props, stats, injuries, lineups, build features, run simulations/models, compare EV, rank singles/parlays, and recommend the best sportsbook for each card.
