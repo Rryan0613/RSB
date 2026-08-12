@@ -1,0 +1,5 @@
+game_pk,sv_id,game_date,game_year,at_bat_number,pitch_number,inning,inning_topbot,game_type,home_team,away_team,home_score,away_score,batter,pitcher,stand,p_throws,on_1b,on_2b,on_3b,balls,strikes,outs_when_up,pitch_type,pitch_name,release_speed,zone,type,events,bb_type,launch_speed,launch_angle,hit_distance,release_spin_rate,player_name
+700001,240401_190001,2024-04-01,2024,1,1,1,Top,R,NYY,BOS,0,0,600001,700010,R,L,,,,0,0,0,FF,4-Seam Fastball,95.1,5,S,,,,,,2250,Synthetic Batter One
+700001,240401_190002,2024-04-01,2024,1,2,1,Top,R,NYY,BOS,0,0,600001,700010,R,L,,,,0,1,0,SL,Slider,84.2,9,B,,,,,,2500,Synthetic Batter One
+700001,240401_190003,2024-04-01,2024,1,3,1,Top,R,NYY,BOS,0,0,600001,700010,R,L,,,,1,1,0,FF,4-Seam Fastball,94.8,6,X,field_out,fly_ball,98.3,25.5,310.0,2260,Synthetic Batter One
+700001,240401_190004,2024-04-01,2024,2,1,1,Top,R,NYY,BOS,0,0,600002,700010,L,L,,,,0,0,1,CU,Curveball,79.5,4,S,,,,,,2700,Synthetic Batter Two
