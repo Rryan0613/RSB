@@ -7,6 +7,7 @@ CONFIG_DIR = PROJECT_ROOT / "config"
 DATA_DIR = PROJECT_ROOT / "data"
 DATA_INPUT_DIR = DATA_DIR / "input"
 DATA_OUTPUT_DIR = DATA_DIR / "output"
+DATA_MLB_DIR = DATA_DIR / "mlb"
 MODELS_DIR = PROJECT_ROOT / "models"
 
 MODEL_CONFIG_PATH = CONFIG_DIR / "model_config.json"
@@ -40,3 +41,24 @@ def get_model_output_path() -> Path:
 def get_results_path() -> Path:
     override = os.environ.get("RSB_RESULTS_PATH")
     return Path(override) if override else DEFAULT_RESULTS_PATH
+
+
+def get_mlb_data_dir() -> Path:
+    override = os.environ.get("RSB_MLB_DATA_DIR")
+    return Path(override) if override else DATA_MLB_DIR
+
+
+def get_mlb_manual_input_dir() -> Path:
+    return get_mlb_data_dir() / "manual_input"
+
+
+def get_mlb_raw_statcast_dir() -> Path:
+    return get_mlb_data_dir() / "raw" / "statcast"
+
+
+def get_mlb_normalized_statcast_pitch_dir() -> Path:
+    return get_mlb_data_dir() / "normalized" / "statcast_pitch"
+
+
+def get_mlb_snapshot_dir() -> Path:
+    return get_mlb_data_dir() / "snapshots"

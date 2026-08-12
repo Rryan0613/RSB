@@ -1,6 +1,6 @@
 # MLB / NBA Roadmap
 
-Status: Approved roadmap direction; version-specific implementation still requires ChatGPT approval.
+Status: Approved roadmap direction. v0.3.1's Stage 1 implementation architecture was reviewed and approved by ChatGPT; Stage 2 implementation is complete on feature/v0.3.1-mlb-statcast-data-foundation, awaiting ChatGPT review and merge (see Handoffs for detail). v0.3.2+ still require their own version-specific implementation-planning approval.
 Date: 2026-08-11
 Current release baseline: v0.3.0
 Next approved objective: v0.3.1 — MLB Statcast Data Foundation
@@ -89,7 +89,7 @@ Do not build a universal sports-model abstraction prematurely. Sport-specific pr
 
 ## 7. v0.3.1 — MLB Statcast Data Foundation (approved next objective)
 
-**Status:** Approved next at the roadmap/objective level. The detailed implementation plan still requires a separate inspection/planning stage and ChatGPT review before coding begins.
+**Status:** Approved next at the roadmap/objective level. The Stage 1 implementation-architecture inspection was reviewed and approved by ChatGPT; Stage 2 implementation is complete on feature/v0.3.1-mlb-statcast-data-foundation, awaiting ChatGPT review and merge.
 
 **Goal:** Obtain, normalize, provenance-tag, and locally snapshot trustworthy historical MLB/Statcast data for later modeling.
 

@@ -53,6 +53,7 @@ Completed foundation (v0.1.8.x – v0.3.0):
 - v0.2.11: pure sport/market capability profile primitives — MarketCapabilityValidationError, normalize_sport/league/market_type/selection_type, build_market_capability, build_sport_market_profile (src/market_capability.py)
 - v0.2.12: pure MLB capability profile seed — 15 declared MLB markets built on v0.2.11 (src/mlb_capability.py)
 - v0.3.0: Candidate Evaluation Contract — validate_candidate_evaluation_record(), the canonical whole-record validator; candidate_ranking.py delegates to it (src/candidate_evaluation.py; docs/CANDIDATE_EVALUATION_CONTRACT.md)
+- v0.3.1: MLB Statcast Data Foundation — manual-CSV-only historical MLB Statcast ingestion (no automated Baseball Savant/MLB access), RSB-owned normalized pitch-level contract, and immutable raw/normalized/manifest snapshots with SHA-256 provenance (src/mlb/statcast_import.py, statcast_normalize.py, statcast_snapshot.py; MLB data root in src/paths.py via RSB_MLB_DATA_DIR). Implemented on feature/v0.3.1-mlb-statcast-data-foundation, awaiting ChatGPT review/merge. No plate-appearance aggregation, modeling, or MLB runtime wiring — that is v0.3.2+ scope.
 
 Long-term product goal:
 The final workflow should not require manual match/team/player/odds input. The user should specify sport, date range/week, markets, sportsbooks, and number of legs. The system should automatically collect fixtures, odds, props, stats, injuries, lineups, build features, run simulations/models, compare EV, rank singles/parlays, and recommend the best sportsbook for each card.

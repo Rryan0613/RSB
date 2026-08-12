@@ -7,3 +7,4 @@ models/
 data/worldcup_ai.db
 data/input/claude_review.json
 data/output/*.json
+data/mlb/

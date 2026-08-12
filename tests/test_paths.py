@@ -132,3 +132,54 @@ def test_rsb_results_path_env_overrides_results_path(tmp_path, monkeypatch):
     override = tmp_path / "override_results.json"
     monkeypatch.setenv("RSB_RESULTS_PATH", str(override))
     assert get_results_path() == override
+
+
+# ---------------------------------------------------------------------------
+# MLB data root
+# ---------------------------------------------------------------------------
+
+
+def test_data_mlb_dir_is_absolute_and_under_data_dir():
+    assert paths.DATA_MLB_DIR.is_absolute()
+    assert paths.DATA_MLB_DIR == ROOT / "data" / "mlb"
+
+
+def test_default_mlb_data_dir_returns_data_mlb_dir():
+    assert paths.get_mlb_data_dir() == paths.DATA_MLB_DIR
+
+
+def test_rsb_mlb_data_dir_env_overrides_mlb_data_dir(tmp_path, monkeypatch):
+    override = tmp_path / "override_mlb"
+    monkeypatch.setenv("RSB_MLB_DATA_DIR", str(override))
+    assert paths.get_mlb_data_dir() == override
+
+
+def test_mlb_manual_input_dir_default():
+    assert paths.get_mlb_manual_input_dir() == paths.DATA_MLB_DIR / "manual_input"
+
+
+def test_mlb_raw_statcast_dir_default():
+    assert paths.get_mlb_raw_statcast_dir() == paths.DATA_MLB_DIR / "raw" / "statcast"
+
+
+def test_mlb_normalized_statcast_pitch_dir_default():
+    assert (
+        paths.get_mlb_normalized_statcast_pitch_dir()
+        == paths.DATA_MLB_DIR / "normalized" / "statcast_pitch"
+    )
+
+
+def test_mlb_snapshot_dir_default():
+    assert paths.get_mlb_snapshot_dir() == paths.DATA_MLB_DIR / "snapshots"
+
+
+def test_mlb_subdirs_follow_rsb_mlb_data_dir_override(tmp_path, monkeypatch):
+    override = tmp_path / "override_mlb"
+    monkeypatch.setenv("RSB_MLB_DATA_DIR", str(override))
+    assert paths.get_mlb_manual_input_dir() == override / "manual_input"
+    assert paths.get_mlb_raw_statcast_dir() == override / "raw" / "statcast"
+    assert (
+        paths.get_mlb_normalized_statcast_pitch_dir()
+        == override / "normalized" / "statcast_pitch"
+    )
+    assert paths.get_mlb_snapshot_dir() == override / "snapshots"

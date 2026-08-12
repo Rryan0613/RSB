@@ -44,16 +44,27 @@ window.RSB_PROGRESS = {
     note: "The v0.3.0 release merge commit is 20f34ab (PR #43, implementation commit 151010b). The roadmap-sync work was based on main at 280527f after PR #44, the post-v0.3.0 docs/dashboard synchronization. This baseline card describes the verified v0.3.0 release; it does not include any work described under Active workspace below."
   },
 
-  activeWorkspace: null,
+  activeWorkspace: {
+    branch: "feature/v0.3.1-mlb-statcast-data-foundation",
+    version: "v0.3.1",
+    title: "MLB Statcast Data Foundation",
+    status: "Implemented, awaiting review",
+    summary: "v0.3.1 implementation is complete on this feature branch, built to the ChatGPT-approved Stage 1 architecture, plus two focused pre-commit correction passes: (1) structured declared_query dict, fixed source_provider=\"baseball_savant\", snapshot-level argument validation on zero-row snapshots, microsecond-precision ingestion timestamps, tightened source_downloaded_at timezone handling, and a 32-to-33 source-column documentation fix; (2) split EXPECTED_SOURCE_COLUMNS (all 33 mapped columns) from REQUIRED_SOURCE_COLUMNS (the 17 backing mandatory normalized fields) so CSVs missing an optional column (e.g. launch_angle, sv_id) import successfully and normalize that field to null instead of failing closed. Adds src/mlb/ (statcast_import.py, statcast_normalize.py, statcast_snapshot.py) implementing manual-CSV-only Statcast ingestion, RSB-owned pitch-level normalization, and immutable raw/normalized/manifest snapshots; adds MLB data-root path helpers (get_mlb_data_dir() and subdir helpers, RSB_MLB_DATA_DIR override) to paths.py. No automated Baseball Savant/MLB access, no World Cup runtime or database changes, no new dependency, no plate-appearance aggregation or probability/model work. Not yet merged to main — awaiting ChatGPT review and Ryan's git validation/commit/PR workflow.",
+    evidence: {
+      fullSuiteResult: "2156 passed (1938 baseline + 218 new v0.3.1 tests), 0 failed, 0 skipped",
+      newModules: ["src/mlb/__init__.py", "src/mlb/statcast_import.py", "src/mlb/statcast_normalize.py", "src/mlb/statcast_snapshot.py"],
+      newTestFiles: ["tests/test_statcast_import.py", "tests/test_statcast_normalize.py", "tests/test_statcast_snapshot.py", "tests/fixtures/mlb/statcast_sample.csv"]
+    }
+  },
 
   currentGate: {
     version: "v0.3.1",
     title: "MLB Statcast Data Foundation",
-    status: "Approved next",
+    status: "Implemented, awaiting review",
     owner: "ChatGPT (roadmap/gatekeeper) + Ryan (approval)",
-    summary: "v0.3.1 — MLB Statcast Data Foundation is approved as the next roadmap objective at the objective level (2026-08-11 roadmap reassessment), superseding the earlier Legacy Candidate Translation / Canonical Odds Snapshot Reconciliation / Candidate Persistence Framework / First MLB Runtime Skeleton sequence. Implementation has not started. Its detailed implementation architecture is not yet approved — a separate v0.3.1 inspection/planning stage must be reviewed and approved before coding begins. v0.3.2 MLB Plate-Appearance Dataset & Rate Foundation, v0.3.3 MLB Plate-Appearance Probability Baseline, and v0.3.4 MLB Walk-Forward Evaluation & Calibration remain a directional planning batch, not independently approved implementation scopes. See docs/MLB_NBA_ROADMAP.md.",
+    summary: "v0.3.1 — MLB Statcast Data Foundation is approved as the next roadmap objective at the objective level (2026-08-11 roadmap reassessment), superseding the earlier Legacy Candidate Translation / Canonical Odds Snapshot Reconciliation / Candidate Persistence Framework / First MLB Runtime Skeleton sequence. The Stage 1 implementation-architecture inspection was reviewed and approved by ChatGPT, and Stage 2 implementation is now complete on feature/v0.3.1-mlb-statcast-data-foundation (see activeWorkspace) — not yet merged. v0.3.2 MLB Plate-Appearance Dataset & Rate Foundation, v0.3.3 MLB Plate-Appearance Probability Baseline, and v0.3.4 MLB Walk-Forward Evaluation & Calibration remain a directional planning batch, not independently approved implementation scopes. See docs/MLB_NBA_ROADMAP.md.",
     nextActions: [
-      "Inspect and approve the v0.3.1 MLB Statcast Data Foundation implementation plan before coding."
+      "ChatGPT reviews the v0.3.1 implementation review package; Ryan runs git validation, commit, push, and PR once approved."
     ]
   },
 

@@ -2218,3 +2218,154 @@ Handoff hygiene note (not part of this chore):
 * Both handoff files have grown past 2,000 lines with substantial duplication between
   them. That is a real future documentation-hygiene item but is explicitly out of scope
   for this roadmap-synchronization chore and was not touched here.
+
+═══════════════════════════════════════════════════════
+2026-08-11 v0.3.1 STAGE 2 IMPLEMENTATION COMPLETE
+═══════════════════════════════════════════════════════
+
+This section records the Stage 2 implementation of v0.3.1 — MLB Statcast Data
+Foundation, on branch feature/v0.3.1-mlb-statcast-data-foundation, after the Stage 1
+inspection/planning architecture was reviewed and approved by ChatGPT. Implementation
+was performed by Claude under explicit authorization; no scope beyond the approved
+Stage 1 architecture (with its stated corrections) was added.
+
+What was built:
+* src/mlb/statcast_import.py — load_statcast_export(): reads a local, already-downloaded
+  Baseball Savant CSV export. No network access of any kind. Validates file
+  existence/readability/UTF-8 decoding/CSV header structure. The adapter recognizes 33
+  mapped provider columns; mandatory normalized fields require their backing source
+  headers (17 required columns), while the 16 provider-nullable mapped columns may be
+  entirely absent from the header and normalize to null. Unmapped columns are tolerated
+  and preserved only in the raw layer. Preserves raw bytes and source row order exactly.
+  Records operator-declared declared_query/requested_date_range honestly; does not infer
+  source_downloaded_at from filesystem metadata (it is None unless the operator
+  explicitly supplies it).
+* src/mlb/statcast_normalize.py — normalize_statcast_row()/normalize_statcast_snapshot():
+  builds the RSB-owned normalized pitch-level contract from the approved source field
+  mapping. Fail-closed for required identity/chronology/game-context/pre-pitch fields;
+  legitimately provider-nullable fields normalize to None. Baseball sanity bounds:
+  balls 0-3, strikes 0-2, outs 0-2, inning >= 1. rsb_pitch_id is a deterministic SHA-256
+  of (source_game_id, at_bat_number, pitch_number), validated unique per snapshot.
+  pa_event_raw is an unvalidated passthrough of the provider's events column — no
+  pa_terminal derivation (v0.3.2 scope, not touched). No venue field.
+* src/mlb/statcast_snapshot.py — create_statcast_snapshot(): orchestrates
+  import -> normalize -> persist. Writes raw .csv.gz (gzip of exact original bytes),
+  normalized .jsonl.gz (gzip of canonical deterministic JSONL), and a .manifest.json with
+  full provenance, ingestion timing, schema version, row counts, and SHA-256 checksums
+  computed over uncompressed bytes before gzip. snapshot_id is
+  <ingestion_timestamp>_<raw_sha256_prefix12> — content-and-ingestion-event-aware, per
+  the Stage 1 correction: re-ingesting identical raw bytes later produces the same raw
+  hash but a different snapshot_id and therefore a different normalized_content_sha256.
+  Existing snapshot artifacts are never overwritten (StatcastSnapshotError); overlapping
+  snapshots coexist.
+* src/paths.py — added DATA_MLB_DIR, get_mlb_data_dir() (RSB_MLB_DATA_DIR override,
+  matching the existing RSB_*_PATH convention), and get_mlb_manual_input_dir() /
+  get_mlb_raw_statcast_dir() / get_mlb_normalized_statcast_pitch_dir() /
+  get_mlb_snapshot_dir() for the approved data/mlb/{manual_input,raw/statcast,
+  normalized/statcast_pitch,snapshots} layout. data/mlb/ added to .gitignore.
+
+Tests: 218 new tests across tests/test_statcast_import.py, tests/test_statcast_normalize.py,
+tests/test_statcast_snapshot.py, and MLB path-override additions to tests/test_paths.py,
+plus a tiny synthetic fixture at tests/fixtures/mlb/statcast_sample.csv. Full suite: 2156
+passed (1938 baseline + 218 new), 0 failures, 0 skips, zero network access required.
+
+Dependencies: zero added. CSV parsing uses the Python standard library csv module, not
+pandas — pandas was already a project dependency but was judged unnecessary for this
+narrow, fully-controlled ingestion layer.
+
+Architecture-boundary confirmation: no MLB/Baseball Savant network access anywhere in
+src/mlb/; no World Cup runtime or database.py changes; data/worldcup_ai.db untouched; no
+plate-appearance aggregation, terminal-PA taxonomy, feature engineering, probability
+generation, modeling, calibration, simulation, sportsbook odds, or candidate EV/ranking
+work; AST-based tests confirm the new MLB modules do not import run_slate, database,
+data_quality, or market_selector.
+
+Deviations from the approved Stage 1 plan: none identified during implementation.
+
+Status: IMPLEMENTATION COMPLETE — READY FOR CHATGPT REVIEW. Not committed, pushed, or
+merged by Claude — Ryan retains git validation/commit/push/PR per the standing workflow.
+docs/progress/progress-data.js activeWorkspace and currentGate were updated to reflect
+this state; repositoryBaseline/readiness/modules remain the merged-main snapshot pending
+actual merge (per the workflow's post-merge verification step).
+
+═══════════════════════════════════════════════════════
+2026-08-11 v0.3.1 FOCUSED PRE-COMMIT CORRECTION PASS
+═══════════════════════════════════════════════════════
+
+ChatGPT's independent implementation review of v0.3.1 found the overall architecture
+sound (correct branch, clean diff, zero dependency changes, no network access, no World
+Cup integration, 2117 passed) but flagged six contained pre-commit correctness/provenance
+issues. Claude applied focused corrections only, on the same feature branch, without
+broadening scope, adding dependencies, or touching PA/model/simulation work:
+
+1. declared_query restored to structured, JSON-serializable dict (string keys; rejects
+   non-serializable values rather than silently converting) instead of free-form prose,
+   matching the approved Stage 1 manifest contract. Empty dict is explicitly valid
+   ("no additional filters beyond requested_date_range").
+2. source_provider is now fixed to "baseball_savant" (SOURCE_PROVIDER constant) — no
+   longer an overridable argument on create_statcast_snapshot() — so the manifest and
+   every normalized row always agree on source_provider by construction.
+3. normalize_statcast_snapshot() now validates snapshot_id/source_provider/
+   requested_date_range before iterating any rows, so a zero-row snapshot still enforces
+   these invariants (previously partially delegated to per-row validation, which a
+   zero-row snapshot would never reach).
+4. Ingestion timestamps (ingestion_started_at/ingestion_completed_at, and therefore the
+   snapshot_id timestamp component) now carry microsecond precision, preventing
+   same-second collisions.
+5. source_downloaded_at, when supplied, now requires an explicit UTC offset or "Z"
+   (naive datetimes rejected) and is normalized to a canonical UTC "...Z" string.
+6. Corrected a documentation error: the source field mapping is 33 provider columns, not
+   32 as originally stated (the field contract itself was never wrong, only the doc count).
+
+Tests: 29 new/changed tests added across the three v0.3.1 test files covering all six
+corrections. Full suite after the correction pass: 2146 passed (1938 baseline + 208 new
+v0.3.1 tests total), 0 failures, 0 skips.
+
+Deviations from the correction-pass instructions: none.
+
+Status: CORRECTION PASS COMPLETE — READY FOR CHATGPT REVIEW. Not committed, pushed, or
+merged by Claude.
+
+═══════════════════════════════════════════════════════
+2026-08-11 v0.3.1 FINAL OPTIONAL-HEADER CORRECTION
+═══════════════════════════════════════════════════════
+
+ChatGPT's final implementation review found the pre-commit correction pass otherwise
+approved (correct branch, clean diff, zero dependency changes, no network access, no
+World Cup scope leakage, no stale 32-column documentation, 2146 passed) but flagged one
+remaining contract violation: statcast_import.py's CSV header check required all 33
+mapped provider columns to be present, incorrectly treating fields statcast_normalize.py
+classifies as provider-nullable/optional as mandatory source headers. A CSV genuinely
+missing an optional column such as launch_angle, hit_distance, pitch_name, or sv_id was
+being rejected at import time instead of normalizing that field to null.
+
+Correction: split EXPECTED_SOURCE_COLUMNS (all 33 mapped columns the adapter recognizes)
+from a new REQUIRED_SOURCE_COLUMNS (the 17 columns backing
+statcast_normalize.REQUIRED_NORMALIZED_FIELDS). REQUIRED_SOURCE_COLUMNS is derived
+directly from statcast_normalize.SOURCE_FIELD_MAPPING and REQUIRED_NORMALIZED_FIELDS
+(statcast_import.py now imports these) rather than duplicating a second, independently
+maintained field classification. Only REQUIRED_SOURCE_COLUMNS must be present in the CSV
+header; the other 16 provider-nullable mapped columns may be entirely absent, in which
+case the corresponding row value is treated as missing (same as csv.DictReader's
+row.get() behavior for an absent key) and normalizes to None downstream — no change was
+needed in the row-normalization logic itself, since it already used dict.get() and
+already treated None the same as a blank string for nullable fields. The raw layer is
+unaffected: exact supplied file bytes are still preserved unchanged regardless of which
+optional columns are present.
+
+Tests: corrected the test that expected a missing launch_angle header to fail (it now
+expects success), and added 10 new tests proving: a genuinely required column missing
+still fails with the column named in the error; several optional columns missing
+individually still succeed; the normalized record contains the corresponding key with
+value None when its source header is entirely absent (proven against a row that DOES
+have a non-blank value for that field when the column is present, to show the None comes
+from column absence, not blank value); multiple simultaneous missing optional headers
+all normalize to None while unaffected required fields remain correct; and a CSV
+containing only the 17 required headers (all 16 optional headers absent) still imports
+and normalizes successfully. Full suite: 2156 passed (1938 baseline + 218 new v0.3.1
+tests total), 0 failures, 0 skips.
+
+Deviations: none.
+
+Status: FINAL CORRECTION COMPLETE — READY FOR CHATGPT REVIEW. Not committed, pushed, or
+merged by Claude.
