@@ -167,8 +167,14 @@ Going forward, RSB should plan 2-4 versions ahead at a time instead of one versi
   remotely. v0.3.3 — MLB Plate-Appearance Probability Baseline is now the next roadmap
   objective. Implementation architecture is not approved — a separate v0.3.3
   inspection/planning stage is required before coding begins.
+* UPDATE 2026-08-18: v0.3.3 — MLB Plate-Appearance Probability Baseline is COMPLETE.
+  PR #50, merge commit dcab8bb, implementation commit 72c4a8f, 2380 tests passed (73 new
+  probability tests). Feature branch feature/v0.3.3-mlb-pa-probability-baseline deleted
+  locally and remotely. v0.3.4 — MLB Walk-Forward Evaluation & Calibration is now the
+  next roadmap objective. Implementation architecture is not approved — a separate
+  v0.3.4 inspection/planning stage is required before coding begins.
 
-FUTURE MLB OPERATIONAL REQUIREMENTS (directional, NOT v0.3.2 scope) — full detail lives
+FUTURE MLB OPERATIONAL REQUIREMENTS (directional, NOT v0.3.4 scope) — full detail lives
 in docs/MLB_NBA_ROADMAP.md §16, "Future MLB operational requirements". Preserved here as
 a pointer so these are not lost across sessions:
   A. On-run historical synchronization/completeness at run time (last-complete-coverage
@@ -191,34 +197,33 @@ a pointer so these are not lost across sessions:
 CURRENT VERIFIED STATE
 ═══════════════════════════════════════════════════════
 
-Version:        0.3.2
-Project verified state (main): main is at merge commit b876eb1 (PR #48), based on
+Version:        0.3.3
+Project verified state (main): main is at merge commit dcab8bb (PR #50), based on
                 Ryan's post-merge verification. main is synchronized with origin/main.
-Tests passing:  2307
+Tests passing:  2380
 
-Current task branch: chore/update-handoffs-after-v0.3.2 — a temporary docs/ops
+Current task branch: chore/update-handoffs-after-v0.3.3 — a temporary docs/ops
                 handoff-update branch only, not the permanent verified project branch.
                 This branch does not change the verified project state above, which
-                reflects main after the v0.3.2 merge.
+                reflects main after the v0.3.3 merge.
 
 Preceding architecture chore: PR #42 — Legacy Pipeline Architecture Audit (merged,
                 docs-only, no version bump) — merged immediately before v0.3.0.
 
-Latest version PR:      PR #48 — v0.3.2 MLB Plate-Appearance Dataset & Rate Foundation
+Latest version PR:      PR #50 — v0.3.3 MLB Plate-Appearance Probability Baseline
                         — merged
-                        https://github.com/Rryan0613/RSB/pull/48
-Merge commit:           b876eb1
-Implementation commit:  9212c93
-Real-Savant correction commit: ba3ce68
-Feature branch:         feature/v0.3.2-mlb-plate-appearance-dataset-rate-foundation
+                        https://github.com/Rryan0613/RSB/pull/50
+Merge commit:           dcab8bb
+Implementation commit:  72c4a8f
+Feature branch:         feature/v0.3.3-mlb-pa-probability-baseline
                         (deleted locally and remotely)
-PR #48 post-merge verification: complete — 2307 tests passed
+PR #50 post-merge verification: complete — 2380 tests passed; GitHub CI passed
 
-Latest completed version: v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation
-Next target:    v0.3.3 — MLB Plate-Appearance Probability Baseline, the next
+Latest completed version: v0.3.3 — MLB Plate-Appearance Probability Baseline
+Next target:    v0.3.4 — MLB Walk-Forward Evaluation & Calibration, the next
                 roadmap objective (directional). See docs/MLB_NBA_ROADMAP.md.
 Next status:    Not started. Implementation architecture not yet approved — a separate
-                v0.3.3 inspection/planning stage requires ChatGPT review and approval
+                v0.3.4 inspection/planning stage requires ChatGPT review and approval
                 before coding begins. Do not create a new version branch until that
                 plan is approved.
 
@@ -249,6 +254,7 @@ v0.2.12   MLB Capability Profile Seed                                        ←
 v0.3.0    Candidate Evaluation Contract                                      ← COMPLETE
 v0.3.1    MLB Statcast Data Foundation                                       ← COMPLETE
 v0.3.2    MLB Plate-Appearance Dataset & Rate Foundation                     ← COMPLETE
+v0.3.3    MLB Plate-Appearance Probability Baseline                          ← COMPLETE
 
 ── Near-term v0.2.x ──────────────────────────────────────────
 
@@ -371,12 +377,22 @@ v0.3.2    MLB Plate-Appearance Dataset & Rate Foundation                     ←
           commit ba3ce68, 2307 tests passed. Feature branch deleted locally and
           remotely. See docs/MLB_NBA_ROADMAP.md and the v0.3.2 SUMMARY section below.
 
-v0.3.3    MLB Plate-Appearance Probability Baseline                      ← NEXT (DIRECTIONAL)
-v0.3.4    MLB Walk-Forward Evaluation & Calibration                      ← DIRECTIONAL
-          Directional planning batch, not independently approved implementation scopes.
-          v0.3.3 is the next roadmap objective but requires its own inspection/planning
-          stage and ChatGPT approval before coding begins. Version numbers/titles may be
-          reassessed after preceding versions teach us more. See docs/MLB_NBA_ROADMAP.md.
+v0.3.3    MLB Plate-Appearance Probability Baseline                          ← COMPLETE
+          Merged 2026-08-18. Turned v0.3.2's leakage-safe prior batter/pitcher/league
+          outcome counts into one coherent categorical distribution over the 12
+          RATE_CATEGORIES, per docs/MLB_PLATE_APPEARANCE_PROBABILITY_CONTRACT.md.
+          PR #50, merge commit dcab8bb, implementation commit 72c4a8f, 2380 tests
+          passed. Feature branch deleted locally and remotely. See
+          docs/MLB_NBA_ROADMAP.md and the v0.3.3 SUMMARY section below.
+
+v0.3.4    MLB Walk-Forward Evaluation & Calibration                      ← NEXT (DIRECTIONAL)
+          Directional planning batch, not an independently approved implementation
+          scope. v0.3.4 is the next roadmap objective but requires its own
+          inspection/planning stage and ChatGPT approval before coding begins. Version
+          numbers/titles may be reassessed after preceding versions teach us more. See
+          docs/MLB_NBA_ROADMAP.md §10 for the considerations recorded during v0.3.3
+          (intersection-sample comparison, scorable-target selection, provisional
+          hyperparameters, matchup overconfidence, intentional_walk visibility).
 
 v0.2.x    Controlled staking / Kelly primitives (possible, later)
           Kelly treated as stake-sizing math only, not recommendation logic.
@@ -737,6 +753,10 @@ that claim with verified settled results.
 RECENT COMPLETED PRs
 ═══════════════════════════════════════════════════════
 
+PR #50:
+v0.3.3 MLB Plate-Appearance Probability Baseline
+https://github.com/Rryan0613/RSB/pull/50
+
 PR #48:
 v0.3.2 MLB Plate-Appearance Dataset & Rate Foundation
 https://github.com/Rryan0613/RSB/pull/48
@@ -878,7 +898,130 @@ v0.1.9.0 backtest report output, build_backtest_report
 https://github.com/Rryan0613/RSB/pull/9
 
 ═══════════════════════════════════════════════════════
-v0.3.2 SUMMARY — LATEST COMPLETED VERSION
+v0.3.3 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.3.3 added the MLB plate-appearance probability baseline: it turns v0.3.2's
+leakage-safe prior batter/pitcher/league outcome counts into one coherent categorical
+probability distribution per plate appearance, per the new
+docs/MLB_PLATE_APPEARANCE_PROBABILITY_CONTRACT.md.
+
+Files added:
+
+* docs/MLB_PLATE_APPEARANCE_PROBABILITY_CONTRACT.md
+* src/mlb/plate_appearance_probability.py
+* tests/test_plate_appearance_probability.py
+
+Files modified:
+
+* src/mlb/__init__.py
+
+Behavior summary:
+
+* Four selectable methods in MODEL_METHODS: league_only, batter_shrinkage,
+  pitcher_shrinkage, matchup_combination — steps 1-4 of the transparent baseline
+  progression the roadmap anticipated. Step 5 (an ML challenger) remains future work and
+  is not scheduled.
+* league_only is the league categorical baseline smoothed toward uniform:
+  L[k] = (c_L[k] + alpha/K) / (n_L + alpha), K = len(RATE_CATEGORIES) = 12. alpha > 0
+  guarantees strict positivity for every category, so there is no epsilon clamping
+  anywhere in the module, and n_L == 0 reduces algebraically to uniform with no separate
+  fallback branch.
+* batter_shrinkage and pitcher_shrinkage share one entity-agnostic implementation
+  (shrink_entity_distribution): the closed-form Dirichlet(kappa_e * L) posterior mean
+  p_e[k] = (c_e[k] + kappa_e * L[k]) / (n_e + kappa_e). Normalization is automatic, not
+  imposed. n_e == 0 yields exactly L, so unseen entities need no special case; tiny
+  samples degrade smoothly and no minimum-sample threshold exists.
+* matchup_combination is a multiplicative relative-likelihood combination
+  r[k] = b[k] * q[k] / L[k], normalized, computed in log space with max-subtraction for
+  numerical stability. It is equivalent to classical log5 in the binary case and is
+  explicitly NOT claimed to be the uniquely canonical K-category generalization.
+* One coherent distribution over the 12 RATE_CATEGORIES (reused verbatim from v0.3.2,
+  never redefined). Every probability is finite, strictly positive, and <= 1; the sum is
+  validated to 1 within 1e-9 and never silently renormalized.
+* intentional_walk is its own categorical outcome, never merged into walk. Sparse IBB
+  counts are handled by the same shrinkage as every other category — there is no bespoke
+  IBB logic in the module.
+* Leakage boundary is enforced by field set, not by trusting function bodies:
+  _extract_prior_context strips each record to a fixed whitelist before any math runs.
+  pa_status, pa_outcome_detailed, pa_outcome_category, and terminal_pa_event_raw are
+  excluded — a predictor must never condition on how the PA resolved, nor on whether it
+  resolved at all. prior_*_outcome_rates are also excluded, since this module re-derives
+  smoothed rates from raw counts.
+* Completion status is NOT a gate: an incomplete or truncated_pa PA still receives a
+  well-defined pre-PA distribution. Selecting which records carry a scorable categorical
+  target is v0.3.4 evaluation work.
+* Pitcher attribution IS a gate: with pitcher_rate_eligible == False, pitcher_shrinkage
+  and matchup_combination raise PitcherAttributionUnavailableError (a subclass of the
+  module error, so a broad except still catches it). The terminal pitcher_id is also
+  WITHHELD (emitted as None) on league_only/batter_shrinkage records for those PAs,
+  because that identity was unknowable before the PA began. pitcher_rate_eligible is
+  retained as retrospective metadata; supported_methods_for() lets callers select
+  records up front instead of using exceptions for control flow.
+* Provisional hyperparameters, deliberately NOT empirically optimized:
+  league_prior_strength = 1.0, batter_prior_strength = 100.0,
+  pitcher_prior_strength = 100.0. All three are explicit keyword arguments, and every
+  output record carries the strengths actually used plus model_config_version, so two
+  artifacts sharing a method label can never be silently incomparable.
+* Output is a plain dict shaped by PROBABILITY_FIELD_ORDER, built by
+  build_pa_probability_distribution (method is a required keyword argument with no
+  default, so the most complex method can never be selected by accident) and checked by
+  validate_pa_probability_distribution — the same build-and-validate pattern as v0.3.0
+  and v0.3.2. Canonical key ordering is a builder guarantee for bit-reproducible
+  serialization and float summation, not a condition of validity.
+* Deterministic and pure: all iteration goes through the RATE_CATEGORIES tuple,
+  math.fsum is used for probability sums, there is no shared or global state, and no
+  function mutates its inputs.
+* Package-root API is build_pa_probability_distribution, supported_methods_for, and
+  validate_pa_probability_distribution, plus error types and model constants. The Level
+  1-3 estimator functions stay importable from mlb.plate_appearance_probability but are
+  deliberately NOT package-root API — they take a prior_context that only the private
+  _extract_prior_context can legitimately produce.
+* data/worldcup_ai.db, src/database.py, and the World Cup runtime are unchanged.
+
+Tests:
+
+* tests/test_plate_appearance_probability.py — 73 new probability-model tests
+* Full local test result after merge: 2380 passed, 0 failed, 0 skipped
+* GitHub CI passed
+
+Implementation commit: 72c4a8f
+Merge commit: dcab8bb (PR #50)
+
+v0.3.3 intentionally did not add: walk-forward evaluation, Brier score, log loss, or
+calibration; empirical tuning of the prior strengths; per-category prior strengths; a
+persisted probability artifact or manifest; a PA-start-pitcher prior contract;
+handedness/platoon splits; situational conditioning on base-out state, score, or inning;
+park factors or opponent adjustment; an ML challenger model; simulation,
+PA-opportunity/lineup modeling, or market projection; sportsbook odds/EV/ranking; MLB
+runtime orchestration; a prediction-time (upcoming-PA) input contract; World Cup
+changes; or NBA changes. See docs/MLB_PLATE_APPEARANCE_PROBABILITY_CONTRACT.md §10 and
+docs/MLB_NBA_ROADMAP.md for the v0.3.4+ directional sequence.
+
+Future points recorded during v0.3.3 (directional; none approved or scheduled):
+
+* v0.3.4 model-vs-model comparison should use an intersection sample so competing
+  methods share one evaluation denominator, since pitcher-dependent methods exclude
+  pitcher_rate_eligible == False PAs. Coverage should be reported separately.
+* The multiplicative matchup baseline can compound same-direction batter/pitcher
+  deviations and become overconfident. Measure that through calibration rather than
+  assuming it is good or bad.
+* intentional_walk's highly situational nature should stay visible in outcome-level
+  evaluation rather than being hidden by merging it with ordinary walks.
+* A PA-start-pitcher prior contract could recover pitcher-dependent coverage for
+  mid-PA-substitution PAs (source_pitcher_ids[0] already IS the PA-start pitcher; only
+  the pitcher-prior keying is missing). It is a v0.3.2-LAYER contract change. Not
+  scheduled.
+* A prediction-time / upcoming-PA input contract is a named architectural gap between
+  historical evaluation and operational prediction. Not scheduled.
+* A PA-opportunity / lineup / game-sequencing model is required between per-PA
+  probabilities and player game-level markets (hits, total bases, home runs). Not
+  scheduled.
+* Handedness/platoon splits are a strong future challenger-feature candidate, but are
+  NOT assigned to v0.3.4 or any other version.
+
+═══════════════════════════════════════════════════════
+v0.3.2 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.3.2 added a leakage-safe MLB plate-appearance (PA) dataset and prior batter/pitcher/
