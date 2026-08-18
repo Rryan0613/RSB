@@ -48,6 +48,22 @@ from .plate_appearance_snapshot import (
     create_plate_appearance_dataset,
     serialize_plate_appearance_records,
 )
+from .plate_appearance_probability import (
+    DEFAULT_BATTER_PRIOR_STRENGTH,
+    DEFAULT_LEAGUE_PRIOR_STRENGTH,
+    DEFAULT_PITCHER_PRIOR_STRENGTH,
+    MODEL_METHODS,
+    PITCHER_DEPENDENT_METHODS,
+    PLATE_APPEARANCE_PROBABILITY_SCHEMA_VERSION,
+    PROBABILITY_FIELD_ORDER,
+    PROBABILITY_MODEL_CONFIG_VERSION,
+    PROBABILITY_SUM_TOLERANCE,
+    PitcherAttributionUnavailableError,
+    PlateAppearanceProbabilityValidationError,
+    build_pa_probability_distribution,
+    supported_methods_for,
+    validate_pa_probability_distribution,
+)
 
 __all__ = [
     "EXPECTED_SOURCE_COLUMNS",
@@ -88,4 +104,18 @@ __all__ = [
     "build_derived_dataset_id",
     "create_plate_appearance_dataset",
     "serialize_plate_appearance_records",
+    "DEFAULT_BATTER_PRIOR_STRENGTH",
+    "DEFAULT_LEAGUE_PRIOR_STRENGTH",
+    "DEFAULT_PITCHER_PRIOR_STRENGTH",
+    "MODEL_METHODS",
+    "PITCHER_DEPENDENT_METHODS",
+    "PLATE_APPEARANCE_PROBABILITY_SCHEMA_VERSION",
+    "PROBABILITY_FIELD_ORDER",
+    "PROBABILITY_MODEL_CONFIG_VERSION",
+    "PROBABILITY_SUM_TOLERANCE",
+    "PitcherAttributionUnavailableError",
+    "PlateAppearanceProbabilityValidationError",
+    "build_pa_probability_distribution",
+    "supported_methods_for",
+    "validate_pa_probability_distribution",
 ]
