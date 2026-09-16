@@ -1,6 +1,6 @@
 window.RSB_PROGRESS = {
   schemaVersion: "2.0.0",
-  lastVerifiedAt: "2026-08-18",
+  lastVerifiedAt: "2026-09-16",
 
   sourceOfTruth: [
     "Handoffs/ChatGpt_Handoff.txt",
@@ -9,14 +9,15 @@ window.RSB_PROGRESS = {
     "docs/CANDIDATE_EVALUATION_CONTRACT.md (merged, PR #43)",
     "docs/MLB_PLATE_APPEARANCE_CONTRACT.md (merged, PR #48)",
     "docs/MLB_PLATE_APPEARANCE_PROBABILITY_CONTRACT.md (merged, PR #50)",
-    "docs/MLB_NBA_ROADMAP.md (current MLB/NBA roadmap; updated through v0.3.3)"
+    "docs/MLB_PLATE_APPEARANCE_EVALUATION_CONTRACT.md (merged, PR #52)",
+    "docs/MLB_NBA_ROADMAP.md (current MLB/NBA roadmap; updated through v0.3.4)"
   ],
 
   project: {
     name: "RSB",
     subtitle: "Disciplined sportsbook analytics and +EV simulation research project",
     repository: "https://github.com/Rryan0613/RSB",
-    productFocus: "Long-term target: MLB and NBA singles, PASS always a valid result. Today: pure decision-contract primitives plus a historical MLB Statcast data foundation, a plate-appearance dataset/rate foundation, and an uncalibrated per-plate-appearance probability baseline — no sport runtime is wired to them yet, and probability quality has not been measured. See Readiness."
+    productFocus: "Long-term target: MLB and NBA singles, PASS always a valid result. Today: pure decision-contract primitives plus a historical MLB Statcast data foundation, a plate-appearance dataset/rate foundation, an uncalibrated per-plate-appearance probability baseline, and a walk-forward evaluation/calibration-measurement layer for it. No sport runtime is wired to any of it. v0.3.4 built the capability to measure probability quality; it has not been run on real historical data, so no MLB method or configuration has been empirically selected. See Readiness."
   },
 
   statusLegend: [
@@ -31,8 +32,8 @@ window.RSB_PROGRESS = {
 
   repositoryBaseline: {
     label: "Repository baseline (merged, verified)",
-    latestMergedVersion: "v0.3.3",
-    latestMergedVersionTitle: "MLB Plate-Appearance Probability Baseline",
+    latestMergedVersion: "v0.3.4",
+    latestMergedVersionTitle: "MLB Walk-Forward Evaluation & Calibration Measurement",
     latestMergedVersionStatus: "Verified complete",
     latestMergedArchitectureChore: {
       title: "Legacy Pipeline Architecture Audit",
@@ -40,24 +41,27 @@ window.RSB_PROGRESS = {
       note: "Read-only architecture audit reconciling the legacy World Cup runtime against the pure-primitives candidate contract. No source, config, schema, test, or CI changes were made by this chore — it is documentation only, not a version bump. Merged immediately before v0.3.0."
     },
     releaseEvidence: {
-      prNumber: 50,
-      mergeCommit: "dcab8bb",
-      testCount: 2380,
-      note: "Implementation commit 72c4a8f; 73 new probability-model tests; GitHub CI passed."
+      prNumber: 52,
+      mergeCommit: "624673d",
+      testCount: 2629,
+      note: "Implementation commit 9ec05cd; 249 new tests (73 calibration, 176 evaluation)."
     },
-    note: "The v0.3.3 release merge commit is dcab8bb (PR #50, implementation commit 72c4a8f). main is synchronized with origin/main; feature/v0.3.3-mlb-pa-probability-baseline was deleted locally and remotely after merge. This baseline card describes the verified v0.3.3 release. There is no active workspace beyond this baseline as of the post-v0.3.3 documentation sync."
+    note: "The v0.3.4 release merge commit is 624673d (PR #52, implementation commit 9ec05cd). main is synchronized with origin/main; feature/v0.3.4-mlb-walk-forward-evaluation-calibration was deleted locally and remotely after merge. This baseline card describes the verified v0.3.4 release. There is no active workspace beyond this baseline as of the post-v0.3.4 documentation sync."
   },
 
   activeWorkspace: null,
 
   currentGate: {
-    version: "v0.3.4",
-    title: "MLB Walk-Forward Evaluation & Calibration",
+    version: "No version assigned",
+    title: "Empirical evaluation of v0.3.4 on real historical MLB data",
     status: "Active planning",
     owner: "ChatGPT (roadmap/gatekeeper) + Ryan (approval)",
-    summary: "v0.3.3 — MLB Plate-Appearance Probability Baseline merged to main (PR #50, merge commit dcab8bb, implementation commit 72c4a8f, 2380 tests passed, GitHub CI passed). v0.3.4 — MLB Walk-Forward Evaluation & Calibration is now the next roadmap objective at the directional level — it was already recorded as a directional planning-batch entry. It is not yet implementation-approved: a separate v0.3.4 inspection/planning stage requires ChatGPT review of the detailed implementation architecture before coding begins. No v0.3.4 implementation has started. Considerations recorded during v0.3.3 for that planning stage: compare methods on an intersection sample so competing methods share one evaluation denominator (pitcher-dependent methods exclude pitcher_rate_eligible = false PAs) and report coverage separately; only completed PAs carry a scorable categorical target; v0.3.3 hyperparameters are provisional and should be evaluated chronologically rather than silently changed; the multiplicative matchup baseline may be overconfident and should be measured through calibration; intentional_walk should stay visible at the outcome level. See docs/MLB_NBA_ROADMAP.md §10.",
+    summary: "v0.3.4 \u2014 MLB Walk-Forward Evaluation & Calibration Measurement merged to main (PR #52, merge commit 624673d, implementation commit 9ec05cd, 2629 tests passed). No next version is assigned, invented, or pre-approved \u2014 there is no v0.3.5 scope. v0.3.4 establishes the EVALUATION CAPABILITY only: it measures, it never adjusts a probability or selects a configuration, and it has not been run on a real historical dataset. RSB has therefore NOT empirically selected a winning MLB probability method or hyperparameter configuration, and the MLB engine is not live-ready. The immediate technical next step is empirical, not a version: apply the now-frozen v0.3.4 evaluator to real historical MLB data. Operational context: the existing Baseball Savant snapshot currently ends at 2026-08-11 and that historical cutoff must be preserved rather than overwritten; a later/current Savant snapshot can be created separately, after which 2026-08-12 onward can serve as a natural out-of-sample / holdout period; model and configuration choices must be frozen before that holdout is inspected, because inspecting holdout metrics and then changing the compared configurations on that basis contaminates the holdout for confirmatory use; future records may update chronological priors normally during walk-forward evaluation, but future outcomes must never leak backward. The exact next implementation version and scope remain unapproved until that empirical evaluation is inspected and separately planned. See docs/MLB_NBA_ROADMAP.md \u00a715.",
     nextActions: [
-      "Perform the v0.3.4 inspection/planning stage for MLB Walk-Forward Evaluation & Calibration; ChatGPT must review and approve the detailed implementation plan before Claude begins coding."
+      "Apply the now-frozen v0.3.4 evaluator to real historical MLB data; preserve the existing Baseball Savant snapshot ending 2026-08-11 rather than overwriting it.",
+      "Create any later/current Savant snapshot separately, so 2026-08-12 onward can serve as a natural out-of-sample / holdout period.",
+      "Freeze model and configuration choices before inspecting that holdout; inspecting holdout metrics and then changing the compared configurations contaminates it for confirmatory use.",
+      "Do not invent or pre-approve a v0.3.5. The next implementation version and scope stay unapproved until the empirical evaluation is inspected and separately planned by ChatGPT."
     ]
   },
 
@@ -90,7 +94,7 @@ window.RSB_PROGRESS = {
     {
       area: "MLB operational runtime",
       status: "Not built",
-      note: "MLB has a capability profile seed (declared market shapes), a v0.3.1 manual-CSV-only historical Statcast data foundation (src/mlb/statcast_import.py, statcast_normalize.py, statcast_snapshot.py) that produces immutable, provenance-tagged raw/normalized pitch-level snapshots, a v0.3.2 plate-appearance dataset/rate foundation built on top of it (src/mlb/plate_appearance.py, plate_appearance_rates.py, plate_appearance_snapshot.py) that derives leakage-safe PA records and prior batter/pitcher/league empirical outcome rates, and a v0.3.3 per-PA probability baseline built on top of that (src/mlb/plate_appearance_probability.py). MLB still has no walk-forward evaluation or calibration pipeline, no simulation, no PA-opportunity/lineup model, no prediction-time (upcoming-PA) input contract, no sportsbook bridge, and no operational MLB runtime/orchestrator. None of the capability profile, the Statcast data foundation, the PA dataset/rate foundation, or the probability baseline is an operational runtime."
+      note: "MLB has a capability profile seed (declared market shapes), a v0.3.1 manual-CSV-only historical Statcast data foundation (src/mlb/statcast_import.py, statcast_normalize.py, statcast_snapshot.py) that produces immutable, provenance-tagged raw/normalized pitch-level snapshots, a v0.3.2 plate-appearance dataset/rate foundation built on top of it (src/mlb/plate_appearance.py, plate_appearance_rates.py, plate_appearance_snapshot.py) that derives leakage-safe PA records and prior batter/pitcher/league empirical outcome rates, a v0.3.3 per-PA probability baseline built on top of that (src/mlb/plate_appearance_probability.py), and a v0.3.4 walk-forward evaluation and calibration-measurement layer for that baseline (src/mlb/plate_appearance_evaluation.py, src/calibration.py). MLB still has no simulation, no PA-opportunity/lineup model, no prediction-time (upcoming-PA) input contract, no sportsbook bridge, and no operational MLB runtime/orchestrator. None of the capability profile, the Statcast data foundation, the PA dataset/rate foundation, the probability baseline, or the evaluation layer is an operational runtime."
     },
     {
       area: "NBA operational runtime",
@@ -100,12 +104,12 @@ window.RSB_PROGRESS = {
     {
       area: "Probability generation",
       status: "Frozen legacy",
-      note: "The World Cup legacy runtime has a working sklearn model (model.py) and a Monte Carlo simulator (simulator.py), both frozen for new feature development. The pure-primitives pipeline has no probability generator by design — candidate_ev.py takes model_probability as caller-supplied input only. MLB gained a v0.3.3 per-plate-appearance categorical probability baseline (src/mlb/plate_appearance_probability.py), but it scores history retrospectively, is uncalibrated and unevaluated, has no prediction-time (upcoming-PA) input contract, and produces no market-level probabilities — so it is not an MLB probability engine in the operational sense. No NBA probability engine exists at any layer."
+      note: "The World Cup legacy runtime has a working sklearn model (model.py) and a Monte Carlo simulator (simulator.py), both frozen for new feature development. The pure-primitives pipeline has no probability generator by design — candidate_ev.py takes model_probability as caller-supplied input only. MLB gained a v0.3.3 per-plate-appearance categorical probability baseline (src/mlb/plate_appearance_probability.py). v0.3.4 added the capability to evaluate it, but that capability has not been run on real historical data, so the baseline remains uncalibrated and empirically unvalidated. It scores history retrospectively, has no prediction-time (upcoming-PA) input contract, and produces no market-level probabilities — so it is not an MLB probability engine in the operational sense. No NBA probability engine exists at any layer."
     },
     {
       area: "Calibration and backtesting",
       status: "Not built",
-      note: "No MLB or NBA calibration/backtesting pipeline exists. Reusable statistical primitives are merged (backtest.py, backtest_report.py, backtest_review.py) and World Cup results ingestion works (update_results.py writes into the results table, and historical_replay.py can read predictions/results back out) — but no code in src/ currently chains historical_replay.py's output into backtest_report.py/backtest_review.py; each is callable but must be invoked by hand today. This is a partially-wired, World Cup-only capability, not an MLB/NBA operational pipeline. v0.3.3 now produces MLB per-PA probabilities that brier_score_multiclass/log_loss_multiclass could consume directly, but nothing scores them yet — that is the directional v0.3.4 objective."
+      note: "No MLB or NBA operational calibration/backtesting pipeline exists. Reusable statistical primitives are merged (backtest.py, backtest_report.py, backtest_review.py, and now the generic calibration.py) and World Cup results ingestion works (update_results.py writes into the results table, and historical_replay.py can read predictions/results back out) — but no code in src/ currently chains historical_replay.py's output into backtest_report.py/backtest_review.py; each is callable but must be invoked by hand today. v0.3.4 added a real MLB walk-forward evaluator (plate_appearance_evaluation.py) that scores v0.3.3's per-PA probabilities with multiclass log loss and Brier score and measures calibration. It is a pure, caller-invoked measurement layer with no persistence, no database access, and no orchestration — and, critically, it has not been run on a real historical dataset, so it has produced no evidence about MLB probability quality and has selected no configuration. The area therefore stays Not built at the operational-pipeline level."
     },
     {
       area: "Operational reporting",
@@ -150,7 +154,7 @@ window.RSB_PROGRESS = {
       status: "Not built",
       description: "No MLB or NBA runtime exists today — shown here as intended direction only, never as a built system. When a future runtime is built, it must own its own sport-specific data, features, probability model, simulation assumptions, calibration, and market support, while reusing the shared infrastructure named below. It will be new, independent orchestration — not an extension of run_slate.py.",
       nodes: [
-        { title: "MLB runtime (not built)", detail: "Would need orchestration, calibrated probabilities, and a prediction-time input path built on top of the existing MLB capability profile seed, the v0.3.1 Statcast data foundation, the v0.3.2 plate-appearance dataset/rate foundation, and the v0.3.3 per-PA probability baseline." },
+        { title: "MLB runtime (not built)", detail: "Would need orchestration, calibrated probabilities, and a prediction-time input path built on top of the existing MLB capability profile seed, the v0.3.1 Statcast data foundation, the v0.3.2 plate-appearance dataset/rate foundation, the v0.3.3 per-PA probability baseline, and the v0.3.4 evaluation layer. v0.3.4 measures probability quality; it does not calibrate, orchestrate, or predict." },
         { title: "NBA runtime (not built)", detail: "Would need a capability profile, data ingestion, features, and probability model — none exist yet." },
         { title: "Shared infrastructure it would reuse", detail: "Identity, odds-snapshot, EV/edge math, candidate evaluation, ranking, and reporting primitives from the foundation lane above." }
       ]
@@ -187,6 +191,7 @@ window.RSB_PROGRESS = {
     { name: "backtest.py", area: "Reusable backtesting primitive", status: "Verified complete", purpose: "Pure statistical primitives: Brier score, log loss, accuracy. Fully sport-agnostic. Its only current importer is backtest_report.py; it is not called by any runtime, legacy or pure." },
     { name: "backtest_report.py", area: "Reusable backtesting primitive", status: "Verified complete", purpose: "Aggregates replay rows into a backtest report. Duck-typed, no sport coupling. Its own docstring documents that rows must already be loaded by the caller (e.g. via historical_replay.load_replay_rows()); no file in src/ currently calls it — fully unwired, not part of any automated World Cup pipeline." },
     { name: "backtest_review.py", area: "Reusable backtesting primitive", status: "Verified complete", purpose: "Classifies a backtest report into strong/mixed/weak/insufficient_data. Pure thresholds, sport-agnostic. No file in src/ currently calls it — fully unwired." },
+    { name: "calibration.py", area: "Reusable backtesting primitive", status: "Verified complete", purpose: "Generic, sport-agnostic and model-agnostic calibration primitives: reliability-bin construction (build_reliability_bins) plus expected calibration error and maximum calibration error. No MLB coupling and no new dependency. Its only current importer is mlb/plate_appearance_evaluation.py." },
     { name: "config_validation.py", area: "Legacy-connected reusable primitive", status: "Verified complete", purpose: "Dependency-free JSON config loading and schema validation. Imported directly by 3 legacy runtime modules (run_slate.py, odds_collector.py, market_selector.py). No pure-primitives module imports it — legacy-connected, not shared between both architectural systems." },
     { name: "paths.py", area: "Legacy-connected reusable primitive", status: "Verified complete", purpose: "Central absolute path resolution and environment-variable overrides. Imported directly by 9 legacy runtime modules (run_slate.py, database.py, model.py, market_selector.py, odds_collector.py, check_odds_provider.py, update_results.py, historical_replay.py, import_claude_review.py). No pure-primitives module imports it — broadly used across the legacy runtime, but not shared between both architectural systems." },
 
@@ -211,7 +216,9 @@ window.RSB_PROGRESS = {
     { name: "mlb/plate_appearance_rates.py", area: "MLB data foundation", status: "Verified complete", purpose: "Attaches leakage-safe prior batter/pitcher/league empirical outcome counts and rates to every plate appearance, using a same-day cross-game leakage policy so two games on the same date can never inform each other's prior state. Raw empirical counting only — no shrinkage, priors, or modeling." },
     { name: "mlb/plate_appearance_snapshot.py", area: "MLB data foundation", status: "Verified complete", purpose: "Validates strict single-source-snapshot provenance against a v0.3.1 manifest before deriving anything, then persists a deterministic, content-derived plate-appearance dataset artifact (derived_dataset_id is not timestamp-salted, unlike v0.3.1's snapshot_id)." },
 
-    { name: "mlb/plate_appearance_probability.py", area: "MLB probability baseline", status: "Verified complete", purpose: "Turns v0.3.2's prior batter/pitcher/league counts into one coherent categorical distribution over the 12 RATE_CATEGORIES via four methods: a league baseline smoothed toward uniform, batter and pitcher Dirichlet shrinkage toward that league baseline, and a multiplicative matchup combination (log5-equivalent in the binary case) computed in log space. intentional_walk stays its own outcome. Probabilities are strictly positive and validated to sum to 1 within 1e-9, never silently renormalized. Leakage is prevented by stripping inputs to a field whitelist that withholds the realized outcome and pa_status; pitcher-dependent methods fail closed and the terminal pitcher_id is withheld when pitcher_rate_eligible is false. Prior strengths (1.0 / 100.0 / 100.0) are provisional, not empirically optimized, and recorded on every output record. Retrospective scoring only — no evaluation, calibration, persistence, or runtime wiring." }
+    { name: "mlb/plate_appearance_probability.py", area: "MLB probability baseline", status: "Verified complete", purpose: "Turns v0.3.2's prior batter/pitcher/league counts into one coherent categorical distribution over the 12 RATE_CATEGORIES via four methods: a league baseline smoothed toward uniform, batter and pitcher Dirichlet shrinkage toward that league baseline, and a multiplicative matchup combination (log5-equivalent in the binary case) computed in log space. intentional_walk stays its own outcome. Probabilities are strictly positive and validated to sum to 1 within 1e-9, never silently renormalized. Leakage is prevented by stripping inputs to a field whitelist that withholds the realized outcome and pa_status; pitcher-dependent methods fail closed and the terminal pitcher_id is withheld when pitcher_rate_eligible is false. Prior strengths (1.0 / 100.0 / 100.0) are provisional, not empirically optimized, and recorded on every output record. Retrospective scoring only — no evaluation, calibration, persistence, or runtime wiring." },
+
+    { name: "mlb/plate_appearance_evaluation.py", area: "MLB evaluation layer", status: "Verified complete", purpose: "Walk-forward measurement of v0.3.3's per-PA probabilities against realized outcomes. Multiclass log loss and Brier score are the primary comparison metrics (reusing backtest.py unchanged, with epsilon = math.nextafter(0.0, 1.0) supplied at the call site so the default clamp cannot silently floor an overconfident configuration); accuracy is descriptive only. Adds top-label reliability/ECE/MCE, 12 classwise one-vs-rest calibration diagnostics (always all twelve, keeping intentional_walk visible), and an unweighted macro classwise ECE summary. Comparative sampling is intersection-only, so every configuration shares one denominator; coverage and per-method support are reported separately and never folded into a metric. Supports optional tuning/holdout date splits (measurement-only, no search loop and no automatic selection) and calendar-month diagnostics instead of a burn-in filter. Deterministic: content-derived input_content_sha256 and config_id, no timestamp and no clock. Validates supplied prior state for coherence against attach_prior_outcome_rates before scoring, and validates its own report for strict self-consistency. Only pa_status = completed PAs are scorable; walk-forward safety is inherited from v0.3.2, not reimplemented; bin edges and sample basis are fixed constants, not caller arguments. Measurement only — it never adjusts a probability, selects a configuration, or changes a v0.3.3 default, and it has not been run on a real historical dataset, so it has produced no evidence yet." }
   ],
 
   milestones: [
@@ -241,7 +248,8 @@ window.RSB_PROGRESS = {
     { version: "v0.3.0", title: "Candidate Evaluation Contract", status: "Verified complete", group: "Architecture" },
     { version: "v0.3.1", title: "MLB Statcast data foundation", status: "Verified complete", group: "MLB data" },
     { version: "v0.3.2", title: "MLB plate-appearance dataset and rate foundation", status: "Verified complete", group: "MLB data" },
-    { version: "v0.3.3", title: "MLB plate-appearance probability baseline", status: "Verified complete", group: "MLB modeling" }
+    { version: "v0.3.3", title: "MLB plate-appearance probability baseline", status: "Verified complete", group: "MLB modeling" },
+    { version: "v0.3.4", title: "MLB walk-forward evaluation and calibration measurement", status: "Verified complete", group: "MLB modeling" }
   ],
 
   roadmap: [
@@ -284,15 +292,15 @@ window.RSB_PROGRESS = {
       phase: 6,
       title: "Probability generation engines",
       status: "Directional future",
-      description: "Generate RSB probabilities for supported MLB and NBA markets. v0.3.3 — MLB Plate-Appearance Probability Baseline delivered a verified completed MLB deliverable within this phase: one coherent, leakage-safe categorical distribution per plate appearance, with league/batter/pitcher/matchup methods (merged, PR #50). It is retrospective and uncalibrated, produces no market-level probabilities, and reaching player game-level markets additionally requires a PA-opportunity/lineup/game-sequencing model that does not exist. No NBA probability engine exists at any layer. The phase-level status therefore stays directional future.",
+      description: "Generate RSB probabilities for supported MLB and NBA markets. v0.3.3 — MLB Plate-Appearance Probability Baseline delivered a verified completed MLB deliverable within this phase: one coherent, leakage-safe categorical distribution per plate appearance, with league/batter/pitcher/matchup methods (merged, PR #50). It is retrospective and uncalibrated, produces no market-level probabilities, and reaching player game-level markets additionally requires a PA-opportunity/lineup/game-sequencing model that does not exist. v0.3.4 added the capability to evaluate it but has not been run on real data, so the baseline is still empirically unvalidated. No NBA probability engine exists at any layer. The phase-level status therefore stays directional future.",
       deliverables: ["MLB plate-appearance probability baseline (v0.3.3, merged)", "Baseline models", "Simulation or ensemble models", "Probability calibration"]
     },
     {
       phase: 7,
       title: "Backtesting, calibration, and CLV",
       status: "Directional future",
-      description: "Measure whether stated probabilities are accurate and whether prices beat the closing market, for MLB/NBA. Reusable backtesting/statistical primitives already exist (Verified complete). The World Cup system separately has working results ingestion and historical replay capability. Those pieces are not currently chained into one automated calibration/backtesting pipeline for World Cup, and no operational MLB or NBA calibration/backtesting system exists at all. Next roadmap objective for MLB: v0.3.4 — MLB Walk-Forward Evaluation & Calibration, still a directional planning batch entry, not yet an independently approved implementation scope. v0.3.4 also carries an open design question on whether to generalize historical_replay.py's read-only pattern or build a separate MLB-specific replay component, plus the comparison considerations recorded during v0.3.3 — see docs/MLB_NBA_ROADMAP.md §10.",
-      deliverables: ["Brier score", "Log loss", "Calibration buckets", "Closing-line value"]
+      description: "Measure whether stated probabilities are accurate and whether prices beat the closing market, for MLB/NBA. Reusable backtesting/statistical primitives already exist (Verified complete), now including the generic calibration primitives in src/calibration.py. The World Cup system separately has working results ingestion and historical replay capability, not currently chained into one automated pipeline. v0.3.4 — MLB Walk-Forward Evaluation & Calibration Measurement delivered a verified completed MLB deliverable within this phase: a pure walk-forward evaluator with multiclass log loss and Brier scoring, top-label and 12 classwise calibration diagnostics, intersection-only comparative sampling, separate coverage reporting, and tuning/holdout splits (merged, PR #52). Its v0.3.3-era open design question was resolved by neither generalizing nor duplicating historical_replay.py: the evaluator is pure and consumes caller-supplied records. The phase-level status stays directional future because this is a measurement capability, not an operational pipeline — it has not been run on a real historical dataset, so no MLB probability method or configuration has been empirically selected, and closing-line value does not exist at any layer.",
+      deliverables: ["MLB walk-forward evaluation and calibration measurement (v0.3.4, merged)", "Brier score", "Log loss", "Calibration buckets", "Closing-line value"]
     },
     {
       phase: 8,

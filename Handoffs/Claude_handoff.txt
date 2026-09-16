@@ -173,8 +173,20 @@ Going forward, RSB should plan 2-4 versions ahead at a time instead of one versi
   locally and remotely. v0.3.4 — MLB Walk-Forward Evaluation & Calibration is now the
   next roadmap objective. Implementation architecture is not approved — a separate
   v0.3.4 inspection/planning stage is required before coding begins.
+* UPDATE 2026-09-16: v0.3.4 — MLB Walk-Forward Evaluation & Calibration Measurement is
+  COMPLETE. PR #52, merge commit 624673d, implementation commit 9ec05cd, 2629 tests
+  passed (249 new tests: 73 calibration, 176 evaluation). Feature branch
+  feature/v0.3.4-mlb-walk-forward-evaluation-calibration deleted locally and remotely.
+  NO next version is assigned, invented, or pre-approved — there is no v0.3.5 scope.
+  v0.3.4 establishes the EVALUATION CAPABILITY only; it is not evidence that any MLB
+  method or hyperparameter configuration is superior, and the MLB engine is not
+  live-ready. The immediate next step is EMPIRICAL, not a version: run the now-frozen
+  v0.3.4 evaluator on real historical MLB data. The exact next implementation
+  version/scope remains unapproved until that empirical evaluation is inspected and
+  separately planned.
 
-FUTURE MLB OPERATIONAL REQUIREMENTS (directional, NOT v0.3.4 scope) — full detail lives
+FUTURE MLB OPERATIONAL REQUIREMENTS (directional, NOT delivered by v0.3.4, NOT assigned to
+any version) — full detail lives
 in docs/MLB_NBA_ROADMAP.md §16, "Future MLB operational requirements". Preserved here as
 a pointer so these are not lost across sessions:
   A. On-run historical synchronization/completeness at run time (last-complete-coverage
@@ -197,35 +209,53 @@ a pointer so these are not lost across sessions:
 CURRENT VERIFIED STATE
 ═══════════════════════════════════════════════════════
 
-Version:        0.3.3
-Project verified state (main): main is at merge commit dcab8bb (PR #50), based on
+Version:        0.3.4
+Project verified state (main): main is at merge commit 624673d (PR #52), based on
                 Ryan's post-merge verification. main is synchronized with origin/main.
-Tests passing:  2380
+Tests passing:  2629
 
-Current task branch: chore/update-handoffs-after-v0.3.3 — a temporary docs/ops
+Current task branch: chore/update-handoffs-after-v0.3.4 — a temporary docs/ops
                 handoff-update branch only, not the permanent verified project branch.
                 This branch does not change the verified project state above, which
-                reflects main after the v0.3.3 merge.
+                reflects main after the v0.3.4 merge.
 
 Preceding architecture chore: PR #42 — Legacy Pipeline Architecture Audit (merged,
                 docs-only, no version bump) — merged immediately before v0.3.0.
 
-Latest version PR:      PR #50 — v0.3.3 MLB Plate-Appearance Probability Baseline
+Latest version PR:      PR #52 — v0.3.4 MLB Walk-Forward Evaluation & Calibration
                         — merged
-                        https://github.com/Rryan0613/RSB/pull/50
-Merge commit:           dcab8bb
-Implementation commit:  72c4a8f
-Feature branch:         feature/v0.3.3-mlb-pa-probability-baseline
+                        https://github.com/Rryan0613/RSB/pull/52
+Merge commit:           624673d
+Implementation commit:  9ec05cd
+Feature branch:         feature/v0.3.4-mlb-walk-forward-evaluation-calibration
                         (deleted locally and remotely)
-PR #50 post-merge verification: complete — 2380 tests passed; GitHub CI passed
+PR #52 post-merge verification: complete — 2629 tests passed
 
-Latest completed version: v0.3.3 — MLB Plate-Appearance Probability Baseline
-Next target:    v0.3.4 — MLB Walk-Forward Evaluation & Calibration, the next
-                roadmap objective (directional). See docs/MLB_NBA_ROADMAP.md.
-Next status:    Not started. Implementation architecture not yet approved — a separate
-                v0.3.4 inspection/planning stage requires ChatGPT review and approval
-                before coding begins. Do not create a new version branch until that
-                plan is approved.
+Latest completed version: v0.3.4 — MLB Walk-Forward Evaluation & Calibration
+                Measurement
+Next target:    NONE. No next version is assigned, invented, or pre-approved. There is
+                no v0.3.5 scope. Do not invent one.
+Truth boundary: v0.3.4 establishes the EVALUATION CAPABILITY. It is not evidence that
+                any MLB probability method or hyperparameter configuration is superior,
+                and the MLB engine is NOT live-ready. RSB still has no MLB simulation,
+                no prediction-time/upcoming-PA input contract, no lineup /
+                PA-opportunity model, no sportsbook bridge, and no MLB runtime or
+                orchestrator.
+Next step:      EMPIRICAL, not a version — use the now-frozen v0.3.4 evaluator on real
+                historical MLB data. The existing Baseball Savant snapshot currently
+                ends at 2026-08-11; PRESERVE that historical cutoff rather than
+                overwriting it. A later/current Savant snapshot can be created
+                separately, after which 2026-08-12 onward can serve as a natural
+                out-of-sample / holdout period. Model/config choices must be FROZEN
+                before that holdout is inspected — inspecting holdout metrics and then
+                changing the compared configurations on that basis contaminates the
+                holdout for confirmatory use and requires a fresh, untouched future
+                holdout. Future records may update chronological priors normally during
+                walk-forward evaluation; future OUTCOMES must never leak backward.
+Next status:    The exact next implementation version/scope remains unapproved until
+                that empirical evaluation is inspected and separately planned. Do not
+                create a new version branch until a plan is reviewed and approved by
+                ChatGPT. See docs/MLB_NBA_ROADMAP.md §15.
 
 If strict verification is needed, ask the user to run:
 
@@ -255,6 +285,7 @@ v0.3.0    Candidate Evaluation Contract                                      ←
 v0.3.1    MLB Statcast Data Foundation                                       ← COMPLETE
 v0.3.2    MLB Plate-Appearance Dataset & Rate Foundation                     ← COMPLETE
 v0.3.3    MLB Plate-Appearance Probability Baseline                          ← COMPLETE
+v0.3.4    MLB Walk-Forward Evaluation & Calibration Measurement               ← COMPLETE
 
 ── Near-term v0.2.x ──────────────────────────────────────────
 
@@ -385,14 +416,28 @@ v0.3.3    MLB Plate-Appearance Probability Baseline                          ←
           passed. Feature branch deleted locally and remotely. See
           docs/MLB_NBA_ROADMAP.md and the v0.3.3 SUMMARY section below.
 
-v0.3.4    MLB Walk-Forward Evaluation & Calibration                      ← NEXT (DIRECTIONAL)
-          Directional planning batch, not an independently approved implementation
-          scope. v0.3.4 is the next roadmap objective but requires its own
-          inspection/planning stage and ChatGPT approval before coding begins. Version
-          numbers/titles may be reassessed after preceding versions teach us more. See
-          docs/MLB_NBA_ROADMAP.md §10 for the considerations recorded during v0.3.3
-          (intersection-sample comparison, scorable-target selection, provisional
-          hyperparameters, matchup overconfidence, intentional_walk visibility).
+v0.3.4    MLB Walk-Forward Evaluation & Calibration Measurement               ← COMPLETE
+          Merged 2026-09-16. Added generic calibration primitives (src/calibration.py)
+          and MLB walk-forward PA evaluation (src/mlb/plate_appearance_evaluation.py):
+          multiclass log loss and Brier measurement, top-label reliability/ECE/MCE, 12
+          classwise calibration diagnostics, a macro classwise ECE diagnostic,
+          intersection-only comparative sampling, method-support/coverage reporting,
+          tuning/holdout date split support, calendar-month diagnostics, deterministic
+          input/config/report identity, prior-state coherence validation, and strict
+          report self-consistency validation, per
+          docs/MLB_PLATE_APPEARANCE_EVALUATION_CONTRACT.md. PR #52, merge commit
+          624673d, implementation commit 9ec05cd, 2629 tests passed (249 new). Feature
+          branch deleted locally and remotely. See the v0.3.4 SUMMARY section below.
+
+          TRUTH BOUNDARY: v0.3.4 establishes the EVALUATION CAPABILITY. It is NOT
+          evidence that one MLB method or hyperparameter configuration is superior. No
+          real historical dataset has been evaluated. The MLB engine is not live-ready.
+
+NEXT      No next version is assigned, invented, or pre-approved. There is no v0.3.5
+          scope. The immediate technical next step is EMPIRICAL, not a version: run the
+          now-frozen v0.3.4 evaluator on real historical MLB data. See
+          docs/MLB_NBA_ROADMAP.md §15 and the CURRENT VERIFIED STATE section above for
+          the Savant-snapshot / holdout operational context.
 
 v0.2.x    Controlled staking / Kelly primitives (possible, later)
           Kelly treated as stake-sizing math only, not recommendation logic.
@@ -753,6 +798,10 @@ that claim with verified settled results.
 RECENT COMPLETED PRs
 ═══════════════════════════════════════════════════════
 
+PR #52:
+v0.3.4 MLB Walk-Forward Evaluation & Calibration
+https://github.com/Rryan0613/RSB/pull/52
+
 PR #50:
 v0.3.3 MLB Plate-Appearance Probability Baseline
 https://github.com/Rryan0613/RSB/pull/50
@@ -898,7 +947,198 @@ v0.1.9.0 backtest report output, build_backtest_report
 https://github.com/Rryan0613/RSB/pull/9
 
 ═══════════════════════════════════════════════════════
-v0.3.3 SUMMARY — LATEST COMPLETED VERSION
+v0.3.4 SUMMARY — LATEST COMPLETED VERSION
+═══════════════════════════════════════════════════════
+
+v0.3.4 added the MLB walk-forward plate-appearance evaluation and calibration
+measurement layer: it measures how well v0.3.3's per-plate-appearance categorical
+probabilities score and calibrate against realized outcomes, per the new
+docs/MLB_PLATE_APPEARANCE_EVALUATION_CONTRACT.md architecture document.
+
+Files added:
+
+* docs/MLB_PLATE_APPEARANCE_EVALUATION_CONTRACT.md
+* src/calibration.py
+* src/mlb/plate_appearance_evaluation.py
+* tests/test_calibration.py
+* tests/test_plate_appearance_evaluation.py
+
+Files modified:
+
+* src/mlb/__init__.py
+
+TRUTH BOUNDARY — READ THIS BEFORE SUMMARIZING v0.3.4 ANYWHERE:
+
+v0.3.4 establishes the EVALUATION CAPABILITY. It is NOT evidence. No real historical
+dataset has been evaluated. RSB has NOT empirically selected a winning MLB probability
+method or hyperparameter configuration, and the MLB engine is NOT live-ready. RSB still
+has no MLB simulation, no prediction-time/upcoming-PA input contract, no lineup /
+PA-opportunity model, no sportsbook bridge, and no MLB runtime/orchestrator.
+
+What shipped:
+
+* Generic calibration primitives (src/calibration.py) — sport-agnostic and
+  model-agnostic: reliability-bin construction (build_reliability_bins) plus expected
+  calibration error (ECE) and maximum calibration error (MCE). No MLB coupling, no new
+  dependency.
+* MLB walk-forward PA evaluation (src/mlb/plate_appearance_evaluation.py) — three
+  public entry points: build_evaluation_model_config, evaluate_pa_walk_forward, and
+  validate_pa_evaluation_report, plus PlateAppearanceEvaluationError, the public
+  constants, and the *_FIELD_ORDER tuples. Private helpers (coherence check,
+  canonicalization, sampling, windowing) are deliberately NOT package-root API.
+* Multiclass log loss and Brier measurement — the two PRIMARY model-comparison metrics,
+  reusing src/backtest.py's log_loss_multiclass and brier_score_multiclass UNCHANGED.
+  Log loss is called with epsilon = math.nextafter(0.0, 1.0) supplied at the call site,
+  so the default 1e-15 clamp cannot silently floor -log(p) and understate log loss for
+  exactly the overconfident configurations this version exists to detect. mean_brier_score
+  is the sum-of-squares form over all 12 categories (range [0, 2]), not divided by K.
+  accuracy is recorded as SECONDARY and descriptive only.
+* Top-label reliability / ECE / MCE — one curve on (max(p), actual == argmax(p)) pairs;
+  the direct test of overconfidence.
+* 12 classwise calibration diagnostics — one-vs-rest reliability curve, ECE, and MCE per
+  RATE_CATEGORIES member, always all twelve and never filtered. This is what keeps
+  intentional_walk visible as its own row rather than averaged into invisibility, and it
+  is how v0.3.3's flagged matchup-overconfidence risk becomes measurable per outcome. A
+  category with zero positive occurrences is still fully diagnosed, not returned as None.
+* A macro classwise ECE diagnostic — the UNWEIGHTED arithmetic mean of the 12 per-category
+  ECE values, recorded in the report's own notes as a weak summary statistic in this
+  outcome space and explicitly not a verdict.
+* Intersection-only comparative sampling — the scored sample is the set of completed PAs
+  that EVERY supplied model configuration natively supports, so competing configurations
+  always share one denominator. There is no sample-basis parameter and no per-method
+  denominator option, because permitting one would make cross-configuration numbers
+  silently incomparable. The resulting selection bias when a pitcher-dependent
+  configuration is present is documented, not hidden.
+* Method-support / coverage reporting — coverage is reported SEPARATELY and never folded
+  into a metric: input/completed/incomplete counts, pitcher eligibility counts,
+  intersection size, cold-start counts, date and calendar-month span, and method_support
+  (each method's natively supported completed-PA count). coverage_basis is
+  "normalized_pitch_represented_pa", inherited verbatim from v0.3.2.
+* Tuning / holdout date split support — split_date is MEASUREMENT-ONLY. None gives a
+  single "full" window; a supplied date gives independently aggregated "tuning"
+  (game_date < split_date) and "holdout" (game_date >= split_date) windows. A
+  hyperparameter sweep is simply N entries in model_configs: there is NO search loop, NO
+  optimizer, and NO automatic selection.
+* Calendar-month diagnostics — one descriptive scoring row per calendar month, ascending,
+  exposing cold-start distortion rather than introducing a caller-controlled burn-in
+  threshold. The breakdown never filters a record; month counts always sum to the window
+  total. Bucket size is not a parameter.
+* Deterministic input/config/report identity — content-derived input_content_sha256
+  (canonical chronological sort, records rebuilt against RATE_ENRICHED_FIELD_ORDER,
+  deterministic stdlib JSON with RECURSIVE key sorting, SHA-256) and content-derived
+  config_id (never timestamp-salted). The report carries NO timestamp and no clock is
+  consulted anywhere, so a report is a pure function of its inputs and repeated runs are
+  byte-identical. math.fsum is used for the aggregation introduced by this version.
+* Prior-state coherence validation — before anything is scored, the supplied enriched
+  history is projected back to PLATE_APPEARANCE_FIELD_ORDER, re-run through
+  attach_prior_outcome_rates, and all nine regenerated prior_* fields must match exactly.
+  The regenerated state is used ONLY for validation; scoring still consumes the supplied
+  records. This is prior-state coherence validation, NOT artifact-completeness
+  validation — tail truncation, omitted incomplete PAs, and some final-date omissions are
+  stated blind spots, each asserted by test.
+* Strict report self-consistency validation — validate_pa_evaluation_report is public and
+  fails closed on an internally INCONSISTENT report, not merely a misshapen one: stored
+  summary statistics are recomputed from the report's own contents, and counts must
+  reconcile across coverage, windows, categories, calibration bins, and calendar months.
+  It deliberately does not rescore the raw history, so it verifies self-consistency only.
+* docs/MLB_PLATE_APPEARANCE_EVALUATION_CONTRACT.md — the architecture document defining
+  the scorable-target rule, coherence validation, sampling/coverage semantics, the metric
+  hierarchy, calibration measurement, split/holdout semantics, output contract, failure
+  semantics, determinism, and the full non-goals list.
+
+Inherited, not reimplemented:
+
+* Walk-forward safety comes from v0.3.2's attach_prior_outcome_rates, which already
+  freezes counters at each game_date boundary. This module never re-derives priors,
+  maintains its own counters, or reimplements the temporal policy.
+* Because these are closed-form empirical estimators with no fitting step, walk-forward
+  evaluation needs NO refit loop — it is chronological consumption of already-prior state.
+* Temporal resolution is DATE-GRANULAR across games, not PA-granular: two games on the
+  same date never inform each other's prior state in either direction.
+* A PA is scorable if and only if pa_status == "completed". truncated_pa resolves to
+  incomplete and is never scorable. Completion status is read only at scoring time and
+  never flows backward into v0.3.3 generation.
+* Every scored number is produced through the public entry point
+  build_pa_probability_distribution(method=...), never by reaching through v0.3.3's
+  internal estimator functions.
+
+Fixed, not configurable:
+
+* Bin edges are module constants (PA_CLASSWISE_CALIBRATION_BIN_EDGES,
+  PA_TOP_LABEL_CALIBRATION_BIN_EDGES) with no bin_edges parameter, so no researcher can
+  try different bins until a model looks better. Both tuples are recorded in every report.
+  The two schemes differ deliberately: classwise edges skew hard toward zero, top-label
+  edges concentrate on 0.10-0.60 (the max of K probabilities summing to 1 cannot fall
+  below 1/K).
+* sample_basis is "intersection", recorded and not selectable. A future basis must bump
+  PA_EVALUATION_SCHEMA_VERSION.
+* The edge placements are a justified prior judgement about distribution shape, NOT
+  measurements RSB has taken.
+
+Tests:
+
+* tests/test_calibration.py — 73 new tests
+* tests/test_plate_appearance_evaluation.py — 176 new tests
+* 249 new tests total
+* Full local test result after merge: 2629 passed
+* GitHub CI: passed
+
+Implementation commit: 9ec05cd
+Merge commit: 624673d (PR #52)
+
+v0.3.4 intentionally did not add: any recalibration or probability adjustment (no Platt
+scaling, isotonic regression, temperature or Dirichlet scaling); automatic hyperparameter
+selection; any change to v0.3.3's prior-strength defaults or PROBABILITY_MODEL_CONFIG_VERSION;
+a persisted evaluation artifact, manifest, or path helper; a supported read-only loader for
+persisted plate-appearance datasets; database access; historical_replay.py reuse or
+generalization; changes to src/backtest.py or any existing MLB module's logic; a new
+dependency; user-configurable calibration bins, sample basis, burn-in threshold, or temporal
+bucket size; per-category prior strengths; situational conditioning on base-out state, score,
+or inning; handedness/platoon splits, park factors, or opponent adjustment; an ML challenger
+model; simulation, PA-opportunity/lineup/game-sequencing modeling, or market projection;
+sportsbook odds/EV/ranking; MLB runtime orchestration; a prediction-time (upcoming-PA) input
+contract; a PA-start-pitcher prior contract; changes to pyproject.toml,
+config/model_config.json, or CHANGELOG.md; World Cup changes; or NBA changes. See
+docs/MLB_PLATE_APPEARANCE_EVALUATION_CONTRACT.md §16.
+
+Resolved during v0.3.4:
+
+* The v0.3.3-era open design question — generalize historical_replay.py's read-only SQLite
+  replay pattern, or build a separate MLB-specific replay component — was resolved by doing
+  NEITHER. The evaluator is pure and consumes caller-supplied rate-enriched records.
+  src/historical_replay.py is unchanged and unreferenced by the MLB evaluator.
+
+Future points recorded during v0.3.4 (directional, NONE approved or scheduled):
+
+* A supported read-only loader for persisted PA datasets. create_plate_appearance_dataset
+  writes .jsonl.gz, but nothing in RSB reads it back, so evaluating a real persisted history
+  currently requires the operator to load the records. Deliberately deferred.
+* Project-version metadata drift: pyproject.toml, config/model_config.json, and CHANGELOG.md
+  have fallen behind the release version. This is KNOWN metadata drift, not a separate
+  semantic version axis, and belongs to its own dedicated maintenance chore. Do not
+  reinterpret config/model_config.json as a separate semantic version.
+* The v0.3.3 gaps remain unchanged and unassigned: PA-start-pitcher prior contract;
+  prediction-time (upcoming-PA) input contract; PA-opportunity/lineup/game-sequencing model;
+  handedness/platoon splits.
+
+Empirical next step recorded at v0.3.4 handoff time (NOT a version, NOT approved scope):
+
+* Use the now-frozen v0.3.4 evaluator on real historical MLB data.
+* The existing Baseball Savant snapshot currently ends at 2026-08-11. PRESERVE that
+  historical cutoff rather than overwriting it.
+* A later/current Savant snapshot can be created separately.
+* 2026-08-12 onward can then serve as a natural out-of-sample / holdout period.
+* Model/config choices must be FROZEN before that holdout is inspected. The contract states
+  the rule code cannot enforce: once holdout metrics have been inspected and the compared
+  configurations are then changed on the basis of those metrics, that holdout is contaminated
+  for confirmatory use and a fresh, untouched future holdout is required.
+* Future records may update chronological priors normally during walk-forward evaluation.
+  Future OUTCOMES must never leak backward.
+* The exact next implementation version/scope remains unapproved until that empirical
+  evaluation is inspected and separately planned. Do NOT invent or pre-approve a v0.3.5.
+
+═══════════════════════════════════════════════════════
+v0.3.3 SUMMARY — FOR REFERENCE
 ═══════════════════════════════════════════════════════
 
 v0.3.3 added the MLB plate-appearance probability baseline: it turns v0.3.2's

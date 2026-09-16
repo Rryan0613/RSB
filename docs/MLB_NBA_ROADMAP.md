@@ -1,10 +1,10 @@
 # MLB / NBA Roadmap
 
-Status: Approved roadmap direction. v0.3.1 — MLB Statcast Data Foundation, v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation, and v0.3.3 — MLB Plate-Appearance Probability Baseline are merged to main (v0.3.1: PR #46, merge commit 3ae353f, implementation commit 765b5ed, 2156 tests passed; v0.3.2: PR #48, merge commit b876eb1, implementation commit 9212c93, real-Savant correction commit ba3ce68, 2307 tests passed; v0.3.3: PR #50, merge commit dcab8bb, implementation commit 72c4a8f, 2380 tests passed; see Handoffs for detail). v0.3.4+ still require their own version-specific implementation-planning approval.
+Status: Approved roadmap direction. v0.3.1 — MLB Statcast Data Foundation, v0.3.2 — MLB Plate-Appearance Dataset & Rate Foundation, v0.3.3 — MLB Plate-Appearance Probability Baseline, and v0.3.4 — MLB Walk-Forward Evaluation & Calibration Measurement are merged to main (v0.3.1: PR #46, merge commit 3ae353f, implementation commit 765b5ed, 2156 tests passed; v0.3.2: PR #48, merge commit b876eb1, implementation commit 9212c93, real-Savant correction commit ba3ce68, 2307 tests passed; v0.3.3: PR #50, merge commit dcab8bb, implementation commit 72c4a8f, 2380 tests passed; v0.3.4: PR #52, merge commit 624673d, implementation commit 9ec05cd, 2629 tests passed; see Handoffs for detail). Every later version still requires its own version-specific implementation-planning approval.
 Date: 2026-08-11
-Last synchronized: 2026-08-18 — v0.3.3 merge verified.
-Current release baseline: v0.3.3
-Next roadmap objective (directional, not yet implementation-approved): v0.3.4 — MLB Walk-Forward Evaluation & Calibration
+Last synchronized: 2026-09-16 — v0.3.4 merge verified.
+Current release baseline: v0.3.4
+Next roadmap objective: none assigned. The immediate next step is empirical, not a version — apply the now-frozen v0.3.4 evaluator to real historical MLB data (see §15). No v0.3.5 exists, is invented here, or is pre-approved.
 
 This is a durable project-direction document, not an implementation spec. It records the roadmap decision made on 2026-08-11 and the reasoning behind it. It does not define any version's detailed schema, data contract, or code — those are separately scoped and approved at implementation-planning time for each version.
 
@@ -36,7 +36,7 @@ That missing middle is now RSB's critical path, and MLB is where RSB builds it f
 
 **Pure-primitives foundation** — shared candidate identity, odds-snapshot, evaluation, EV enrichment, ranking, reporting, settlement, backtest-metric, and sport/market capability infrastructure. Sport-agnostic by design, and architecturally separate from the World Cup runtime above the shared math leaf (`ev.py`, transitively `odds.py`). See `docs/CANDIDATE_EVALUATION_CONTRACT.md`.
 
-**MLB** — has a capability seed (`src/mlb_capability.py`), the v0.3.1 pitch-level Statcast historical data foundation, the v0.3.2 plate-appearance dataset/rate foundation, and the v0.3.3 plate-appearance probability baseline. That baseline is retrospective per-PA probability generation only: MLB still has no walk-forward evaluation or calibration, no simulation, no PA-opportunity/lineup model, no prediction-time (upcoming-PA) input contract, no sportsbook bridge, and no operational runtime/orchestrator.
+**MLB** — has a capability seed (`src/mlb_capability.py`), the v0.3.1 pitch-level Statcast historical data foundation, the v0.3.2 plate-appearance dataset/rate foundation, the v0.3.3 plate-appearance probability baseline, and the v0.3.4 walk-forward evaluation and calibration-measurement layer. All of it is retrospective. v0.3.4 establishes the *capability* to measure probability quality; it is not itself evidence, and no real historical dataset has been evaluated yet, so no MLB method or hyperparameter configuration has been empirically selected. MLB still has no simulation, no PA-opportunity/lineup model, no prediction-time (upcoming-PA) input contract, no sportsbook bridge, and no operational runtime/orchestrator. The MLB engine is not live-ready.
 
 **NBA** — no implementation exists at any layer today.
 
@@ -145,40 +145,48 @@ Step 5, a later ML challenger, remains future work and is not scheduled to any v
 - Batter and pitcher shrinkage share one entity-agnostic Dirichlet posterior-mean implementation; unseen entities reduce exactly to the league baseline, and no minimum-sample threshold exists anywhere in the module.
 - **Critical invariant satisfied:** every method emits one coherent distribution over the 12 `RATE_CATEGORIES` — strictly positive, finite, and summing to 1 within `1e-9`, validated and never silently renormalized.
 - `intentional_walk` is modeled as its own categorical outcome, never merged into `walk`. v0.3.2 deferred this decision to v0.3.3; this version resolved it in favor of keeping them separate, with sparse IBB counts handled by the same shrinkage as every other category rather than by bespoke logic.
-- The matchup method is a multiplicative relative-likelihood categorical baseline, equivalent to classical log5 in the binary case. **`matchup_combination` is an approved, shipped v0.3.3 baseline.** The earlier "not RSB's approved method" caveat described the pre-implementation roadmap state and no longer applies to the implemented method. What is still **not** claimed is uniqueness: it is not the uniquely canonical K-category generalization, it is one defensible baseline among several, and it must still earn its place empirically in v0.3.4 evaluation like any other candidate. RSB's durable documentation never recorded the specification of the external combination formula reviewed during the roadmap reassessment, so this document asserts neither that the shipped method is that formula nor that it is not; any materially different variant would be a separate reference variant/hypothesis, evaluated the same as any other candidate.
+- The matchup method is a multiplicative relative-likelihood categorical baseline, equivalent to classical log5 in the binary case. **`matchup_combination` is an approved, shipped v0.3.3 baseline.** The earlier "not RSB's approved method" caveat described the pre-implementation roadmap state and no longer applies to the implemented method. What is still **not** claimed is uniqueness: it is not the uniquely canonical K-category generalization, it is one defensible baseline among several, and it must still earn its place empirically like any other candidate. The v0.3.4 evaluator (§10) is the instrument for that; as of this synchronization it has not been run on real historical data, so the matchup method has neither earned nor lost that place. RSB's durable documentation never recorded the specification of the external combination formula reviewed during the roadmap reassessment, so this document asserts neither that the shipped method is that formula nor that it is not; any materially different variant would be a separate reference variant/hypothesis, evaluated the same as any other candidate.
 - Leakage is enforced by field-set boundary: inputs are stripped to a whitelist before any math runs, excluding `pa_status`, `pa_outcome_detailed`, `pa_outcome_category`, and `terminal_pa_event_raw`. Completion status is deliberately not a gate — a historical incomplete or `truncated_pa` PA still receives a well-defined pre-PA distribution; deciding which records carry a scorable target is evaluation work.
 - Pitcher attribution **is** a gate: when `pitcher_rate_eligible = False`, pitcher-dependent methods raise `PitcherAttributionUnavailableError` and the terminal `pitcher_id` is withheld from the emitted record, because that identity was unknowable before the PA began. `pitcher_rate_eligible` itself is retained as retrospective metadata.
 - Hyperparameters are provisional and explicitly not empirically optimized (league prior strength 1.0, batter 100.0, pitcher 100.0). Every output record carries the strengths actually used alongside `model_config_version`, so two artifacts labelled with the same method can never be silently incomparable.
 - No evaluation, calibration, tuning, persistence, simulation, handedness splits, situational conditioning, sportsbook work, or runtime orchestration — see `docs/MLB_PLATE_APPEARANCE_PROBABILITY_CONTRACT.md` §10 for the full non-goals list.
 
-**Exit boundary (conceptual, not a schema):** coherent, leakage-safe, uncalibrated per-PA probabilities exist. Measuring whether they are any good is v0.3.4 work, not v0.3.3 work.
+**Exit boundary (conceptual, not a schema):** coherent, leakage-safe, uncalibrated per-PA probabilities exist. Measuring whether they are any good was v0.3.4 work, not v0.3.3 work — v0.3.4 delivered the measurement capability (§10); actually measuring on real data has not yet happened (§15).
 
-## 10. Directional v0.3.4 — MLB Walk-Forward Evaluation & Calibration
+## 10. v0.3.4 — MLB Walk-Forward Evaluation & Calibration Measurement (merged)
 
-**Status:** Next roadmap objective, directional planning batch; not yet an independently approved implementation scope — requires its own inspection/planning stage and ChatGPT approval before coding begins.
+**Status:** Merged and verified. PR #52, merge commit 624673d, implementation commit 9ec05cd, 2629 tests passed (249 new tests: 73 calibration, 176 evaluation). Feature branch feature/v0.3.4-mlb-walk-forward-evaluation-calibration deleted locally and remotely.
 
-- Strict chronological (walk-forward) evaluation, no future leakage.
-- Multiclass Brier score and log loss. `brier_score_multiclass` and `log_loss_multiclass` already exist in `src/backtest.py` and consume v0.3.3's `probabilities` directly.
-- Reliability / calibration assessment.
-- Comparison against the baseline progression from v0.3.3.
-- Outcome-level and sample-count diagnostics.
+**What shipped:** A measurement layer that scores v0.3.3's per-plate-appearance categorical probabilities against realized outcomes, per `docs/MLB_PLATE_APPEARANCE_EVALUATION_CONTRACT.md` (`src/calibration.py`, `src/mlb/plate_appearance_evaluation.py`).
 
-**Considerations recorded during v0.3.3, to be carried into v0.3.4 planning (none of them pre-approve an implementation):**
+- **Generic calibration primitives** (`src/calibration.py`) — sport-agnostic, model-agnostic reliability-bin construction plus expected calibration error (ECE) and maximum calibration error (MCE). No MLB coupling.
+- **MLB walk-forward PA evaluation** (`src/mlb/plate_appearance_evaluation.py`) — `build_evaluation_model_config`, `evaluate_pa_walk_forward`, and `validate_pa_evaluation_report`.
+- **Multiclass log loss and Brier score** are the two primary model-comparison metrics, reusing `src/backtest.py`'s `log_loss_multiclass` and `brier_score_multiclass` unchanged. Log loss is called with `epsilon = math.nextafter(0.0, 1.0)` at the call site so the default clamp cannot silently floor an overconfident configuration. Accuracy is recorded as descriptive only.
+- **Top-label reliability, ECE, and MCE** — the direct test of overconfidence, on `(max(p), actual == argmax(p))` pairs.
+- **12 classwise one-vs-rest calibration diagnostics** — one reliability curve, ECE, and MCE per `RATE_CATEGORIES` member, always all twelve and never filtered, which is what keeps `intentional_walk` visible as its own row.
+- **A macro classwise ECE diagnostic** — the unweighted arithmetic mean of the 12 per-category ECE values, explicitly recorded as a weak summary in this outcome space and never a verdict.
+- **Intersection-only comparative sampling** — the scored sample is the set of completed plate appearances every supplied configuration natively supports, so competing configurations always share one denominator. There is no sample-basis parameter and no per-method denominator option.
+- **Method-support / coverage reporting** — coverage is reported separately and never folded into a metric: input/completed/incomplete counts, pitcher eligibility counts, intersection size, cold-start counts, date and calendar-month span, and each method's natively supported completed-PA count. The resulting selection bias is documented rather than hidden.
+- **Tuning / holdout date split support** — `split_date` is measurement-only, producing independently aggregated `tuning` and `holdout` windows, or a single `full` window when omitted. A hyperparameter sweep is N entries in `model_configs`; there is no search loop, no optimizer, and no automatic selection.
+- **Calendar-month diagnostics** — one descriptive scoring row per calendar month, exposing cold-start distortion instead of introducing a caller-controlled burn-in filter. Month counts always sum to the window total.
+- **Deterministic input/config/report identity** — content-derived `input_content_sha256` (canonical chronological sort, recursive key sorting, SHA-256) and `config_id`, no timestamp anywhere and no clock consulted, so repeated runs over the same input are byte-identical.
+- **Prior-state coherence validation** — the supplied enriched history is re-run through `attach_prior_outcome_rates` and all nine regenerated `prior_*` fields must match exactly before anything is scored. This is coherence validation, not artifact-completeness validation; its blind spots (tail truncation, omitted incomplete PAs, some final-date omissions) are stated and asserted by test.
+- **Strict report self-consistency validation** — `validate_pa_evaluation_report` fails closed on an internally inconsistent report, not merely a misshapen one: stored summary statistics are recomputed from the report's own contents and counts must reconcile across coverage, windows, categories, calibration bins, and calendar months.
+- Walk-forward safety is **inherited** from v0.3.2's frozen-at-date-boundary prior state, not reimplemented; only `pa_status == "completed"` plate appearances are scorable; bin edges and sample basis are fixed module constants, never caller arguments.
 
-- **Intersection-sample comparison.** Pitcher-dependent methods are unavailable when `pitcher_rate_eligible = False`, and eligibility is knowable only after the fact, so a sample selected on it is not a random sample of plate appearances. Model-vs-model comparison should therefore run on the intersection of records all compared methods support, so competing methods share one evaluation denominator. Coverage should be reported separately rather than folded into the comparison. Every v0.3.3 output record carries `pitcher_rate_eligible` so that intersection is trivially identifiable.
-- **Scorable-target selection.** v0.3.3 emits a distribution for incomplete and `truncated_pa` plate appearances as well; only completed PAs carry a categorical target and are eligible for Brier/log-loss scoring. Deciding and enforcing that split is v0.3.4's job.
-- **Provisional hyperparameters.** v0.3.3's league/batter/pitcher prior strengths (1.0 / 100.0 / 100.0) are deliberately provisional and not empirically optimized. v0.3.4 should evaluate and tune model configurations chronologically and compare them explicitly, rather than silently changing defaults.
-- **Multiplicative matchup overconfidence.** The matchup baseline can compound same-direction batter and pitcher deviations from league rather than averaging them, which may make it overconfident. Upstream shrinkage damps this; how much remains should be measured through calibration, not assumed good or bad in advance.
-- **`intentional_walk` visibility.** IBB remains its own category. It is low-frequency and heavily situational, and that should be visible in outcome-level evaluation rather than hidden by merging it into ordinary walks.
-- **Compare through the public entry point.** Estimators should be compared through `build_pa_probability_distribution(method=...)`, not by reaching through module internals, so the leakage boundary, provenance fields, and output validation stay on every path that produces a scored number.
+**Capability, not evidence.** This is the boundary that matters most for anyone reading this document later. v0.3.4 establishes the leakage-safe evaluation and calibration-measurement capability. It does **not** provide real-data evidence that one MLB probability method or hyperparameter configuration is superior to another. No real historical dataset has been evaluated. RSB has not empirically selected a winning MLB model, and the MLB engine is not live-ready.
 
-**Important principle:** RSB should validate probability quality before investing in a large Monte Carlo simulation runtime. Simulation count does not compensate for a poorly calibrated probability model.
+**Measurement only.** v0.3.4 adjusts nothing. No recalibration (no Platt scaling, isotonic regression, temperature or Dirichlet scaling), no automatic hyperparameter selection, no change to v0.3.3's prior-strength defaults or `PROBABILITY_MODEL_CONFIG_VERSION`, no persistence, no database access, no simulation, no sportsbook odds/EV/ranking, and no MLB runtime orchestration. See `docs/MLB_PLATE_APPEARANCE_EVALUATION_CONTRACT.md` §16 for the full non-goals list and §17 for items recorded but not implemented.
 
-**Open design question, recorded but not resolved here:** `src/historical_replay.py` is a generally reusable, read-only SQLite replay pattern except for one function, `_derive_actual_label`, which hardcodes a soccer-specific `home_win`/`draw`/`away_win` outcome vocabulary (confirmed by direct code review; also classified "B — reusable concept, needs adaptation" by `docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md`). At v0.3.4 planning time, a decision is needed: reuse/generalize the safe read-only replay pattern with an MLB-appropriate label function, or introduce a separate MLB-specific replay component. This document intentionally does not resolve that question — it belongs to v0.3.4 implementation planning.
+**Resolved open design question.** The v0.3.3-era question of whether to generalize `src/historical_replay.py`'s read-only SQLite replay pattern or build a separate MLB-specific component was resolved by not doing either: the evaluator is pure and consumes caller-supplied rate-enriched records. `src/historical_replay.py` is unchanged and unreferenced by the MLB evaluator. A supported read-only loader for persisted PA datasets remains deliberately unbuilt and unassigned (`docs/MLB_PLATE_APPEARANCE_EVALUATION_CONTRACT.md` §17).
+
+**Important principle (unchanged):** RSB should validate probability quality before investing in a large Monte Carlo simulation runtime. Simulation count does not compensate for a poorly calibrated probability model. v0.3.4 built the instrument for that validation; the validation itself has not been performed.
+
+**Exit boundary (conceptual, not a schema):** a frozen, leakage-safe evaluator exists. Actually running it on real historical data, and deciding anything on the basis of what it reports, is separate work — see §15.
 
 ## 11. Directional later MLB work
 
-No exact versions are locked after v0.3.4. Directionally, and in no fixed order yet:
+No version is assigned after v0.3.4, and none is invented here. The items below are directional only, in no fixed order, and none is approved or scheduled:
 
 - MLB game-state / Monte Carlo simulation runtime.
 - MLB market probability projection.
@@ -189,20 +197,22 @@ No exact versions are locked after v0.3.4. Directionally, and in no fixed order 
 
 ### Named architectural gaps identified during v0.3.3
 
-These were discovered while building the probability baseline and are recorded here so they are not lost. **None of them is assigned to a version, approved, or scheduled**, including to v0.3.4:
+These were discovered while building the probability baseline and are recorded here so they are not lost. They were **not** addressed by v0.3.4, which is a measurement layer only. **None of them is assigned to a version, approved, or scheduled:**
 
 - **PA-start-pitcher prior contract.** `attach_prior_outcome_rates` keys pitcher priors on the *terminal* `pitcher_id`, which is why mid-PA-substitution plate appearances are excluded from pitcher-dependent methods. `source_pitcher_ids[0]` already is the PA-start pitcher, so a future contract could attach PA-start-pitcher prior state and recover that pitcher-dependent coverage. This would be a v0.3.2-layer contract change, not a probability-layer change.
 - **Prediction-time (upcoming-PA) input contract.** Every PA record in RSB derives from already-observed pitch data, so v0.3.3 scores history only. No input contract for an upcoming, not-yet-played plate appearance exists anywhere in RSB. This is the architectural gap between historical evaluation and operational prediction.
 - **PA-opportunity / lineup / game-sequencing model.** Per-PA probabilities alone do not produce player game-level markets. Something must model how many plate appearances a batter gets, against which pitchers, in what order. This sits between v0.3.3's per-PA distributions and markets such as hits, total bases, or home runs.
-- **Handedness / platoon splits.** A strong candidate for a future challenger feature, evaluated the same as any other candidate. It is deliberately not assigned to v0.3.4 or to any other version.
+- **Handedness / platoon splits.** A strong candidate for a future challenger feature, evaluated the same as any other candidate. It is deliberately not assigned to any version.
 
-Exact version numbers and ordering for this later work must be reassessed after v0.3.1–v0.3.4 are actually built and have taught RSB what the real next constraints are.
+Recorded during v0.3.4 and likewise unassigned: a **supported read-only loader for persisted PA datasets**. `create_plate_appearance_dataset` writes `.jsonl.gz`, but nothing in RSB reads it back, so evaluating a real persisted history currently requires the operator to load the records. See `docs/MLB_PLATE_APPEARANCE_EVALUATION_CONTRACT.md` §17.
+
+Exact version numbers and ordering for this later work must be reassessed after the v0.3.4 evaluator has actually been run on real historical data and has taught RSB what the real next constraints are.
 
 ## 12. MLB market-capability note
 
 `src/mlb_capability.py`'s 15 declared MLB markets (moneyline, run_line, total_runs, team_total_runs, player_hits, player_total_bases, player_home_runs, player_rbis, player_runs, player_stolen_bases, pitcher_strikeouts, pitcher_outs_recorded, pitcher_hits_allowed, pitcher_walks_allowed, pitcher_earned_runs_allowed) are declarative capability metadata only — a record of what a market *would* require if supported, not proof RSB can generate probabilities for it today.
 
-This is not an implementation checklist. RSB does not promise all 15 markets as an immediate or near-term target. Market support expands only when the underlying model/state-simulation layer can legitimately generate the outcomes that market requires. Some markets (e.g. batter hits, home runs, total bases; pitcher strikeouts, walks allowed, hits allowed) are plausible early targets once a plate-appearance-level model exists. v0.3.3 delivered a per-PA probability baseline, but that is not yet sufficient on its own: reaching those player game-level markets still requires the PA-opportunity / lineup / game-sequencing gap named in §11, and probability quality still has to be validated. Others (RBIs, runs, stolen bases, team/game totals, moneyline) require richer game-state and baserunner sequencing than a single-plate-appearance model provides, and will come later if and when that state model exists.
+This is not an implementation checklist. RSB does not promise all 15 markets as an immediate or near-term target. Market support expands only when the underlying model/state-simulation layer can legitimately generate the outcomes that market requires. Some markets (e.g. batter hits, home runs, total bases; pitcher strikeouts, walks allowed, hits allowed) are plausible early targets once a plate-appearance-level model exists. v0.3.3 delivered a per-PA probability baseline and v0.3.4 delivered the capability to evaluate it, but that is not yet sufficient on its own: reaching those player game-level markets still requires the PA-opportunity / lineup / game-sequencing gap named in §11, and probability quality still has to actually be validated against real data. Others (RBIs, runs, stolen bases, team/game totals, moneyline) require richer game-state and baserunner sequencing than a single-plate-appearance model provides, and will come later if and when that state model exists.
 
 ## 13. Dependency policy
 
@@ -227,11 +237,21 @@ After MLB and NBA reach an explicitly defined finished RSB state:
 
 ## 15. Immediate next action
 
-v0.3.3 — MLB Plate-Appearance Probability Baseline has merged (PR #50). The next step is a separate **v0.3.4 inspection/planning stage** for MLB Walk-Forward Evaluation & Calibration. No v0.3.4 MLB evaluation/calibration code is written until that implementation plan is reviewed and approved by ChatGPT.
+v0.3.4 — MLB Walk-Forward Evaluation & Calibration Measurement has merged (PR #52). **No next version is assigned, invented, or pre-approved.**
+
+The immediate technical next step is empirical, not a new version: **use the now-frozen v0.3.4 evaluator on real historical MLB data.** Operational context for that step:
+
+- An existing Baseball Savant snapshot currently ends at **2026-08-11**. Preserve that historical cutoff — do not overwrite or regenerate that snapshot.
+- A later/current Savant snapshot can be created separately, as a distinct artifact alongside the existing one.
+- **2026-08-12 onward** can then serve as a natural out-of-sample / holdout period.
+- Model and configuration choices must be **frozen before the holdout is inspected**. Per §10 and the evaluation contract §10, once holdout metrics have been inspected and the compared configurations are then changed on the basis of those metrics, that holdout is contaminated for confirmatory use and a fresh, untouched future holdout is required.
+- Future records may update chronological priors normally during walk-forward evaluation — that is what walk-forward means. Future *outcomes* must never leak backward.
+
+The exact next implementation version and scope remain **unapproved** until that empirical evaluation is inspected and separately planned. Any subsequent version still requires its own inspection/planning stage and ChatGPT approval before coding begins.
 
 ## 16. Future MLB operational requirements
 
-**Status:** Directional architectural requirements, recorded here so they are not lost across handoffs. **These are not v0.3.4 implementation scope.** Each requires its own separately scoped and ChatGPT-approved implementation plan when RSB reaches it. Do not implement any part of this section as a side effect of v0.3.4 or any other current chore.
+**Status:** Directional architectural requirements, recorded here so they are not lost across handoffs. **None of these was delivered by v0.3.4, and none is assigned to any version.** Each requires its own separately scoped and ChatGPT-approved implementation plan when RSB reaches it. Do not implement any part of this section as a side effect of the empirical evaluation step in §15, or of any other current chore.
 
 ### A. On-run historical synchronization and completeness
 
@@ -257,7 +277,7 @@ Direction:
 - external **object storage** for large immutable raw/normalized snapshot artifacts
 - local files only as temporary ingestion/cache artifacts
 - exact hosted vendor remains undecided
-- do not implement this in the current docs chore or v0.3.4 unless separately scoped
+- do not implement this in the current docs chore or as part of the §15 empirical evaluation step unless separately scoped
 
 ### C. Multi-source verification / reconciliation
 
@@ -296,4 +316,4 @@ historical data
 
 Simulation must be sport-specific and should occur only after probability quality is validated/calibrated.
 
-This requirement must remain distinct from v0.3.4; v0.3.2 delivered the PA dataset/rate foundation and v0.3.3 delivered uncalibrated per-PA probabilities. Neither delivered calibrated probabilities or simulation, and reaching market probabilities from per-PA probabilities also requires the PA-opportunity / lineup / game-sequencing gap named in §11.
+This requirement remains distinct from everything shipped so far: v0.3.2 delivered the PA dataset/rate foundation, v0.3.3 delivered uncalibrated per-PA probabilities, and v0.3.4 delivered the capability to measure them. None of the three delivered calibrated probabilities or simulation, and reaching market probabilities from per-PA probabilities also requires the PA-opportunity / lineup / game-sequencing gap named in §11.

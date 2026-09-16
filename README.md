@@ -1,4 +1,4 @@
-# RSB v0.3.3
+# RSB v0.3.4
 
 RSB is a probabilistic sports forecasting, simulation, and +EV research framework. The existing World Cup runtime is RSB's first operational sport implementation and is frozen for new feature development. MLB is the next active modeling domain, with NBA planned as the second and final new sport engine.
 
@@ -10,8 +10,8 @@ RSB's current architecture:
 
 - The World Cup runtime (`run_slate.py` and everything it orchestrates) is the only currently operational, end-to-end pipeline. It is frozen for new feature development — maintenance and bug fixes only.
 - A separate, reusable pure-primitives foundation (candidate identity, odds snapshot, evaluation, EV enrichment, ranking, reporting, settlement, sport/market capability profiles, and backtest math) exists independently of the World Cup runtime and is not yet wired into any operational sport pipeline.
-- MLB has a declared market capability profile (`src/mlb_capability.py`) and, as of v0.3.1/v0.3.2/v0.3.3, a manual-CSV-only historical Statcast data foundation, a plate-appearance dataset/rate foundation built on top of it, and a plate-appearance probability baseline built on top of that (`src/mlb/`). The v0.3.3 baseline generates retrospective per-plate-appearance categorical probabilities only — there is still no walk-forward evaluation or calibration, no MLB simulation, no prediction-time (upcoming-PA) input contract, and no MLB runtime.
-- **v0.3.3 — MLB Plate-Appearance Probability Baseline is merged.** (PR #50, merge commit `dcab8bb`, 2380 tests passed.) **v0.3.4 — MLB Walk-Forward Evaluation & Calibration is the next directional objective**, not yet implementation-approved.
+- MLB has a declared market capability profile (`src/mlb_capability.py`) and, as of v0.3.1/v0.3.2/v0.3.3/v0.3.4, a manual-CSV-only historical Statcast data foundation, a plate-appearance dataset/rate foundation built on top of it, a plate-appearance probability baseline built on top of that, and a walk-forward evaluation and calibration-measurement layer that scores those probabilities against realized outcomes (`src/mlb/`, `src/calibration.py`). These remain retrospective: there is still no MLB simulation, no prediction-time (upcoming-PA) input contract, no PA-opportunity/lineup model, no sportsbook bridge, and no MLB runtime.
+- **v0.3.4 — MLB Walk-Forward Evaluation & Calibration Measurement is merged.** (PR #52, merge commit `624673d`, 2629 tests passed.) v0.3.4 establishes the evaluation *capability*; it has not yet been run against a real historical dataset, so RSB has **not** empirically selected a winning MLB probability method or hyperparameter configuration. The immediate next step is to apply the now-frozen evaluator to real historical data. No next version is approved or assigned.
 - NBA is planned as the second and final new sport engine, after MLB. No NBA code exists yet.
 
 For the full roadmap and sport-scope decisions, see [docs/MLB_NBA_ROADMAP.md](docs/MLB_NBA_ROADMAP.md). For the architecture audit behind the World Cup freeze decision, see [docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md](docs/LEGACY_PIPELINE_ARCHITECTURE_AUDIT.md).
@@ -60,6 +60,8 @@ The project currently supports:
 - manual-CSV-only historical MLB Statcast ingestion, normalization, and immutable provenance-tagged snapshots (`src/mlb/statcast_import.py`, `statcast_normalize.py`, `statcast_snapshot.py`)
 - MLB plate-appearance dataset and leakage-safe prior batter/pitcher/league rate foundation (`src/mlb/plate_appearance.py`, `plate_appearance_rates.py`, `plate_appearance_snapshot.py`; see [docs/MLB_PLATE_APPEARANCE_CONTRACT.md](docs/MLB_PLATE_APPEARANCE_CONTRACT.md))
 - MLB plate-appearance probability baseline — one coherent categorical distribution over the 12 outcome categories via a smoothed league baseline, batter/pitcher shrinkage toward league, and a multiplicative matchup combination (`src/mlb/plate_appearance_probability.py`; see [docs/MLB_PLATE_APPEARANCE_PROBABILITY_CONTRACT.md](docs/MLB_PLATE_APPEARANCE_PROBABILITY_CONTRACT.md))
+- generic calibration primitives — reliability-bin construction plus expected and maximum calibration error, sport-agnostic and independent of any model (`src/calibration.py`)
+- MLB walk-forward plate-appearance evaluation — multiclass log loss and Brier score, top-label reliability/ECE/MCE, 12 classwise calibration diagnostics plus a macro classwise ECE summary, intersection-only comparative sampling with separate method-support/coverage reporting, tuning/holdout date splits, calendar-month diagnostics, deterministic input/config/report identity, prior-state coherence validation, and strict report self-consistency validation (`src/mlb/plate_appearance_evaluation.py`; see [docs/MLB_PLATE_APPEARANCE_EVALUATION_CONTRACT.md](docs/MLB_PLATE_APPEARANCE_EVALUATION_CONTRACT.md))
 
 ## Runtime Target
 
@@ -354,8 +356,8 @@ Workflow file:
 
 ## Roadmap
 
-Completed versions through v0.3.3 are listed under Current Foundation above.
+Completed versions through v0.3.4 are listed under Current Foundation above.
 
-**v0.3.4 — MLB Walk-Forward Evaluation & Calibration** is the next directional roadmap objective. It requires a separate v0.3.4 inspection/planning stage and ChatGPT approval before coding begins.
+**No next version is approved or assigned.** The immediate technical next step is empirical, not a new version: run the now-frozen v0.3.4 evaluator against real historical MLB data and inspect the result. Only after that evidence is reviewed does a further version get scoped, and it still requires its own inspection/planning stage and ChatGPT approval before coding begins.
 
-For the full roadmap, including the MLB-first / NBA-second sport-scope decision and the directional v0.3.4 MLB objective, see [docs/MLB_NBA_ROADMAP.md](docs/MLB_NBA_ROADMAP.md).
+For the full roadmap, including the MLB-first / NBA-second sport-scope decision and the named architectural gaps that remain unscheduled, see [docs/MLB_NBA_ROADMAP.md](docs/MLB_NBA_ROADMAP.md).
