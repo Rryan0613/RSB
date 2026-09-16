@@ -1,0 +1,353 @@
+{
+  "rule": "Drop every (source_game_id, at_bat_number) plate-appearance group whose pitch rows carry more than one distinct `batter` id or more than one distinct `stand` value.",
+  "reason": "v0.3.2 s4 fails the whole derivation closed on a plate appearance containing multiple batter identities and explicitly defers resolving attribution to a separately scoped future change. These are genuine MLB events (a pinch hitter entering mid-count, typically answering a mid-PA pitching change), not corrupt data. This sprint does not change the contract, so the affected plate appearances are dropped pre-ingestion and reported as coverage loss.",
+  "outcome_independence": "The `events` column is never read by the detector. The rule depends only on batter/stand structure within a group. No realized outcome, no metric, and no model performance influenced this exclusion, and the identical rule is applied to development and holdout dates.",
+  "declared_range": {
+    "start_date": "2026-03-25",
+    "end_date": "2026-09-15"
+  },
+  "development_holdout_split_date": "2026-08-12",
+  "total_source_pitch_rows_in_range": 669982,
+  "total_pa_groups_in_range": 172245,
+  "excluded_pa_count": 21,
+  "excluded_pa_fraction_of_range": 0.00012191935905251241,
+  "excluded_pa_count_by_window": {
+    "development": 18,
+    "holdout": 3
+  },
+  "excluded_pitch_row_count_by_window": {
+    "development": 90,
+    "holdout": 12
+  },
+  "excluded_plate_appearances": [
+    {
+      "source_game_id": "822918",
+      "at_bat_number": 49,
+      "rsb_pa_id": "0c47535c8f41f057ee30f7d05e6193d65d1e5318020aaac7a119f854a1ea17ef",
+      "game_date": "2026-04-06",
+      "window": "development",
+      "pitch_row_count": 4,
+      "distinct_batter_ids": [
+        "641487",
+        "645302"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "824051",
+      "at_bat_number": 44,
+      "rsb_pa_id": "a5fe3a4a56fbbe3a0f0b2cfa245a6ff1583f32f05f13be81f742daa552e882db",
+      "game_date": "2026-04-07",
+      "window": "development",
+      "pitch_row_count": 4,
+      "distinct_batter_ids": [
+        "600869",
+        "624585"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "824374",
+      "at_bat_number": 14,
+      "rsb_pa_id": "69ae379719823ea6de6f08a0a36ce513ded235ce2c3acc1da9a82581e6216919",
+      "game_date": "2026-04-08",
+      "window": "development",
+      "pitch_row_count": 6,
+      "distinct_batter_ids": [
+        "676694",
+        "694728"
+      ],
+      "distinct_stands": [
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "823565",
+      "at_bat_number": 3,
+      "rsb_pa_id": "9763d6960605629c758406dbb9f5e157c28fd0109c8365d612f33e82bf061176",
+      "game_date": "2026-04-09",
+      "window": "development",
+      "pitch_row_count": 3,
+      "distinct_batter_ids": [
+        "667670",
+        "671732"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "823883",
+      "at_bat_number": 59,
+      "rsb_pa_id": "44a2a93ac2fd1cc3467fadd6d042a761b6812bb960c9e56820ed99b1b6191302",
+      "game_date": "2026-04-17",
+      "window": "development",
+      "pitch_row_count": 6,
+      "distinct_batter_ids": [
+        "681715",
+        "688363"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "823632",
+      "at_bat_number": 52,
+      "rsb_pa_id": "e8eed0cb55e384b6b9a5cd41d3a0e61885768252cb9412b9945677fe2d2f4dda",
+      "game_date": "2026-05-12",
+      "window": "development",
+      "pitch_row_count": 8,
+      "distinct_batter_ids": [
+        "620443",
+        "682626"
+      ],
+      "distinct_stands": [
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "823705",
+      "at_bat_number": 66,
+      "rsb_pa_id": "df5873cc1c0bbc4e765caee910a0c537a9e11e68ee635e4696e1ca387d82c4d2",
+      "game_date": "2026-05-18",
+      "window": "development",
+      "pitch_row_count": 5,
+      "distinct_batter_ids": [
+        "605170",
+        "680777"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "824674",
+      "at_bat_number": 39,
+      "rsb_pa_id": "301925818ea6fdb46fca6903538d871fe17f52b3e027fd38b02b0872a65ba793",
+      "game_date": "2026-05-23",
+      "window": "development",
+      "pitch_row_count": 3,
+      "distinct_batter_ids": [
+        "670541",
+        "701305"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "823048",
+      "at_bat_number": 53,
+      "rsb_pa_id": "69e07481773ad9070d4cd6663c3ad64d71ee6ff6600b571723895969648ce329",
+      "game_date": "2026-06-06",
+      "window": "development",
+      "pitch_row_count": 4,
+      "distinct_batter_ids": [
+        "663457",
+        "686780"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "824915",
+      "at_bat_number": 73,
+      "rsb_pa_id": "aa894d352e2e23edc6274a0c4ec3e98a16df0acf27e67093b93ebab983148fc3",
+      "game_date": "2026-06-06",
+      "window": "development",
+      "pitch_row_count": 5,
+      "distinct_batter_ids": [
+        "664040",
+        "691373"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "824023",
+      "at_bat_number": 51,
+      "rsb_pa_id": "703d987f939b824b7c7438a59444e4d814e43e7ffa252ec35a6d67a462747105",
+      "game_date": "2026-06-09",
+      "window": "development",
+      "pitch_row_count": 6,
+      "distinct_batter_ids": [
+        "665861",
+        "681351"
+      ],
+      "distinct_stands": [
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "824181",
+      "at_bat_number": 16,
+      "rsb_pa_id": "abda48150cc12e807b5e601de935d3189e6e72107f54d898851db2eeba3d6ada",
+      "game_date": "2026-06-15",
+      "window": "development",
+      "pitch_row_count": 5,
+      "distinct_batter_ids": [
+        "650402",
+        "701678"
+      ],
+      "distinct_stands": [
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "823533",
+      "at_bat_number": 28,
+      "rsb_pa_id": "45dfca14d7817e77427cc10c8453f78b8edfcfab0dd10d622df1ef01720d4368",
+      "game_date": "2026-06-18",
+      "window": "development",
+      "pitch_row_count": 7,
+      "distinct_batter_ids": [
+        "665862",
+        "683011"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "822800",
+      "at_bat_number": 46,
+      "rsb_pa_id": "f7594b89d212f3f8516419fabfd22a6a4468537c1bd7a834ac7809e1e6c59ab0",
+      "game_date": "2026-06-22",
+      "window": "development",
+      "pitch_row_count": 4,
+      "distinct_batter_ids": [
+        "665161",
+        "694728"
+      ],
+      "distinct_stands": [
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "823927",
+      "at_bat_number": 47,
+      "rsb_pa_id": "341499ccfe4f05a415c8e8c0b52a6d017cd9ab89b1721ccb22fd96355b786d80",
+      "game_date": "2026-07-10",
+      "window": "development",
+      "pitch_row_count": 2,
+      "distinct_batter_ids": [
+        "678489",
+        "814439"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "824169",
+      "at_bat_number": 32,
+      "rsb_pa_id": "cf44247821f5c2e53130f9962bc68dfb6576ffabca512616077a1f7689119d4c",
+      "game_date": "2026-07-18",
+      "window": "development",
+      "pitch_row_count": 5,
+      "distinct_batter_ids": [
+        "572233",
+        "664774"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "824408",
+      "at_bat_number": 45,
+      "rsb_pa_id": "7f23931ac84af4864d8e60b0bea1763e8549e4f999f329a0e9744cfbbb0ea283",
+      "game_date": "2026-07-22",
+      "window": "development",
+      "pitch_row_count": 7,
+      "distinct_batter_ids": [
+        "605170",
+        "668952"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "823028",
+      "at_bat_number": 37,
+      "rsb_pa_id": "7cf397dc4a69c20e116ca25c5aa1d46f6f6950e160d7837921faa8e729bee2dd",
+      "game_date": "2026-07-26",
+      "window": "development",
+      "pitch_row_count": 6,
+      "distinct_batter_ids": [
+        "668715",
+        "695490"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "823671",
+      "at_bat_number": 67,
+      "rsb_pa_id": "094ea28aa24bdab81d42afa3a60cb56e39eeccf47c82cddcf1d06795002fb058",
+      "game_date": "2026-08-15",
+      "window": "holdout",
+      "pitch_row_count": 2,
+      "distinct_batter_ids": [
+        "607208",
+        "702222"
+      ],
+      "distinct_stands": [
+        "L",
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "824642",
+      "at_bat_number": 21,
+      "rsb_pa_id": "fc987c791e6bb9eb3d5fbc02f19b93a219f1e34622d59557afbc606241cda62c",
+      "game_date": "2026-08-16",
+      "window": "holdout",
+      "pitch_row_count": 5,
+      "distinct_batter_ids": [
+        "621020",
+        "701649"
+      ],
+      "distinct_stands": [
+        "R"
+      ]
+    },
+    {
+      "source_game_id": "822854",
+      "at_bat_number": 10,
+      "rsb_pa_id": "6712a4eb4ab5054911fec2cf956b9f69297fa6a489cc4652f60374a859551e54",
+      "game_date": "2026-09-01",
+      "window": "holdout",
+      "pitch_row_count": 5,
+      "distinct_batter_ids": [
+        "683021",
+        "695720"
+      ],
+      "distinct_stands": [
+        "R"
+      ]
+    }
+  ]
+}

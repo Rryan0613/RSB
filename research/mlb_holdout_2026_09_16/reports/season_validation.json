@@ -1,0 +1,142 @@
+{
+  "pitch_layer": {
+    "normalized_pitch_count": 669880,
+    "distinct_game_dates": 172,
+    "distinct_games": 2270,
+    "game_type_counts": {
+      "R": 669880
+    },
+    "duplicate_rsb_pitch_id_count": 0,
+    "first_game_date": "2026-03-25",
+    "last_game_date": "2026-09-15"
+  },
+  "source_completeness": {
+    "authority": "MLB StatsAPI schedule, gameType=R, detailedState=Final",
+    "expected_final_game_count": 2268,
+    "observed_game_count_in_range": 2270,
+    "game_coverage_fraction": 1.0008818342151675,
+    "dates_with_scheduled_finals_but_no_pitch_data": [],
+    "missing_game_count": 0,
+    "missing_games_by_date": {},
+    "unexpected_game_count": 2,
+    "unexpected_games_by_date": {
+      "2026-04-04": [
+        "824295"
+      ],
+      "2026-08-02": [
+        "824807"
+      ]
+    }
+  },
+  "pa_layer": {
+    "pa_count": 172224,
+    "duplicate_rsb_pa_id_count": 0,
+    "status_counts": {
+      "completed": 171818,
+      "incomplete": 406
+    },
+    "incomplete_fraction": 0.0023573950204384985,
+    "terminal_raw_on_incomplete": {
+      "None": 100,
+      "truncated_pa": 306
+    },
+    "recognized_incomplete_markers": [
+      "truncated_pa"
+    ],
+    "pitcher_rate_eligible_counts": {
+      "True": 172182,
+      "False": 42
+    },
+    "multi_pitcher_pa_count": 42,
+    "pa_count_by_month": {
+      "2026-03": 5736,
+      "2026-04": 30001,
+      "2026-05": 31562,
+      "2026-06": 29918,
+      "2026-07": 28096,
+      "2026-08": 31596,
+      "2026-09": 15315
+    },
+    "pitches_per_pa_distribution": {
+      "1": 20079,
+      "2": 26092,
+      "3": 29818,
+      "4": 32151,
+      "5": 28721,
+      "6": 20685,
+      "7": 8956,
+      "8": 3588,
+      "9": 1359,
+      "10": 469,
+      "11": 202,
+      "12": 68,
+      "13": 21,
+      "14": 12,
+      "15": 2,
+      "18": 1
+    },
+    "pa_count_by_window": {
+      "development": 136575,
+      "holdout": 35649
+    },
+    "zero_prior_batter_history_pa_count": 661,
+    "zero_prior_pitcher_history_pa_count": 858
+  },
+  "outcome_frequencies_development_only": {
+    "scope": "game_date < 2026-08-12 (holdout outcomes not read)",
+    "completed_pa_count_whole_range": 171818,
+    "completed_pa_count_development": 136249,
+    "category_counts": {
+      "strikeout": 30140,
+      "walk": 11757,
+      "intentional_walk": 390,
+      "hit_by_pitch": 1560,
+      "single": 19230,
+      "double": 5596,
+      "triple": 491,
+      "home_run": 4154,
+      "field_out": 61552,
+      "fielders_choice": 533,
+      "reached_on_error": 779,
+      "catcher_interference": 67
+    },
+    "category_frequencies": {
+      "strikeout": 0.2212126327532679,
+      "walk": 0.08629054158195656,
+      "intentional_walk": 0.00286240632958774,
+      "hit_by_pitch": 0.01144962531835096,
+      "single": 0.14113865055890318,
+      "double": 0.04107186107787947,
+      "triple": 0.0036036961739168726,
+      "home_run": 0.030488297161814032,
+      "field_out": 0.45176111384303735,
+      "fielders_choice": 0.003911955317103245,
+      "reached_on_error": 0.005717473155766281,
+      "catcher_interference": 0.0004917467284163554
+    },
+    "categories_never_observed_in_development": [],
+    "detailed_counts": {
+      "field_out": 54971,
+      "strikeout": 30067,
+      "single": 19230,
+      "walk": 11757,
+      "double": 5596,
+      "home_run": 4154,
+      "force_out": 2515,
+      "grounded_into_double_play": 2320,
+      "hit_by_pitch": 1560,
+      "sac_fly": 966,
+      "field_error": 779,
+      "triple": 491,
+      "sac_bunt": 486,
+      "intent_walk": 390,
+      "fielders_choice": 306,
+      "double_play": 285,
+      "fielders_choice_out": 227,
+      "strikeout_double_play": 73,
+      "catcher_interf": 67,
+      "sac_fly_double_play": 8,
+      "triple_play": 1
+    }
+  }
+}

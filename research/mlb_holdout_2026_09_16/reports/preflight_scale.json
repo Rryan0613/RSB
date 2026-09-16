@@ -1,0 +1,155 @@
+{
+  "snapshot_id": "20260916T185927127261Z_d4b9355a7140",
+  "total_pitches": 252790,
+  "total_pa_groups": 65006,
+  "condition_counts": {
+    "pitcher_substitution_forward_only": 26,
+    "batter_id_varies": 8,
+    "batter_stands_varies": 6
+  },
+  "condition_affected_pa_counts": {
+    "pitcher_substitution_forward_only": 26,
+    "batter_id_varies": 8,
+    "batter_stands_varies": 6
+  },
+  "condition_affected_game_counts": {
+    "pitcher_substitution_forward_only": 26,
+    "batter_id_varies": 8,
+    "batter_stands_varies": 6
+  },
+  "examples": {
+    "pitcher_substitution_forward_only": [
+      {
+        "source_game_id": "822744",
+        "at_bat_number": 47,
+        "game_date": "2026-05-01",
+        "detail": "['694819', '676879']"
+      },
+      {
+        "source_game_id": "822813",
+        "at_bat_number": 37,
+        "game_date": "2026-05-24",
+        "detail": "['656302', '689254']"
+      },
+      {
+        "source_game_id": "822911",
+        "at_bat_number": 33,
+        "game_date": "2026-04-26",
+        "detail": "['669372', '669270']"
+      },
+      {
+        "source_game_id": "822918",
+        "at_bat_number": 49,
+        "game_date": "2026-04-06",
+        "detail": "['641302', '668390']"
+      },
+      {
+        "source_game_id": "823154",
+        "at_bat_number": 16,
+        "game_date": "2026-04-12",
+        "detail": "['675989', '681151']"
+      }
+    ],
+    "batter_id_varies": [
+      {
+        "source_game_id": "822918",
+        "at_bat_number": 49,
+        "game_date": "2026-04-06",
+        "detail": "['641487', '645302']"
+      },
+      {
+        "source_game_id": "823565",
+        "at_bat_number": 3,
+        "game_date": "2026-04-09",
+        "detail": "['667670', '671732']"
+      },
+      {
+        "source_game_id": "823632",
+        "at_bat_number": 52,
+        "game_date": "2026-05-12",
+        "detail": "['620443', '682626']"
+      },
+      {
+        "source_game_id": "823705",
+        "at_bat_number": 66,
+        "game_date": "2026-05-18",
+        "detail": "['605170', '680777']"
+      },
+      {
+        "source_game_id": "823883",
+        "at_bat_number": 59,
+        "game_date": "2026-04-17",
+        "detail": "['681715', '688363']"
+      }
+    ],
+    "batter_stands_varies": [
+      {
+        "source_game_id": "822918",
+        "at_bat_number": 49,
+        "game_date": "2026-04-06",
+        "detail": "['L', 'R']"
+      },
+      {
+        "source_game_id": "823565",
+        "at_bat_number": 3,
+        "game_date": "2026-04-09",
+        "detail": "['L', 'R']"
+      },
+      {
+        "source_game_id": "823705",
+        "at_bat_number": 66,
+        "game_date": "2026-05-18",
+        "detail": "['L', 'R']"
+      },
+      {
+        "source_game_id": "823883",
+        "at_bat_number": 59,
+        "game_date": "2026-04-17",
+        "detail": "['L', 'R']"
+      },
+      {
+        "source_game_id": "824051",
+        "at_bat_number": 44,
+        "game_date": "2026-04-07",
+        "detail": "['L', 'R']"
+      }
+    ]
+  },
+  "fatal_pa_count": 8,
+  "fatal_pa_fraction": 0.0001230655631787835,
+  "fatal_game_count": 8,
+  "fatal_pa_keys": [
+    [
+      "822918",
+      49
+    ],
+    [
+      "823565",
+      3
+    ],
+    [
+      "823632",
+      52
+    ],
+    [
+      "823705",
+      66
+    ],
+    [
+      "823883",
+      59
+    ],
+    [
+      "824051",
+      44
+    ],
+    [
+      "824374",
+      14
+    ],
+    [
+      "824674",
+      39
+    ]
+  ]
+}
