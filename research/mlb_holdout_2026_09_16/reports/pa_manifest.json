@@ -1,0 +1,15 @@
+{
+  "derived_dataset_id": "fcea444a0ae6e9806d2fae34c1c00a3c6bb405296ce27b490b11026472fdca5c",
+  "source_snapshot_id": "20260916T191623976585Z_2b12606c6f66",
+  "source_provider": "baseball_savant",
+  "source_normalized_content_sha256": "bef9e067fffbd2b671b51f4f1c29d73107fcc614f554761ca8a56574d2709063",
+  "pa_schema_version": "1",
+  "derivation_version": "1",
+  "coverage_basis": "normalized_pitch_represented_pa",
+  "input_pitch_row_count": 669880,
+  "output_pa_count_completed": 171818,
+  "output_pa_count_incomplete": 406,
+  "derived_content_sha256": "80d5a44b1eeb96ac57d9a814b124befd94400a4ab00fc5f9de0119c2327da5a7",
+  "derived_row_count": 172224,
+  "derived_at": "2026-09-16T19:20:30.019832Z"
+}

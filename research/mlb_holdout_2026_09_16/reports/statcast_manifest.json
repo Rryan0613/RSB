@@ -1,0 +1,401 @@
+{
+  "snapshot_id": "20260916T191623976585Z_2b12606c6f66",
+  "source_provider": "baseball_savant",
+  "retrieval_mechanism": "manual_csv_export",
+  "source_identifier": "Baseball Savant Statcast Search, manual export",
+  "declared_query": {
+    "endpoint": "https://baseballsavant.mlb.com/statcast_search/csv",
+    "base_parameters": {
+      "all": "true",
+      "type": "details",
+      "hfGT": "R|",
+      "min_pitches": "0",
+      "min_results": "0",
+      "group_by": "name",
+      "sort_col": "pitches",
+      "player_event_sort": "api_p_release_speed",
+      "sort_order": "desc"
+    },
+    "acquisition": "scripted HTTP GET of the public Statcast Search CSV export",
+    "acquisition_script": "research/mlb_holdout_2026_09_16/download_savant.py",
+    "chunking": "non-overlapping closed game_date ranges of up to 3 days",
+    "chunk_ranges": [
+      [
+        "2026-03-25",
+        "2026-03-27"
+      ],
+      [
+        "2026-03-28",
+        "2026-03-30"
+      ],
+      [
+        "2026-03-31",
+        "2026-04-02"
+      ],
+      [
+        "2026-04-03",
+        "2026-04-05"
+      ],
+      [
+        "2026-04-06",
+        "2026-04-08"
+      ],
+      [
+        "2026-04-09",
+        "2026-04-11"
+      ],
+      [
+        "2026-04-12",
+        "2026-04-14"
+      ],
+      [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      [
+        "2026-04-18",
+        "2026-04-20"
+      ],
+      [
+        "2026-04-21",
+        "2026-04-23"
+      ],
+      [
+        "2026-04-24",
+        "2026-04-26"
+      ],
+      [
+        "2026-04-27",
+        "2026-04-29"
+      ],
+      [
+        "2026-04-30",
+        "2026-05-02"
+      ],
+      [
+        "2026-05-03",
+        "2026-05-05"
+      ],
+      [
+        "2026-05-06",
+        "2026-05-08"
+      ],
+      [
+        "2026-05-09",
+        "2026-05-11"
+      ],
+      [
+        "2026-05-12",
+        "2026-05-14"
+      ],
+      [
+        "2026-05-15",
+        "2026-05-17"
+      ],
+      [
+        "2026-05-18",
+        "2026-05-20"
+      ],
+      [
+        "2026-05-21",
+        "2026-05-23"
+      ],
+      [
+        "2026-05-24",
+        "2026-05-26"
+      ],
+      [
+        "2026-05-27",
+        "2026-05-29"
+      ],
+      [
+        "2026-05-30",
+        "2026-06-01"
+      ],
+      [
+        "2026-06-02",
+        "2026-06-04"
+      ],
+      [
+        "2026-06-05",
+        "2026-06-07"
+      ],
+      [
+        "2026-06-08",
+        "2026-06-10"
+      ],
+      [
+        "2026-06-11",
+        "2026-06-13"
+      ],
+      [
+        "2026-06-14",
+        "2026-06-16"
+      ],
+      [
+        "2026-06-17",
+        "2026-06-19"
+      ],
+      [
+        "2026-06-20",
+        "2026-06-22"
+      ],
+      [
+        "2026-06-23",
+        "2026-06-25"
+      ],
+      [
+        "2026-06-26",
+        "2026-06-28"
+      ],
+      [
+        "2026-06-29",
+        "2026-07-01"
+      ],
+      [
+        "2026-07-02",
+        "2026-07-04"
+      ],
+      [
+        "2026-07-05",
+        "2026-07-07"
+      ],
+      [
+        "2026-07-08",
+        "2026-07-10"
+      ],
+      [
+        "2026-07-11",
+        "2026-07-13"
+      ],
+      [
+        "2026-07-14",
+        "2026-07-16"
+      ],
+      [
+        "2026-07-17",
+        "2026-07-19"
+      ],
+      [
+        "2026-07-20",
+        "2026-07-22"
+      ],
+      [
+        "2026-07-23",
+        "2026-07-25"
+      ],
+      [
+        "2026-07-26",
+        "2026-07-28"
+      ],
+      [
+        "2026-07-29",
+        "2026-07-31"
+      ],
+      [
+        "2026-08-01",
+        "2026-08-03"
+      ],
+      [
+        "2026-08-04",
+        "2026-08-06"
+      ],
+      [
+        "2026-08-07",
+        "2026-08-09"
+      ],
+      [
+        "2026-08-10",
+        "2026-08-12"
+      ],
+      [
+        "2026-08-13",
+        "2026-08-15"
+      ],
+      [
+        "2026-08-16",
+        "2026-08-18"
+      ],
+      [
+        "2026-08-19",
+        "2026-08-21"
+      ],
+      [
+        "2026-08-22",
+        "2026-08-24"
+      ],
+      [
+        "2026-08-25",
+        "2026-08-27"
+      ],
+      [
+        "2026-08-28",
+        "2026-08-30"
+      ],
+      [
+        "2026-08-31",
+        "2026-09-02"
+      ],
+      [
+        "2026-09-03",
+        "2026-09-05"
+      ],
+      [
+        "2026-09-06",
+        "2026-09-08"
+      ],
+      [
+        "2026-09-09",
+        "2026-09-11"
+      ],
+      [
+        "2026-09-12",
+        "2026-09-14"
+      ],
+      [
+        "2026-09-15",
+        "2026-09-15"
+      ]
+    ],
+    "post_download_transform": "projected to the 33 columns RSB maps (statcast_import.EXPECTED_SOURCE_COLUMNS) and concatenated into one CSV; no row filtering beyond the declared date range",
+    "retained_columns": [
+      "at_bat_number",
+      "away_score",
+      "away_team",
+      "balls",
+      "batter",
+      "bb_type",
+      "events",
+      "game_date",
+      "game_pk",
+      "game_type",
+      "game_year",
+      "hit_distance",
+      "home_score",
+      "home_team",
+      "inning",
+      "inning_topbot",
+      "launch_angle",
+      "launch_speed",
+      "on_1b",
+      "on_2b",
+      "on_3b",
+      "outs_when_up",
+      "p_throws",
+      "pitch_name",
+      "pitch_number",
+      "pitch_type",
+      "pitcher",
+      "release_speed",
+      "stand",
+      "strikes",
+      "sv_id",
+      "type",
+      "zone"
+    ],
+    "mapped_columns_absent_from_source": [
+      "hit_distance"
+    ],
+    "game_type_filter": "R (regular season) via hfGT",
+    "excluded_multi_batter_plate_appearances": [
+      {
+        "source_game_id": "822800",
+        "at_bat_number": 46
+      },
+      {
+        "source_game_id": "822854",
+        "at_bat_number": 10
+      },
+      {
+        "source_game_id": "822918",
+        "at_bat_number": 49
+      },
+      {
+        "source_game_id": "823028",
+        "at_bat_number": 37
+      },
+      {
+        "source_game_id": "823048",
+        "at_bat_number": 53
+      },
+      {
+        "source_game_id": "823533",
+        "at_bat_number": 28
+      },
+      {
+        "source_game_id": "823565",
+        "at_bat_number": 3
+      },
+      {
+        "source_game_id": "823632",
+        "at_bat_number": 52
+      },
+      {
+        "source_game_id": "823671",
+        "at_bat_number": 67
+      },
+      {
+        "source_game_id": "823705",
+        "at_bat_number": 66
+      },
+      {
+        "source_game_id": "823883",
+        "at_bat_number": 59
+      },
+      {
+        "source_game_id": "823927",
+        "at_bat_number": 47
+      },
+      {
+        "source_game_id": "824023",
+        "at_bat_number": 51
+      },
+      {
+        "source_game_id": "824051",
+        "at_bat_number": 44
+      },
+      {
+        "source_game_id": "824169",
+        "at_bat_number": 32
+      },
+      {
+        "source_game_id": "824181",
+        "at_bat_number": 16
+      },
+      {
+        "source_game_id": "824374",
+        "at_bat_number": 14
+      },
+      {
+        "source_game_id": "824408",
+        "at_bat_number": 45
+      },
+      {
+        "source_game_id": "824642",
+        "at_bat_number": 21
+      },
+      {
+        "source_game_id": "824674",
+        "at_bat_number": 39
+      },
+      {
+        "source_game_id": "824915",
+        "at_bat_number": 73
+      }
+    ],
+    "exclusion_rationale": "v0.3.2 s4 fails closed on a plate appearance whose pitch rows carry more than one batter identity and defers resolving it; these PAs are dropped pre-ingestion rather than changing the contract. Structural rule, never outcome-dependent, applied identically to all dates."
+  },
+  "requested_date_range": {
+    "start_date": "2026-03-25",
+    "end_date": "2026-09-15"
+  },
+  "source_downloaded_at": null,
+  "ingestion_started_at": "2026-09-16T19:16:23.976585Z",
+  "ingestion_completed_at": "2026-09-16T19:16:30.111959Z",
+  "adapter_version": "1",
+  "normalized_schema_version": "1",
+  "raw_content_sha256": "2b12606c6f66dde67832113f65bb949b6a90f56c267f19cd494a70e4fe4c4952",
+  "normalized_content_sha256": "bef9e067fffbd2b671b51f4f1c29d73107fcc614f554761ca8a56574d2709063",
+  "raw_row_count": 669880,
+  "normalized_row_count": 669880
+}
